@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         initBluetooth();
         button = (Button) findViewById(R.id.testButton);
         dataButton = (Button) findViewById(R.id.getDataButton);
-        text1 = (TextView)findViewById(R.id.dataView);
+        text1 = (TextView) findViewById(R.id.dataView);
         initButtonListners();
 
     }
@@ -81,11 +81,13 @@ public class MainActivity extends AppCompatActivity {
                 String deviceAddress = devices.get(position).getAddress();
                 BluetoothDevice device = btAdapter.getRemoteDevice(deviceAddress);
                 ArrayList<UUID> jeeben = new ArrayList<UUID>();
-                for(ParcelUuid u:devices.get(position).getUuids()){
-                    UUID uuid = UUID.fromString(u.toString());
-                    Thread t = new Thread(new ConnectRunnable(uuid,device));
-                    t.start();
-                }
+                //for(ParcelUuid u:devices.get(position).getUuids()){
+
+                //}
+                UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+                Thread t = new Thread(new ConnectRunnable(uuid, device));
+                t.start();
+
             }
         });
 
@@ -94,20 +96,20 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void initButtonListners(){
+    private void initButtonListners() {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
-                    Log.e(TAG,"InitOBD");
+                    Log.e(TAG, "InitOBD");
                     new EchoOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                     new LineFeedOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                     new TimeoutCommand(125).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                     new SelectProtocolCommand(ObdProtocols.AUTO).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                 } catch (IOException e) {
-                    Log.e(TAG,"ERROR",e);
+                    Log.e(TAG, "ERROR", e);
                 } catch (InterruptedException e) {
-                    Log.e(TAG,"ERROR",e);
+                    Log.e(TAG, "ERROR", e);
                 }
             }
         });
@@ -131,9 +133,9 @@ public class MainActivity extends AppCompatActivity {
                     new AmbientAirTemperatureCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                     rpmCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                     String theString = IOUtils.toString(bluetoothSocket.getInputStream(), "UTF-8");
-                    Log.e(TAG,"THESTRING" + theString);
+                    Log.e(TAG, "THESTRING" + theString);
                 } catch (IOException e) {
-                    Log.e(TAG,"ERROR",e);
+                    Log.e(TAG, "ERROR", e);
                 } catch (InterruptedException e) {
                     Log.e("ERROR", "ERROR", e);
                 }
@@ -150,44 +152,44 @@ public class MainActivity extends AppCompatActivity {
     private class ConnectRunnable implements Runnable {
         private UUID uuidToConnect;
         BluetoothDevice device;
-        public ConnectRunnable(UUID uid,BluetoothDevice dev){
-            this.uuidToConnect  = uid;
+
+        public ConnectRunnable(UUID uid, BluetoothDevice dev) {
+            this.uuidToConnect = uid;
             this.device = dev;
         }
 
         @Override
         public void run() {
             try {
-                try {
-                    BluetoothAdapter bluetooth = BluetoothAdapter.getDefaultAdapter();
-                    if(!bluetooth.isEnabled()){
-                        bluetooth.enable();
-                    }
-                } catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
                 bluetoothSocket = device.createRfcommSocketToServiceRecord(uuidToConnect);
-                Log.e(TAG,"Connecting with" + uuidToConnect.toString());
-                Thread.sleep(500);
-                if(!bluetoothSocket.isConnected())
-                    bluetoothSocket.connect();
-                Log.e(TAG,"Connected with" + uuidToConnect.toString());
+                Log.e(TAG, "Connecting with" + uuidToConnect.toString());
+                bluetoothSocket.connect();
+                Log.e(TAG, "Connected with" + uuidToConnect.toString());
                 try {
-                    Log.e(TAG,"InitOBD");
+                    Log.e(TAG, "InitOBD");
                     new EchoOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                     new LineFeedOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                     new TimeoutCommand(125).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                     new SelectProtocolCommand(ObdProtocols.AUTO).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                 } catch (IOException e) {
-                    Log.e(TAG,"ERROR",e);
+                    Log.e(TAG, "ERROR", e);
                 } catch (InterruptedException e) {
-                    Log.e(TAG,"ERROR",e);
+                    Log.e(TAG, "ERROR", e);
                 }
             } catch (IOException e) {
-                Log.e(TAG,"ERROR",e);
-            } catch (InterruptedException e) {
-                Log.e(TAG,"ERROR",e);
+                Log.e(TAG, "ERROR", e);
+                try {
+                    Log.e(TAG,"trying fallback...");
+
+                    bluetoothSocket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(device,1);
+                    Log.e(TAG,"socket creatd");
+                    bluetoothSocket.connect();
+
+                    Log.e(TAG,"Connected");
+                }
+                catch (Exception e2) {
+                    Log.e("", "Couldn't establish Bluetooth connection!",e2);
+                }
             }
         }
     }
@@ -195,5 +197,9 @@ public class MainActivity extends AppCompatActivity {
     private void requestPermission() {
         int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+    }
+
+    private void checkBLE(){
+
     }
 }
