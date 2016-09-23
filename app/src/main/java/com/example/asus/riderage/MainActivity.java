@@ -14,8 +14,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.example.asus.riderage.views.SpeedoView;
 import com.github.pires.obd.commands.ObdCommand;
 import com.github.pires.obd.commands.ObdMultiCommand;
 import com.github.pires.obd.commands.control.ModuleVoltageCommand;
@@ -41,9 +43,10 @@ import java.util.UUID;
 public class MainActivity extends AppCompatActivity {
     private final String TAG = "MainActivity";
     TextView text1;
-    Button button, dataButton, checkConnectionButton;
+    Button button, dataButton, checkConnectionButton,changeNeedleBtn;
     BluetoothSocket bluetoothSocket;
-
+    SpeedoView speedo1;
+    SeekBar seekkeri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +57,29 @@ public class MainActivity extends AppCompatActivity {
         button = (Button) findViewById(R.id.testButton);
         dataButton = (Button) findViewById(R.id.getDataButton);
         checkConnectionButton = (Button) findViewById(R.id.checkConnectionButton);
+        changeNeedleBtn = (Button)findViewById(R.id.changeNeedleTest);
         text1 = (TextView) findViewById(R.id.dataView);
         initButtonListners();
+
+        speedo1 = (SpeedoView)findViewById(R.id.speedo1);
+        seekkeri = (SeekBar)findViewById(R.id.seeker);
+        seekkeri.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                Log.e(TAG, "onProgressChanged: "+progress );
+                speedo1.changeNeedlePosition(progress);//(int)((double)progress/100)*180);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
     private void initBluetooth() {
@@ -74,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // show list
+        /*
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.select_dialog_singlechoice,
                 deviceStrs.toArray(new String[deviceStrs.size()]));
@@ -98,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
         alertDialog.setTitle("Choose Bluetooth device");
         alertDialog.show();
+        */
 
     }
 
@@ -155,6 +181,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.e(TAG, "Bluetooth socket connection " + bluetoothSocket.isConnected());
+            }
+        });
+
+        changeNeedleBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                speedo1.changeNeedlePosition(180);
             }
         });
 
