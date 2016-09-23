@@ -16,17 +16,24 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.github.pires.obd.commands.ObdCommand;
+import com.github.pires.obd.commands.ObdMultiCommand;
+import com.github.pires.obd.commands.control.ModuleVoltageCommand;
 import com.github.pires.obd.commands.engine.RPMCommand;
 import com.github.pires.obd.commands.protocol.EchoOffCommand;
 import com.github.pires.obd.commands.protocol.LineFeedOffCommand;
+import com.github.pires.obd.commands.protocol.ObdResetCommand;
 import com.github.pires.obd.commands.protocol.SelectProtocolCommand;
 import com.github.pires.obd.commands.protocol.TimeoutCommand;
+import com.github.pires.obd.commands.temperature.AirIntakeTemperatureCommand;
 import com.github.pires.obd.commands.temperature.AmbientAirTemperatureCommand;
 import com.github.pires.obd.enums.ObdProtocols;
 
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
@@ -34,7 +41,7 @@ import java.util.UUID;
 public class MainActivity extends AppCompatActivity {
     private final String TAG = "MainActivity";
     TextView text1;
-    Button button, dataButton;
+    Button button, dataButton, checkConnectionButton;
     BluetoothSocket bluetoothSocket;
 
 
@@ -46,9 +53,9 @@ public class MainActivity extends AppCompatActivity {
         initBluetooth();
         button = (Button) findViewById(R.id.testButton);
         dataButton = (Button) findViewById(R.id.getDataButton);
+        checkConnectionButton = (Button) findViewById(R.id.checkConnectionButton);
         text1 = (TextView) findViewById(R.id.dataView);
         initButtonListners();
-
     }
 
     private void initBluetooth() {
@@ -62,8 +69,6 @@ public class MainActivity extends AppCompatActivity {
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
                 deviceStrs.add(device.getName() + "\n" + device.getAddress());
-                //Log.e(TAG, "name " + device.getName() + "UUIDs " + device.getUuids()[0] + " size " + device.getUuids().length + " address " + device.getAddress());
-                // devices.add(device.getAddress());
                 devices.add(device);
             }
         }
@@ -102,10 +107,34 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 try {
                     Log.e(TAG, "InitOBD");
+                    new ObdResetCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
+                    Log.d(TAG, "ObdResetComand was run");
+
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        Log.e(TAG, "Thread sleep: error", e);
+                    }
+                    Log.d(TAG, "Thread sleep done");
                     new EchoOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                     new LineFeedOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                    new TimeoutCommand(125).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
+                    new TimeoutCommand(62).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                     new SelectProtocolCommand(ObdProtocols.AUTO).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
+
+                    AmbientAirTemperatureCommand aa = new AmbientAirTemperatureCommand();
+                    RPMCommand rpm = new RPMCommand();
+                    rpm.run(bluetoothSocket.getInputStream(),bluetoothSocket.getOutputStream());
+                    //aa.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
+                    Log.e(TAG, "CalculatedResult: " + rpm.getCalculatedResult());
+                    Log.e(TAG, "FormattedResult " + rpm.getFormattedResult());
+
+                    //new RPMCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
+/*
+                    Log.e(TAG, "Air temp " + new AmbientAirTemperatureCommand().getCalculatedResult());
+                    Log.e(TAG, "Module voltage " + new ModuleVoltageCommand().getFormattedResult());
+*/
+                    Log.e(TAG, "Init finished without errors ");
+                    Log.e(TAG, "Bluetooth socket connection " + bluetoothSocket.isConnected());
                 } catch (IOException e) {
                     Log.e(TAG, "ERROR", e);
                 } catch (InterruptedException e) {
@@ -121,19 +150,34 @@ public class MainActivity extends AppCompatActivity {
                 t.start();
             }
         });
+
+        checkConnectionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e(TAG, "Bluetooth socket connection " + bluetoothSocket.isConnected());
+            }
+        });
+
     }
+
+/*    private void sendCommand() {
+        String airTempCommand = "01 46";
+        bluetoothSocket.getOutputStream().write(airTempCommand).get;
+
+    }*/
 
     private class TestThread implements Runnable {
 
         @Override
         public void run() {
-            RPMCommand rpmCommand = new RPMCommand();
+            //   RPMCommand rpmCommand = new RPMCommand();
             while (!Thread.currentThread().isInterrupted()) {
                 try {
+                    //       rpmCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
+                    //      String theString = IOUtils.toString(bluetoothSocket.getInputStream(), "UTF-8");
+                    //       Log.e(TAG, "THESTRING" + theString);
                     new AmbientAirTemperatureCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                    rpmCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                    String theString = IOUtils.toString(bluetoothSocket.getInputStream(), "UTF-8");
-                    Log.e(TAG, "THESTRING" + theString);
+
                 } catch (IOException e) {
                     Log.e(TAG, "ERROR", e);
                 } catch (InterruptedException e) {
@@ -162,20 +206,9 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             try {
                 bluetoothSocket = device.createRfcommSocketToServiceRecord(uuidToConnect);
-                Log.e(TAG, "Connecting with" + uuidToConnect.toString());
+                Log.e(TAG, "Connecting with " + uuidToConnect.toString());
                 bluetoothSocket.connect();
-                Log.e(TAG, "Connected with" + uuidToConnect.toString());
-                try {
-                    Log.e(TAG, "InitOBD");
-                    new EchoOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                    new LineFeedOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                    new TimeoutCommand(125).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                    new SelectProtocolCommand(ObdProtocols.AUTO).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                } catch (IOException e) {
-                    Log.e(TAG, "ERROR", e);
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "ERROR", e);
-                }
+                Log.e(TAG, "Connected with " + uuidToConnect.toString());
             } catch (IOException e) {
                 Log.e(TAG, "ERROR", e);
                 try {

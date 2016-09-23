@@ -32,4 +32,10 @@
         android:layout_gravity="center"
         />
 
+    <Button
+        android:id="@+id/checkConnectionButton"
+        android:text="check connection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
 </LinearLayout>
