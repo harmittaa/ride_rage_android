@@ -6,9 +6,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
-import android.os.ParcelUuid;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.media.MediaMetadataCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,35 +15,28 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.github.pires.obd.commands.ObdCommand;
-import com.github.pires.obd.commands.ObdMultiCommand;
-import com.github.pires.obd.commands.control.ModuleVoltageCommand;
 import com.github.pires.obd.commands.engine.RPMCommand;
 import com.github.pires.obd.commands.protocol.EchoOffCommand;
 import com.github.pires.obd.commands.protocol.LineFeedOffCommand;
 import com.github.pires.obd.commands.protocol.ObdResetCommand;
-import com.github.pires.obd.commands.protocol.ObdWarmstartCommand;
 import com.github.pires.obd.commands.protocol.SelectProtocolCommand;
 import com.github.pires.obd.commands.protocol.TimeoutCommand;
 import com.github.pires.obd.commands.temperature.AirIntakeTemperatureCommand;
 import com.github.pires.obd.commands.temperature.AmbientAirTemperatureCommand;
 import com.github.pires.obd.enums.ObdProtocols;
 
-import org.apache.commons.io.IOUtils;
-
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     private final String TAG = "MainActivity";
-    TextView text1;
-    Button button, dataButton, checkConnectionButton, airIntakeButton;
-    BluetoothSocket bluetoothSocket;
-
+    TextView dataTextView;
+    Button button, dataButton, checkConnectionButton, airIntakeButton, airIntakeTempButton;
+    private static BluetoothSocket bluetoothSocket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,11 +47,15 @@ public class MainActivity extends AppCompatActivity {
         button = (Button) findViewById(R.id.testButton);
         dataButton = (Button) findViewById(R.id.getDataButton);
         airIntakeButton = (Button) findViewById(R.id.airIntakeButton);
+        airIntakeTempButton = (Button) findViewById(R.id.airIntakeTempButton);
         checkConnectionButton = (Button) findViewById(R.id.checkConnectionButton);
-        text1 = (TextView) findViewById(R.id.dataView);
+        dataTextView = (TextView) findViewById(R.id.dataView);
         initButtonListners();
     }
 
+
+    // creates the pop up for user to choose which BT device to use
+    // also starts the thread that creates
     private void initBluetooth() {
         Log.e(TAG, "InitBL starting");
         ArrayList deviceStrs = new ArrayList();
@@ -99,6 +94,16 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public BluetoothSocket getBluetoothSocket() {
+        Log.e(TAG, "getBluetoothSocket");
+        return bluetoothSocket;
+    }
+
+    public void setBluetoothSocket(BluetoothSocket bluetoothSocket) {
+        Log.e(TAG, "setBluetoothSocket: bluetoothSocket set");
+        MainActivity.bluetoothSocket = bluetoothSocket;
+    }
+
     private void initButtonListners() {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -120,17 +125,19 @@ public class MainActivity extends AppCompatActivity {
                     new SelectProtocolCommand(ObdProtocols.AUTO).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
 
                     AmbientAirTemperatureCommand aatc = new AmbientAirTemperatureCommand();
-                    aatc.run(bluetoothSocket.getInputStream(),bluetoothSocket.getOutputStream());
+                    aatc.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                     Log.e(TAG, "CalculatedResult: " + aatc.getCalculatedResult());
                     Log.e(TAG, "FormattedResult " + aatc.getFormattedResult());
 
                     Log.e(TAG, "Init finished without errors ");
                     Log.e(TAG, "Bluetooth socket connection " + bluetoothSocket.isConnected());
-
-
                     Log.e(TAG, "Starting thread to get RPM");
 
-                    for (int i = 0; i < 20; i++) {
+                    Thread t = new Thread(new TestThread());
+                    t.start();
+
+                    /*for (int i = 0; i < 6; i++) {*/
+                    while (true) {
                         try {
                             RPMCommand rpmCommand = new RPMCommand();
                             rpmCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
@@ -140,12 +147,17 @@ public class MainActivity extends AppCompatActivity {
                             Log.e(TAG, "Thread sleep: error", e);
                         }
                         Thread.sleep(500);
-                        Log.e(TAG, "Loop done " + i);
+                       // Log.e(TAG, "Loop done " + i);
                     }
 
 
-                   /* Thread t = new Thread(new TestThread(bluetoothSocket));
-                    t.start();*/
+/*                    AirIntakeTemperatureCommand airIntakeTemperatureCommand = new AirIntakeTemperatureCommand();
+
+                    BluetoothSocket btsocket = getBluetoothSocket();
+                    Log.e(TAG, "bluetooth socket connection is " + btsocket.isConnected());
+                    airIntakeTemperatureCommand.run(btsocket.getInputStream(), btsocket.getOutputStream());
+                    Log.e(TAG, "airIntakeTemperatureCommand formatted" + airIntakeTemperatureCommand.getFormattedResult());
+                    Log.e(TAG, "airIntakeTemperatureCommand calculated" + airIntakeTemperatureCommand.getCalculatedResult());*/
 
                 } catch (IOException e) {
                     Log.e(TAG, "ERROR", e);
@@ -165,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.e(TAG, "Starting thread to get RPM");
-                Thread t = new Thread(new TestThread(bluetoothSocket));
+                Thread t = new Thread(new TestThread());
                 t.start();
             }
         });
@@ -185,25 +197,58 @@ public class MainActivity extends AppCompatActivity {
                 airIntakeThread.start();
             }
         });
+
+        airIntakeTempButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e(TAG, "oilTempOnClick starting");
+                AirIntakeTemperatureCommand airIntakeTemperatureCommand = new AirIntakeTemperatureCommand();
+                try {
+                    BluetoothSocket btsocket = getBluetoothSocket();
+                    Log.e(TAG, "bluetooth socket connection is " + btsocket.isConnected());
+                   // airIntakeTemperatureCommand.run(new ByteArrayInputStream("41 00 00 00>41 00 00 00>41 00 00 00>".getBytes()), new ByteArrayOutputStream());
+                    airIntakeTemperatureCommand.run(btsocket.getInputStream(), btsocket.getOutputStream());
+                    Log.e(TAG, "airIntakeTemperatureCommand formatted" + airIntakeTemperatureCommand.getFormattedResult());
+                    Log.e(TAG, "airIntakeTemperatureCommand calculated" + airIntakeTemperatureCommand.getCalculatedResult());
+                } catch (IOException e) {
+                    Log.e(TAG, "onClick: OilTempError ", e);
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "onClick: OilTempError ", e);
+                }
+            }
+        });
     }
 
 
     private class TestThread implements Runnable {
-        BluetoothSocket bluetoothSocket;
+        private BluetoothSocket btSocket;
+        private int i = 0;
+       // private RPMCommand rpmCommand;
 
-        public TestThread(BluetoothSocket bluetoothSocket) {
-            this.bluetoothSocket = bluetoothSocket;
+        public TestThread() {
+            this.btSocket = getBluetoothSocket();
         }
 
         @Override
         public void run() {
+        //    rpmCommand = new RPMCommand();
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    Log.d(TAG, "ObdResetComand was run");
-                    RPMCommand rpmCommand = new RPMCommand();
-                    rpmCommand.run(this.bluetoothSocket.getInputStream(), this.bluetoothSocket.getOutputStream());
-                    Log.e(TAG, "RPM formatted " + rpmCommand.getFormattedResult());
-                    Log.e(TAG, "RPM calculated " + rpmCommand.getCalculatedResult());
+                    Thread.sleep(500);
+                    i++;
+                    Log.e(TAG, "bluetooth socket connection is " + btSocket.isConnected());
+                    final RPMCommand rpmCommand = new RPMCommand();
+                    rpmCommand.run(new ByteArrayInputStream("41 00 00 00>41 00 00 00>41 00 00 00>".getBytes()), new ByteArrayOutputStream());
+//                    rpmCommand.run(this.btSocket.getInputStream(), this.btSocket.getOutputStream());
+                    Log.e(TAG, "Round " + i + "RPM calculated " + rpmCommand.getCalculatedResult());
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            dataTextView.setText(rpmCommand.getCalculatedResult());
+                        }
+                    });
+
                 } catch (IOException e) {
                     Log.e(TAG, "ERROR", e);
                 } catch (InterruptedException e) {
@@ -214,12 +259,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class AirIntakeTemperatureCommandThread implements Runnable {
+
+        private BluetoothSocket btSocket;
+
+        public AirIntakeTemperatureCommandThread() {
+            this.btSocket = getBluetoothSocket();
+        }
+
         @Override
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
+                    Log.e(TAG, "bluetooth socket connection is" + btSocket.isConnected());
                     AirIntakeTemperatureCommand airIntakeTemperatureCommand = new AirIntakeTemperatureCommand();
-                    airIntakeTemperatureCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
+                    airIntakeTemperatureCommand.run(new ByteArrayInputStream("41 00 00 00>41 00 00 00>41 00 00 00>".getBytes()), new ByteArrayOutputStream());
+                    //airIntakeTemperatureCommand.run(this.btSocket.getInputStream(), this.btSocket.getOutputStream());
                     Log.e(TAG, "airIntakeTemperatureCommand formatted " + airIntakeTemperatureCommand.getFormattedResult());
                     Log.e(TAG, "airIntakeTemperatureCommand calculated " + airIntakeTemperatureCommand.getCalculatedResult());
                 } catch (IOException e) {
@@ -234,9 +288,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // for making a connection between the OBD reader and the device
     private class ConnectRunnable implements Runnable {
         private UUID uuidToConnect;
         BluetoothDevice device;
+        private BluetoothSocket btSocket;
 
         public ConnectRunnable(UUID uid, BluetoothDevice dev) {
             this.uuidToConnect = uid;
@@ -246,20 +302,26 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             try {
-                bluetoothSocket = device.createRfcommSocketToServiceRecord(uuidToConnect);
+                this.btSocket = getBluetoothSocket();
+                //bluetoothSocket = device.createRfcommSocketToServiceRecord(uuidToConnect);
+                this.btSocket = device.createRfcommSocketToServiceRecord(uuidToConnect);
                 Log.e(TAG, "Connecting with " + uuidToConnect.toString());
-                bluetoothSocket.connect();
+                //bluetoothSocket.connect();
+                this.btSocket.connect();
+                setBluetoothSocket(this.btSocket);
                 Log.e(TAG, "Connected with " + uuidToConnect.toString());
             } catch (IOException e) {
                 Log.e(TAG, "ERROR", e);
                 try {
-                    Log.e(TAG,"Trying fallback socket");
-                    bluetoothSocket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(device,1);
-                    Log.e(TAG,"Fallback socket created, trying to connect...");
-                    bluetoothSocket.connect();
-                    Log.e(TAG,"Connection established");
-                }
-                catch (Exception e2) {
+                    Log.e(TAG, "Trying fallback socket");
+                    //bluetoothSocket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(device,1);
+                    this.btSocket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(device, 1);
+                    Log.e(TAG, "Fallback socket created, trying to connect...");
+                    //bluetoothSocket.connect();
+                    this.btSocket.connect();
+                    setBluetoothSocket(this.btSocket);
+                    Log.e(TAG, "Connection established");
+                } catch (Exception e2) {
                     Log.e(TAG, "Couldn't establish Bluetooth connection!", e2);
                 }
             }
@@ -269,9 +331,5 @@ public class MainActivity extends AppCompatActivity {
     private void requestPermission() {
         int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-    }
-
-    private void checkBLE(){
-
     }
 }
