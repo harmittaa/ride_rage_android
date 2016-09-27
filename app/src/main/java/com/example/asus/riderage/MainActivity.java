@@ -1,52 +1,38 @@
 package com.example.asus.riderage;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
-import android.os.ParcelUuid;
+import android.content.Intent;
+import android.graphics.Color;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.SeekBar;
-import android.widget.TextView;
+import android.widget.ImageButton;
 
-import com.example.asus.riderage.views.SpeedoView;
-import com.github.pires.obd.commands.ObdCommand;
-import com.github.pires.obd.commands.ObdMultiCommand;
-import com.github.pires.obd.commands.control.ModuleVoltageCommand;
-import com.github.pires.obd.commands.engine.RPMCommand;
-import com.github.pires.obd.commands.protocol.EchoOffCommand;
-import com.github.pires.obd.commands.protocol.LineFeedOffCommand;
-import com.github.pires.obd.commands.protocol.ObdResetCommand;
-import com.github.pires.obd.commands.protocol.SelectProtocolCommand;
-import com.github.pires.obd.commands.protocol.TimeoutCommand;
-import com.github.pires.obd.commands.temperature.AirIntakeTemperatureCommand;
+import com.cardiomood.android.controls.gauge.SpeedometerGauge;
 import com.github.pires.obd.commands.temperature.AmbientAirTemperatureCommand;
-import com.github.pires.obd.enums.ObdProtocols;
-
-import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     private final String TAG = "MainActivity";
-    TextView text1;
-    Button button, dataButton, checkConnectionButton,changeNeedleBtn;
+    ImageButton blSelectBtn;
     BluetoothSocket bluetoothSocket;
-    SpeedoView speedo1;
-    SeekBar seekkeri;
+    SpeedometerGauge speedoRPM, speedoSpeed;
+    ArrayList deviceStrs;
+    ArrayList<BluetoothDevice> devices;
+    BluetoothAdapter btAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,40 +40,16 @@ public class MainActivity extends AppCompatActivity {
         requestPermission();
         setContentView(R.layout.activity_main);
         initBluetooth();
-        button = (Button) findViewById(R.id.testButton);
-        dataButton = (Button) findViewById(R.id.getDataButton);
-        checkConnectionButton = (Button) findViewById(R.id.checkConnectionButton);
-        changeNeedleBtn = (Button)findViewById(R.id.changeNeedleTest);
-        text1 = (TextView) findViewById(R.id.dataView);
         initButtonListners();
+        initSpeedos();
 
-        speedo1 = (SpeedoView)findViewById(R.id.speedo1);
-        seekkeri = (SeekBar)findViewById(R.id.seeker);
-        seekkeri.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Log.e(TAG, "onProgressChanged: "+progress );
-                speedo1.changeNeedlePosition(progress);//(int)((double)progress/100)*180);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
     }
 
     private void initBluetooth() {
         Log.e(TAG, "InitBL starting");
-        ArrayList deviceStrs = new ArrayList();
-        final ArrayList<BluetoothDevice> devices = new ArrayList();
-
-        final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+        this.deviceStrs = new ArrayList();
+        devices = new ArrayList();
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
 
         if (pairedDevices.size() > 0) {
@@ -128,7 +90,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initButtonListners() {
-        button.setOnClickListener(new View.OnClickListener() {
+        this.blSelectBtn = (ImageButton) findViewById(R.id.selectDeviceButton);
+        this.blSelectBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!MainActivity.this.btAdapter.isEnabled()){
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBtIntent, RESULT_OK);
+                    showDeviceSelectScreen();
+                }else showDeviceSelectScreen();
+            }
+        });
+
+        /*button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
@@ -158,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
 /*
                     Log.e(TAG, "Air temp " + new AmbientAirTemperatureCommand().getCalculatedResult());
                     Log.e(TAG, "Module voltage " + new ModuleVoltageCommand().getFormattedResult());
-*/
+
                     Log.e(TAG, "Init finished without errors ");
                     Log.e(TAG, "Bluetooth socket connection " + bluetoothSocket.isConnected());
                 } catch (IOException e) {
@@ -167,29 +141,71 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "ERROR", e);
                 }
             }
-        });
+        });*/
 
-        dataButton.setOnClickListener(new View.OnClickListener() {
+    }
+
+    private void showDeviceSelectScreen() {
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.select_dialog_singlechoice,
+                deviceStrs.toArray(new String[deviceStrs.size()]));
+
+        alertDialog.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                Thread t = new Thread(new TestThread());
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+                String deviceAddress = devices.get(position).getAddress();
+                BluetoothDevice device = btAdapter.getRemoteDevice(deviceAddress);
+                ArrayList<UUID> jeeben = new ArrayList<UUID>();
+                //for(ParcelUuid u:devices.get(position).getUuids()){
+
+                //}
+                UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+                Thread t = new Thread(new ConnectRunnable(uuid, device));
                 t.start();
+
             }
         });
 
-        checkConnectionButton.setOnClickListener(new View.OnClickListener() {
+        alertDialog.setTitle("Choose Bluetooth device");
+        alertDialog.show();
+    }
+
+    private void initSpeedos() {
+        speedoRPM = (SpeedometerGauge) findViewById(R.id.speedoRPM);
+
+        speedoRPM.setMaxSpeed(60);
+        speedoRPM.setMajorTickStep(10);
+        speedoRPM.setMinorTicks(4);
+
+        speedoRPM.addColoredRange(0, 22, Color.GREEN);
+        speedoRPM.addColoredRange(22, 32, Color.YELLOW);
+        speedoRPM.addColoredRange(32, 60, Color.RED);
+
+        speedoRPM.setLabelTextSize(40);
+
+        speedoRPM.setLabelConverter(new SpeedometerGauge.LabelConverter() {
             @Override
-            public void onClick(View v) {
-                Log.e(TAG, "Bluetooth socket connection " + bluetoothSocket.isConnected());
+            public String getLabelFor(double progress, double maxProgress) {
+                return String.valueOf((int) Math.round(progress));
             }
         });
 
-        changeNeedleBtn.setOnClickListener(new View.OnClickListener() {
+        speedoSpeed = (SpeedometerGauge) findViewById(R.id.speedoSpeed);
+        speedoSpeed.setMaxSpeed(240);
+        speedoSpeed.setMajorTickStep(20);
+        speedoSpeed.setMinorTicks(1);
+
+        speedoSpeed.setLabelTextSize(20);
+
+        speedoSpeed.setLabelConverter(new SpeedometerGauge.LabelConverter() {
             @Override
-            public void onClick(View v) {
-                speedo1.changeNeedlePosition(180);
+            public String getLabelFor(double progress, double maxProgress) {
+                return String.valueOf((int) Math.round(progress));
             }
         });
+
 
     }
 
@@ -245,16 +261,15 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
                 Log.e(TAG, "ERROR", e);
                 try {
-                    Log.e(TAG,"trying fallback...");
+                    Log.e(TAG, "trying fallback...");
 
-                    bluetoothSocket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(device,1);
-                    Log.e(TAG,"socket creatd");
+                    bluetoothSocket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(device, 1);
+                    Log.e(TAG, "socket creatd");
                     bluetoothSocket.connect();
 
-                    Log.e(TAG,"Connected");
-                }
-                catch (Exception e2) {
-                    Log.e("", "Couldn't establish Bluetooth connection!",e2);
+                    Log.e(TAG, "Connected");
+                } catch (Exception e2) {
+                    Log.e("", "Couldn't establish Bluetooth connection!", e2);
                 }
             }
         }
@@ -265,7 +280,4 @@ public class MainActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
     }
 
-    private void checkBLE(){
-
-    }
 }

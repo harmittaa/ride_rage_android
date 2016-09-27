@@ -82,7 +82,7 @@ public class SpeedoView extends View {
 
     public void changeNeedlePosition(int newValue) {
         //this.needlePoint = new Point((int)(this.needlePoint.x*newValue),0);
-        double radians = Math.toRadians((double)newValue/100*180);
+        /*double radians = Math.toRadians((double)newValue/100*180);
         double suhde = Math.cos(radians);
         if(suhde<0) suhde = -suhde;
         double newHeight = this.getHeight() * suhde;
@@ -90,7 +90,11 @@ public class SpeedoView extends View {
 
         double newWidth = ((180*((double)newValue/100))/180)*this.getWidth();
         Log.e(TAG, "changeNeedlePosition: new width" + newWidth );
-        this.needlePoint = new Point((int)newWidth, (int)newHeight);
+        this.needlePoint = new Point((int)newWidth, (int)newHeight);*/
+        double newX = ((double)newValue/100)*this.getWidth();
+        double newY = getYforX(newValue,this.getHeight());
+        this.needlePoint = new Point((int)newX,(int)newY);
+        Log.e(TAG, "changeNeedlePosition: new needle point: " + this.needlePoint.toString());
         invalidate();
     }
 
@@ -100,7 +104,7 @@ public class SpeedoView extends View {
         needlePaint = new Paint(Paint.ANTI_ALIAS_FLAG); // reduce the
         needlePaint.setColor(Color.BLACK); //jaggedness of lines in graphics
         needlePaint.setStrokeWidth(20f);
-        viewCenter = new Point((this.getWidth() / 2), this.getHeight());
+        viewCenter = new Point((this.getWidth() / 2), this.getHeight());//this.getHeight());
         needlePoint = new Point(0,this.getHeight());
         Log.e(TAG, "initView: pints inited:" + viewCenter.toString() + needlePoint.toString() );
     }
@@ -110,5 +114,17 @@ public class SpeedoView extends View {
         Log.e(TAG, "onSizeChanged: size changed called");
         super.onSizeChanged(w, h, oldw, oldh);
         initView();
+    }
+
+    private double getYforX(double x,double radius){
+        double radX = Math.toRadians(((x/100)*180));
+        //if(lel > 90) lel = x-90;
+        Log.e(TAG, "getYforX: x is " + radX );
+        //double newx = Math.toRadians(lel);
+        /*double y = Math.sqrt(1-(newx*newx));
+        Log.e(TAG, "getYforX: result of calc= " + y);*/
+        double y = Math.sin(radX)*getWidth()/2;
+        Log.e(TAG, "getYforX: y is " + y );
+        return -y+getHeight();
     }
 }
