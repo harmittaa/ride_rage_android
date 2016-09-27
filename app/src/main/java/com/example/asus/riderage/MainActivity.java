@@ -1,61 +1,58 @@
 package com.example.asus.riderage;
 
 import android.Manifest;
-import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
+import android.graphics.Color;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
+import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
+
+import com.cardiomood.android.controls.gauge.SpeedometerGauge;
+import java.util.ArrayList;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
-    private final String TAG = "MainActivity";
     private BluetoothManagerClass bluetoothManagerClass;
-    private TextView dataTextView;
-    private Button initObdButton, checkConnectionButton, startServiceButton, stopServiceButton;
-
+    private final String TAG = "MainActivity";
+    ImageButton blSelectBtn;
+    SpeedometerGauge speedoRPM, speedoSpeed;
+    ArrayList deviceStrs;
+    ArrayList<BluetoothDevice> devices;
+    BluetoothAdapter btAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestPermission();
         setContentView(R.layout.activity_main);
-
-        initObdButton = (Button) findViewById(R.id.initObdButton);
-        checkConnectionButton = (Button) findViewById(R.id.checkConnectionButton);
-        startServiceButton = (Button) findViewById(R.id.startServiceButton);
-        stopServiceButton = (Button) findViewById(R.id.stopServiceBUtton);
-        dataTextView = (TextView) findViewById(R.id.dataView);
-
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.bluetoothManagerClass.passContext(this);
-        this.bluetoothManagerClass.initBluetooth();
-        initButtonListeners();
+        initButtonListners();
+        initSpeedos();
     }
 
-
-    // creates the pop up for user to choose which BT device to use
-    // also starts the thread that creates
-/*
-    private void initBluetooth() {
-        Log.e(TAG, "InitBL starting");
-        ArrayList deviceStrs = new ArrayList();
-        final ArrayList<BluetoothDevice> devices = new ArrayList();
-
-        final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
-
-        if (pairedDevices.size() > 0) {
-            for (BluetoothDevice device : pairedDevices) {
-                deviceStrs.add(device.getName() + "\n" + device.getAddress());
-                devices.add(device);
+    private void initButtonListners() {
+        this.blSelectBtn = (ImageButton) findViewById(R.id.selectDeviceButton);
+        this.blSelectBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!MainActivity.this.btAdapter.isEnabled()) {
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBtIntent, RESULT_OK);
+                    showDeviceSelectScreen();
+                } else showDeviceSelectScreen();
             }
-        }
+        });
+    }
 
-        // show list
+    private void showDeviceSelectScreen() {
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.select_dialog_singlechoice,
                 deviceStrs.toArray(new String[deviceStrs.size()]));
@@ -67,255 +64,55 @@ public class MainActivity extends AppCompatActivity {
                 int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
                 String deviceAddress = devices.get(position).getAddress();
                 BluetoothDevice device = btAdapter.getRemoteDevice(deviceAddress);
-                UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
-                Thread t = new Thread(new ConnectRunnable(uuid, device));
-                t.start();
+                ArrayList<UUID> jeeben = new ArrayList<UUID>();
+                // TODO: 27/09/2016 create connection
             }
         });
 
         alertDialog.setTitle("Choose Bluetooth device");
         alertDialog.show();
-
-    }
-*/
-
-/*
-    public BluetoothSocket getBluetoothSocket() {
-        Log.e(TAG, "getBluetoothSocket");
-        return bluetoothSocket;
     }
 
-    public void setBluetoothSocket(BluetoothSocket bluetoothSocket) {
-        Log.e(TAG, "setBluetoothSocket: bluetoothSocket set");
-        MainActivity.bluetoothSocket = bluetoothSocket;
-    }
-*/
+    private void initSpeedos() {
+        speedoRPM = (SpeedometerGauge) findViewById(R.id.speedoRPM);
 
-    public void updateView(String stringToUpdate) {
-        this.dataTextView.setText(stringToUpdate);
-    }
+        speedoRPM.setMaxSpeed(60);
+        speedoRPM.setMajorTickStep(10);
+        speedoRPM.setMinorTicks(4);
 
-    private void initButtonListeners() {
-        this.initObdButton.setOnClickListener(new View.OnClickListener() {
+        speedoRPM.addColoredRange(0, 22, Color.GREEN);
+        speedoRPM.addColoredRange(22, 32, Color.YELLOW);
+        speedoRPM.addColoredRange(32, 60, Color.RED);
+
+        speedoRPM.setLabelTextSize(40);
+
+        speedoRPM.setLabelConverter(new SpeedometerGauge.LabelConverter() {
             @Override
-            public void onClick(View v) {
-                Thread obdInitializerThread = new Thread(new ObdInitializer(MainActivity.this));
-                obdInitializerThread.start();
+            public String getLabelFor(double progress, double maxProgress) {
+                return String.valueOf((int) Math.round(progress));
             }
         });
 
-        checkConnectionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                BluetoothSocket btS = bluetoothManagerClass.getBluetoothSocket();
-                Log.e(TAG, "Bluetooth socket connection " + btS.isConnected());
-            }
-        });
+        speedoSpeed = (SpeedometerGauge) findViewById(R.id.speedoSpeed);
+        speedoSpeed.setMaxSpeed(240);
+        speedoSpeed.setMajorTickStep(20);
+        speedoSpeed.setMinorTicks(1);
 
-        startServiceButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Method to start the service
-                startService(new Intent(getBaseContext(), ObdJobService.class));
-            }
-        });
+        speedoSpeed.setLabelTextSize(20);
 
-        stopServiceButton.setOnClickListener(new View.OnClickListener() {
+        speedoSpeed.setLabelConverter(new SpeedometerGauge.LabelConverter() {
             @Override
-            public void onClick(View v) {
-                Log.e(TAG, "onClick: STOPPING SERVICE");
-                stopService(new Intent(getBaseContext(), ObdJobService.class));
+            public String getLabelFor(double progress, double maxProgress) {
+                return String.valueOf((int) Math.round(progress));
             }
         });
 
     }
-
-    /*private void initButtonListeners() {
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    Log.e(TAG, "InitOBD");
-                    new ObdResetCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                    Log.d(TAG, "ObdResetComand was run");
-
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        Log.e(TAG, "Thread sleep: error", e);
-                    }
-                    Log.d(TAG, "Thread sleep done");
-                    new EchoOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                    new LineFeedOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                    new TimeoutCommand(62).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                    new SelectProtocolCommand(ObdProtocols.AUTO).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-
-                    AmbientAirTemperatureCommand aatc = new AmbientAirTemperatureCommand();
-                    aatc.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                    Log.e(TAG, "CalculatedResult: " + aatc.getCalculatedResult());
-                    Log.e(TAG, "FormattedResult " + aatc.getFormattedResult());
-
-                    Log.e(TAG, "Init finished without errors ");
-                    Log.e(TAG, "Bluetooth socket connection " + bluetoothSocket.isConnected());
-                    Log.e(TAG, "Starting thread to get RPM");
-
-                    Thread t = new Thread(new TestThread());
-                    t.start();
-
-                    *//*for (int i = 0; i < 6; i++) {*//*
-                    while (true) {
-                        try {
-                            RPMCommand rpmCommand = new RPMCommand();
-                            rpmCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                            Log.e(TAG, "RPM formatted " + rpmCommand.getFormattedResult());
-                            Log.e(TAG, "RPM calculated " + rpmCommand.getCalculatedResult());
-                        } catch (InterruptedException e) {
-                            Log.e(TAG, "Thread sleep: error", e);
-                        }
-                        Thread.sleep(500);
-                       // Log.e(TAG, "Loop done " + i);
-                    }
-
-
-*//*                    AirIntakeTemperatureCommand airIntakeTemperatureCommand = new AirIntakeTemperatureCommand();
-
-                    BluetoothSocket btsocket = getBluetoothSocket();
-                    Log.e(TAG, "bluetooth socket connection is " + btsocket.isConnected());
-                    airIntakeTemperatureCommand.run(btsocket.getInputStream(), btsocket.getOutputStream());
-                    Log.e(TAG, "airIntakeTemperatureCommand formatted" + airIntakeTemperatureCommand.getFormattedResult());
-                    Log.e(TAG, "airIntakeTemperatureCommand calculated" + airIntakeTemperatureCommand.getCalculatedResult());*//*
-
-                } catch (IOException e) {
-                    Log.e(TAG, "ERROR", e);
-                    try {
-                        Log.e(TAG, "Read return -1, closing BT socket");
-                        bluetoothSocket.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "ERROR", e);
-                }
-            }
-        });
-
-        dataButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e(TAG, "Starting thread to get RPM");
-                Thread t = new Thread(new TestThread());
-                t.start();
-            }
-        });
-
-        checkConnectionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e(TAG, "Bluetooth socket connection " + bluetoothSocket.isConnected());
-            }
-        });
-
-        airIntakeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e(TAG, "Starting airIntakeThread");
-                Thread airIntakeThread = new Thread(new AirIntakeTemperatureCommandThread());
-                airIntakeThread.start();
-            }
-        });
-
-        airIntakeTempButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e(TAG, "oilTempOnClick starting");
-                AirIntakeTemperatureCommand airIntakeTemperatureCommand = new AirIntakeTemperatureCommand();
-                try {
-                    BluetoothSocket btsocket = getBluetoothSocket();
-                    Log.e(TAG, "bluetooth socket connection is " + btsocket.isConnected());
-                   // airIntakeTemperatureCommand.run(new ByteArrayInputStream("41 00 00 00>41 00 00 00>41 00 00 00>".getBytes()), new ByteArrayOutputStream());
-                    airIntakeTemperatureCommand.run(btsocket.getInputStream(), btsocket.getOutputStream());
-                    Log.e(TAG, "airIntakeTemperatureCommand formatted" + airIntakeTemperatureCommand.getFormattedResult());
-                    Log.e(TAG, "airIntakeTemperatureCommand calculated" + airIntakeTemperatureCommand.getCalculatedResult());
-                } catch (IOException e) {
-                    Log.e(TAG, "onClick: OilTempError ", e);
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "onClick: OilTempError ", e);
-                }
-            }
-        });
-    }
-
-
-    private class TestThread implements Runnable {
-        private BluetoothSocket btSocket;
-        private int i = 0;
-       // private RPMCommand rpmCommand;
-
-        public TestThread() {
-            this.btSocket = getBluetoothSocket();
-        }
-
-        @Override
-        public void run() {
-        //    rpmCommand = new RPMCommand();
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    Thread.sleep(500);
-                    i++;
-                    Log.e(TAG, "bluetooth socket connection is " + btSocket.isConnected());
-                    final RPMCommand rpmCommand = new RPMCommand();
-                    rpmCommand.run(new ByteArrayInputStream("41 00 00 00>41 00 00 00>41 00 00 00>".getBytes()), new ByteArrayOutputStream());
-//                    rpmCommand.run(this.btSocket.getInputStream(), this.btSocket.getOutputStream());
-                    Log.e(TAG, "Round " + i + "RPM calculated " + rpmCommand.getCalculatedResult());
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            dataTextView.setText(rpmCommand.getCalculatedResult());
-                        }
-                    });
-
-                } catch (IOException e) {
-                    Log.e(TAG, "ERROR", e);
-                } catch (InterruptedException e) {
-                    Log.e("ERROR", "ERROR", e);
-                }
-            }
-        }
-    }
-
-    private class AirIntakeTemperatureCommandThread implements Runnable {
-
-        private BluetoothSocket btSocket;
-
-        public AirIntakeTemperatureCommandThread() {
-            this.btSocket = getBluetoothSocket();
-        }
-
-        @Override
-        public void run() {
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    Log.e(TAG, "bluetooth socket connection is" + btSocket.isConnected());
-                    AirIntakeTemperatureCommand airIntakeTemperatureCommand = new AirIntakeTemperatureCommand();
-                    airIntakeTemperatureCommand.run(new ByteArrayInputStream("41 00 00 00>41 00 00 00>41 00 00 00>".getBytes()), new ByteArrayOutputStream());
-                    //airIntakeTemperatureCommand.run(this.btSocket.getInputStream(), this.btSocket.getOutputStream());
-                    Log.e(TAG, "airIntakeTemperatureCommand formatted " + airIntakeTemperatureCommand.getFormattedResult());
-                    Log.e(TAG, "airIntakeTemperatureCommand calculated " + airIntakeTemperatureCommand.getCalculatedResult());
-                } catch (IOException e) {
-                    Log.e(TAG, "AirIntakeThread FAIL");
-                    Log.e(TAG, "ERROR", e);
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "AirIntakeThread FAIL");
-                    Log.e("ERROR", "ERROR", e);
-                }
-            }
-
-        }
-    }*/
 
     private void requestPermission() {
         int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
     }
 }
+
+
