@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.github.pires.obd.commands.SpeedCommand;
 import com.github.pires.obd.commands.engine.RPMCommand;
+import com.github.pires.obd.commands.protocol.ObdRawCommand;
 
 import java.io.IOException;
 
@@ -76,6 +77,9 @@ public class ObdJobService extends Service {
     private void closeConnection() {
         try {
             if (this.bluetoothSocket.isConnected()) {
+                ObdRawCommand rawCommand = new ObdRawCommand("AT PC");
+                rawCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
+                Log.e(TAG, "Raw command returns " + rawCommand.getFormattedResult());
                 this.bluetoothSocket.close();
                 Log.e(TAG, "closeConnection: connection closed");
                 this.bluetoothManagerClass.setBluetoothSocket(this.bluetoothSocket);
@@ -91,6 +95,9 @@ public class ObdJobService extends Service {
         Log.e(TAG, "onDestroy: called");
         this.serviceThread.interrupt();
         stopSelf();
+
+        // TODO: 27/09/2016  this works for the BT conneciton, but the OBD2 still declines any incoming commmands after reconnect
+        // java.io.IOException: bt socket closed, read return: -1
     }
 
     @Nullable

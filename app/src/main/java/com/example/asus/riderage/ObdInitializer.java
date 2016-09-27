@@ -8,6 +8,7 @@ import com.github.pires.obd.commands.SpeedCommand;
 import com.github.pires.obd.commands.engine.RPMCommand;
 import com.github.pires.obd.commands.protocol.EchoOffCommand;
 import com.github.pires.obd.commands.protocol.LineFeedOffCommand;
+import com.github.pires.obd.commands.protocol.ObdRawCommand;
 import com.github.pires.obd.commands.protocol.ObdResetCommand;
 import com.github.pires.obd.commands.protocol.SelectProtocolCommand;
 import com.github.pires.obd.commands.protocol.TimeoutCommand;
@@ -31,9 +32,11 @@ public class ObdInitializer implements Runnable {
 
     }
 
+    // https://www.elmelectronics.com/help/obd/tips/#327_Commands
     public void initializeObd() {
         try {
             Log.e(TAG, "InitOBD");
+           // new ObdRawCommand("01 00").run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
             new ObdResetCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
             Log.d(TAG, "ObdResetComand was run");
             try {
