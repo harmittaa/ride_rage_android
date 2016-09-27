@@ -19,14 +19,14 @@
         android:text="Hello World!" />
 
     <Button
-        android:id="@+id/testButton"
+        android:id="@+id/initObdButton"
         android:text="initObd2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         />
     <Button
-        android:id="@+id/getDataButton"
-        android:text="getData"
+        android:id="@+id/startServiceButton"
+        android:text="Start service"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -39,16 +39,11 @@
         android:layout_height="wrap_content" />
 
     <Button
-        android:id="@+id/airIntakeButton"
-        android:text="Air intake THREAD"
+        android:id="@+id/stopServiceBUtton"
+        android:text="Stop service"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"/>
-    <Button
-        android:id="@+id/airIntakeTempButton"
-        android:text="Air intake "
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="left"/>
+        android:layout_gravity="right"
+        />
 
 </LinearLayout>
