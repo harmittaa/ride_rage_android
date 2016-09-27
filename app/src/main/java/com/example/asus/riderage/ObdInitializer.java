@@ -22,12 +22,13 @@ public class ObdInitializer implements Runnable {
     private static final String TAG = "ObdInitializer";
     BluetoothManagerClass bluetoothManagerInstance;
     private BluetoothSocket bluetoothSocket;
-    private MainActivity mainAct;
+    private CommunicationHandler commHandler;
 
-    public ObdInitializer(MainActivity mainAct) {
+    public ObdInitializer() {
         bluetoothManagerInstance = BluetoothManagerClass.getBluetoothManagerClass();
         this.bluetoothSocket = this.bluetoothManagerInstance.getBluetoothSocket();
-        this.mainAct = mainAct;
+        this.commHandler = CommunicationHandler.getCommunicationHandlerInstance();
+
     }
 
     public void initializeObd() {
@@ -35,7 +36,6 @@ public class ObdInitializer implements Runnable {
             Log.e(TAG, "InitOBD");
             new ObdResetCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
             Log.d(TAG, "ObdResetComand was run");
-
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
@@ -51,37 +51,8 @@ public class ObdInitializer implements Runnable {
             Log.e(TAG, "Bluetooth socket connection " + bluetoothSocket.isConnected());
             this.bluetoothManagerInstance.setBluetoothSocket(this.bluetoothSocket);
 
-/*
-            Log.e(TAG, "Starting thread to get RPM");
-            final RPMCommand rpmCommand = new RPMCommand();
-            SpeedCommand speedCommand = new SpeedCommand();
+            commHandler.startObdJobService();
 
-            for (int i = 0; i < 100; i++) {
-                try {
-                    speedCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                    rpmCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                    Log.e(TAG, "RPM formatted " + rpmCommand.getFormattedResult());
-                    Log.e(TAG, "Speed formatted " + speedCommand.getFormattedResult());
-
-                    mainAct.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mainAct.updateView(rpmCommand.getFormattedResult());
-                        }
-                    });
-
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "Thread sleep: error", e);
-                }
-                Thread.sleep(500);
-            }
-*/
-
-/*            AirIntakeTemperatureCommand airIntakeTemperatureCommand = new AirIntakeTemperatureCommand();
-            Log.e(TAG, "bluetooth socket connection is " + this.bluetoothSocket.isConnected());
-            airIntakeTemperatureCommand.run(this.bluetoothSocket.getInputStream(), this.bluetoothSocket.getOutputStream());
-            Log.e(TAG, "airIntakeTemperatureCommand formatted" + airIntakeTemperatureCommand.getFormattedResult());
-            Log.e(TAG, "airIntakeTemperatureCommand calculated" + airIntakeTemperatureCommand.getCalculatedResult());*/
 
         } catch (IOException e) {
             Log.e(TAG, "ERROR", e);

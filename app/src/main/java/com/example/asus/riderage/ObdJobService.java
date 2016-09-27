@@ -20,12 +20,14 @@ public class ObdJobService extends Service {
     private static final String TAG = "ObdJobService";
     private BluetoothSocket bluetoothSocket;
     private BluetoothManagerClass bluetoothManagerClass;
+    private CommunicationHandler communicationHandler;
     private Thread serviceThread;
 
     @Override
     public void onCreate() {
         Log.e(TAG, "onCreate: ObdJobService created");
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
+        this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
     }
 
     @Override
@@ -42,27 +44,46 @@ public class ObdJobService extends Service {
                 final RPMCommand rpmCommand = new RPMCommand();
                 SpeedCommand speedCommand = new SpeedCommand();
 
-                for (int i = 0; i < 100; i++) {
+                while (!Thread.interrupted()) {
                     try {
                         speedCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
                         rpmCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
+                        communicationHandler.updateGauges(Double.parseDouble(rpmCommand.getCalculatedResult()),
+                                Double.parseDouble(speedCommand.getCalculatedResult()));
                         Log.e(TAG, "RPM formatted " + rpmCommand.getFormattedResult());
                         Log.e(TAG, "Speed formatted " + speedCommand.getFormattedResult());
 
                     } catch (Exception e) {
                         Log.e(TAG, "ERROR running commands ", e);
+                        closeConnection();
+                        return;
                     }
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(50);
                     } catch (InterruptedException e) {
-                        Log.e(TAG, "Thread sleep: error ", e);
+                        Log.e(TAG, "Thread interrupted " + e);
+                        closeConnection();
                         return;
                     }
                 }
+                closeConnection();
             }
         });
         serviceThread.start();
         return START_STICKY_COMPATIBILITY;
+    }
+
+    private void closeConnection() {
+        try {
+            if (this.bluetoothSocket.isConnected()) {
+                this.bluetoothSocket.close();
+                Log.e(TAG, "closeConnection: connection closed");
+                this.bluetoothManagerClass.setBluetoothSocket(this.bluetoothSocket);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "closeConnection: error when closing connection ", e);
+        }
+
     }
 
     @Override

@@ -1,10 +1,10 @@
 package com.example.asus.riderage;
 
 import android.Manifest;
-import android.content.Intent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
@@ -12,18 +12,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
+
 import java.util.ArrayList;
-import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     private BluetoothManagerClass bluetoothManagerClass;
+    private CommunicationHandler communicationHandler;
     private final String TAG = "MainActivity";
+
+    private Button matinTest;
     ImageButton blSelectBtn;
     SpeedometerGauge speedoRPM, speedoSpeed;
-    ArrayList deviceStrs;
     ArrayList<BluetoothDevice> devices;
     BluetoothAdapter btAdapter;
 
@@ -32,8 +36,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         requestPermission();
         setContentView(R.layout.activity_main);
+        this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
-        this.bluetoothManagerClass.passContext(this);
+        this.communicationHandler.passContext(this);
+        this.matinTest = (Button) findViewById(R.id.matinTest);
         initButtonListners();
         initSpeedos();
     }
@@ -43,16 +49,24 @@ public class MainActivity extends AppCompatActivity {
         this.blSelectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!MainActivity.this.btAdapter.isEnabled()) {
-                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(enableBtIntent, RESULT_OK);
-                    showDeviceSelectScreen();
+                if (!communicationHandler.checkBluetoothStatus()) {
+
                 } else showDeviceSelectScreen();
+            }
+        });
+
+        this.matinTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                communicationHandler.stopObdJobService();
             }
         });
     }
 
     private void showDeviceSelectScreen() {
+
+        ArrayList<String> deviceStrs = this.communicationHandler.getDeviceStrings();
+
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.select_dialog_singlechoice,
                 deviceStrs.toArray(new String[deviceStrs.size()]));
@@ -61,14 +75,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
-                int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
-                String deviceAddress = devices.get(position).getAddress();
-                BluetoothDevice device = btAdapter.getRemoteDevice(deviceAddress);
-                ArrayList<UUID> jeeben = new ArrayList<UUID>();
                 // TODO: 27/09/2016 create connection
+                communicationHandler.createBluetoothConnection(which);
             }
         });
-
         alertDialog.setTitle("Choose Bluetooth device");
         alertDialog.show();
     }
@@ -112,6 +122,35 @@ public class MainActivity extends AppCompatActivity {
     private void requestPermission() {
         int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+    }
+
+    public void makeToast(final String stringToShow) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast toast = Toast.makeText(getApplicationContext(), stringToShow, Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
+    }
+
+    public void startObdJobService() {
+        startService(new Intent(this, ObdJobService.class));
+    }
+
+    public void stopObdJobService() {
+        stopService(new Intent(this, ObdJobService.class));
+    }
+
+    public void updateGauges(final double rpm, final double speed) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                speedoRPM.setSpeed((rpm / 100), 0, 0);
+                speedoSpeed.setSpeed(speed, 0, 0);
+            }
+        });
+
     }
 }
 

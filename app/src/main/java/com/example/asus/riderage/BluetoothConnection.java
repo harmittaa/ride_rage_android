@@ -19,11 +19,13 @@ public class BluetoothConnection implements Runnable {
     private BluetoothDevice device;
     private BluetoothSocket btSocket;
     private BluetoothManagerClass bluetoothManagerClass;
+    private CommunicationHandler communicationHandler;
 
     public BluetoothConnection(UUID uid, BluetoothDevice dev) {
         this.uuidToConnect = uid;
         this.device = dev;
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
+        this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
     }
 
     @Override
@@ -34,11 +36,17 @@ public class BluetoothConnection implements Runnable {
             Log.e(TAG, "Connecting with " + uuidToConnect.toString());
             this.btSocket.connect();
             this.bluetoothManagerClass.setBluetoothSocket(this.btSocket);
+            startObdInit();
             Log.e(TAG, "Connected with " + uuidToConnect.toString());
         } catch (IOException e) {
             Log.e(TAG, "ERROR", e);
             connectWithFallbackSocket();
         }
+    }
+
+    private void startObdInit() {
+        Thread obdInitThread = new Thread(new ObdInitializer());
+        obdInitThread.start();
     }
 
     private void connectWithFallbackSocket() {
@@ -48,9 +56,11 @@ public class BluetoothConnection implements Runnable {
             Log.e(TAG, "Fallback socket created, trying to connect...");
             this.btSocket.connect();
             this.bluetoothManagerClass.setBluetoothSocket(this.btSocket);
+            startObdInit();
             Log.e(TAG, "Connection established");
         } catch (Exception e2) {
             Log.e(TAG, "Couldn't establish Bluetooth connection!", e2);
+            this.communicationHandler.makeToast(R.string.couldNotConnect);
         }
     }
 }

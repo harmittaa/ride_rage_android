@@ -1,17 +1,16 @@
 package com.example.asus.riderage;
 
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
+
+import static android.app.Activity.RESULT_OK;
 
 /**
  * Created by Asus on 26/09/2016.
@@ -21,26 +20,33 @@ public class BluetoothManagerClass {
     private static final String TAG = "BluetoothManagerClass";
     private static BluetoothManagerClass bluetoothManagerClass = new BluetoothManagerClass();
     private static BluetoothSocket bluetoothSocket;
-    private Context context;
+    private CommunicationHandler communicationHandler;
+    private BluetoothAdapter btAdapter;
+    private ArrayList<String> deviceStrs;
+    private ArrayList<BluetoothDevice> devices;
 
-    private BluetoothManagerClass() { }
+    private BluetoothManagerClass() {
+        this.btAdapter = BluetoothAdapter.getDefaultAdapter();
+        this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
+        Log.e(TAG, "BluetoothManagerClass: BT manager created");
+    }
 
     public static BluetoothManagerClass getBluetoothManagerClass() {
         return bluetoothManagerClass;
     }
 
-    protected void passContext(Context context) {
-        this.context = context;
-
+    public boolean checkBluetooth() {
+        if (!this.btAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            this.communicationHandler.getContext().startActivityForResult(enableBtIntent, RESULT_OK);
+            return false;
+        } else return true;
     }
 
-    protected void initBluetooth() {
-        Log.e(TAG, "InitBL starting");
-        ArrayList deviceStrs = new ArrayList();
-        final ArrayList<BluetoothDevice> devices = new ArrayList();
-
-        final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+    public ArrayList<String> getDeviceStrings() {
+        deviceStrs = new ArrayList();
+        devices = new ArrayList();
+        Set<BluetoothDevice> pairedDevices = this.btAdapter.getBondedDevices();
 
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
@@ -48,8 +54,32 @@ public class BluetoothManagerClass {
                 devices.add(device);
             }
         }
+        return this.deviceStrs;
+    }
 
-        // TODO: MOVE TO MAIN ACTIVITY
+    public void createBluetoothConnection(int position) {
+        String deviceAddress = devices.get(position).getAddress();
+        BluetoothDevice device = btAdapter.getRemoteDevice(deviceAddress);
+        //UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+        UUID uuid = UUID.fromString(devices.get(position).getUuids()[0].toString());
+        Log.e(TAG, "createBluetoothConnection: the UUID is" + uuid.toString());
+        Log.e(TAG, "createBluetoothConnection: the UUID should be 00001101-0000-1000-8000-00805f9b34fb");
+        Thread connectionCreationThread = new Thread(new BluetoothConnection(uuid, device));
+        connectionCreationThread.start();
+    }
+
+/*    protected void initBluetooth() {
+        Log.e(TAG, "InitBL starting");
+        deviceStrs = new ArrayList();
+        devices = new ArrayList();
+        Set<BluetoothDevice> pairedDevices = this.btAdapter.getBondedDevices();
+
+        if (pairedDevices.size() > 0) {
+            for (BluetoothDevice device : pairedDevices) {
+                deviceStrs.add(device.getName() + "\n" + device.getAddress());
+                devices.add(device);
+            }
+        }
 
         // show list
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
@@ -70,8 +100,7 @@ public class BluetoothManagerClass {
 
         alertDialog.setTitle("Choose Bluetooth device");
         alertDialog.show();
-
-    }
+    }*/
 
     protected BluetoothSocket getBluetoothSocket() {
         return bluetoothSocket;

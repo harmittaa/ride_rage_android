@@ -75,4 +75,10 @@
         android:id="@+id/selectDeviceButton"
         />
 
+    <Button
+        android:id="@+id/matinTest"
+        android:text="stopService"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
 </LinearLayout>

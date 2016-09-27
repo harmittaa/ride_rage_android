@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">RideRage</string>
+    <string name="couldNotConnect">Could not connect to device</string>
 </resources>
