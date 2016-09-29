@@ -13,6 +13,7 @@ public class CommunicationHandler {
     private static CommunicationHandler communicationHandlerInstance = new CommunicationHandler();
     private MainActivity mainActivity;
     private BluetoothManagerClass btManager;
+    private boolean accelInProgress = false;
 
     private CommunicationHandler() {
         this.btManager = BluetoothManagerClass.getBluetoothManagerClass();
@@ -22,6 +23,7 @@ public class CommunicationHandler {
     public void passContext(MainActivity ma) {
         this.mainActivity = ma;
     }
+
     public MainActivity getContext() {
         return this.mainActivity;
     }
@@ -57,5 +59,14 @@ public class CommunicationHandler {
 
     public void updateGauges(double rpm, double speed) {
         mainActivity.updateGauges(rpm, speed);
+    }
+
+    public boolean isAccelInProgress() {
+        return accelInProgress;
+    }
+
+    public void setAccelInProgress(boolean accelInProgress) {
+        Log.e(TAG, "setAccelInProgress:  kakke" );
+        this.accelInProgress = accelInProgress;
     }
 }

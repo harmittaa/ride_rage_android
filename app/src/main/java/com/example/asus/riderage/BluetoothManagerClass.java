@@ -27,7 +27,6 @@ public class BluetoothManagerClass {
 
     private BluetoothManagerClass() {
         this.btAdapter = BluetoothAdapter.getDefaultAdapter();
-        this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
         Log.e(TAG, "BluetoothManagerClass: BT manager created");
     }
 
@@ -38,7 +37,7 @@ public class BluetoothManagerClass {
     public boolean checkBluetooth() {
         if (!this.btAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            this.communicationHandler.getContext().startActivityForResult(enableBtIntent, RESULT_OK);
+            CommunicationHandler.getCommunicationHandlerInstance().getContext().startActivityForResult(enableBtIntent, RESULT_OK);
             return false;
         } else return true;
     }
