@@ -22,6 +22,7 @@ public class CommunicationHandler {
     public void passContext(MainActivity ma) {
         this.mainActivity = ma;
     }
+
     public MainActivity getContext() {
         return this.mainActivity;
     }
@@ -58,4 +59,6 @@ public class CommunicationHandler {
     public void updateGauges(double rpm, double speed) {
         mainActivity.updateGauges(rpm, speed);
     }
+
+
 }

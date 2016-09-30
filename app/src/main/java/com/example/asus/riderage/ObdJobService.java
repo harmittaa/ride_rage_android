@@ -2,7 +2,12 @@ package com.example.asus.riderage;
 
 import android.app.Service;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -18,19 +23,22 @@ import java.io.IOException;
  */
 
 // BG service to run the ObdJobs
-
-public class ObdJobService extends Service {
+public class ObdJobService extends Service implements SensorEventListener {
     private static final String TAG = "ObdJobService";
     private BluetoothSocket bluetoothSocket;
     private BluetoothManagerClass bluetoothManagerClass;
     private CommunicationHandler communicationHandler;
     private Thread serviceThread;
+    private boolean isAccelerationInProgress = false;
 
     @Override
     public void onCreate() {
         Log.e(TAG, "onCreate: ObdJobService created");
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
+        //i like spaghetti
+        ((SensorManager) CommunicationHandler.getCommunicationHandlerInstance().getContext().getSystemService(Context.SENSOR_SERVICE)).registerListener(this, ((SensorManager) CommunicationHandler.getCommunicationHandlerInstance().getContext().getSystemService(Context.SENSOR_SERVICE)).getSensorList(Sensor.TYPE_ACCELEROMETER).get(0), SensorManager.SENSOR_DELAY_NORMAL);
+
     }
 
     @Override
@@ -55,6 +63,7 @@ public class ObdJobService extends Service {
                                 Double.parseDouble(speedCommand.getCalculatedResult()));
                         Log.e(TAG, "RPM formatted " + rpmCommand.getFormattedResult());
                         Log.e(TAG, "Speed formatted " + speedCommand.getFormattedResult());
+
 
                     } catch (Exception e) {
                         Log.e(TAG, "ERROR running commands ", e);
@@ -97,6 +106,25 @@ public class ObdJobService extends Service {
         Log.e(TAG, "onDestroy: called");
         this.serviceThread.interrupt();
         stopSelf();
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        for(double d : event.values){
+            if (d>8){
+
+            }else if (0<d && d<8){
+                this.isAccelerationInProgress = true;
+                Log.e(TAG, "onSensorChanged: Accel value " + d);
+            }else {
+                this.isAccelerationInProgress = false;
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 
     @Nullable

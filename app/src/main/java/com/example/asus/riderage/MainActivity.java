@@ -1,64 +1,85 @@
 package com.example.asus.riderage;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Color;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
 import com.example.asus.riderage.Database.TripDatabaseHelper;
 
 import java.util.ArrayList;
-import java.util.Date;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
+
     private BluetoothManagerClass bluetoothManagerClass;
     private CommunicationHandler communicationHandler;
     private TripDatabaseHelper tripDbHelper;
     private final String TAG = "MainActivity";
+    TextView accelTest;
+    GaugesFragment gaugeFragment;
 
-    private Button matinTest;
-    ImageButton blSelectBtn;
-    SpeedometerGauge speedoRPM, speedoSpeed;
-    ArrayList<BluetoothDevice> devices;
-    BluetoothAdapter btAdapter;
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.bar_main, menu);
+        return true;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestPermission();
         setContentView(R.layout.activity_main);
+        accelTest = (TextView)findViewById(R.id.accelTest);
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler.passContext(this);
-        initButtonListners();
-        initSpeedos();
+        }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        gaugeFragment = new GaugesFragment();
+        fragmentTransaction.add(R.id.replaceWithFragment, gaugeFragment);
+        fragmentTransaction.commit();
     }
 
-    private void initButtonListners() {
-        this.blSelectBtn = (ImageButton) findViewById(R.id.selectDeviceButton);
-        this.blSelectBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!communicationHandler.checkBluetoothStatus()) {
-
-                } else showDeviceSelectScreen();
-            }
-        });
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_bluetooth:
+                showDeviceSelectScreen();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
+
+    public void activateDeviceSelectScreen(){
+        if (!communicationHandler.checkBluetoothStatus()) {
+
+        } else showDeviceSelectScreen();
+    }
+
 
     private void showDeviceSelectScreen() {
 
@@ -80,40 +101,7 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    private void initSpeedos() {
-        speedoRPM = (SpeedometerGauge) findViewById(R.id.speedoRPM);
 
-        speedoRPM.setMaxSpeed(60);
-        speedoRPM.setMajorTickStep(10);
-        speedoRPM.setMinorTicks(4);
-
-        speedoRPM.addColoredRange(0, 22, Color.GREEN);
-        speedoRPM.addColoredRange(22, 32, Color.YELLOW);
-        speedoRPM.addColoredRange(32, 60, Color.RED);
-
-        speedoRPM.setLabelTextSize(40);
-
-        speedoRPM.setLabelConverter(new SpeedometerGauge.LabelConverter() {
-            @Override
-            public String getLabelFor(double progress, double maxProgress) {
-                return String.valueOf((int) Math.round(progress));
-            }
-        });
-
-        speedoSpeed = (SpeedometerGauge) findViewById(R.id.speedoSpeed);
-        speedoSpeed.setMaxSpeed(240);
-        speedoSpeed.setMajorTickStep(20);
-        speedoSpeed.setMinorTicks(1);
-
-        speedoSpeed.setLabelTextSize(20);
-
-        speedoSpeed.setLabelConverter(new SpeedometerGauge.LabelConverter() {
-            @Override
-            public String getLabelFor(double progress, double maxProgress) {
-                return String.valueOf((int) Math.round(progress));
-            }
-        });
-    }
 
     private void requestPermission() {
         int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
@@ -139,14 +127,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateGauges(final double rpm, final double speed) {
+
+        //TODO change to call fragment method
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                speedoRPM.setSpeed((rpm / 100), 0, 0);
-                speedoSpeed.setSpeed(speed, 0, 0);
+                gaugeFragment.updateGauges(rpm, speed);
             }
         });
     }
+
 }
 
 
