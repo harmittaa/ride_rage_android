@@ -17,6 +17,8 @@ import java.io.IOException;
  * Created by Asus on 27/09/2016.
  */
 
+// BG service to run the ObdJobs
+
 public class ObdJobService extends Service {
     private static final String TAG = "ObdJobService";
     private BluetoothSocket bluetoothSocket;
@@ -95,9 +97,6 @@ public class ObdJobService extends Service {
         Log.e(TAG, "onDestroy: called");
         this.serviceThread.interrupt();
         stopSelf();
-
-        // TODO: 27/09/2016  this works for the BT conneciton, but the OBD2 still declines any incoming commmands after reconnect
-        // java.io.IOException: bt socket closed, read return: -1
     }
 
     @Nullable

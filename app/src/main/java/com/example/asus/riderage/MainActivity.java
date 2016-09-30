@@ -5,11 +5,13 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -17,12 +19,15 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
+import com.example.asus.riderage.Database.TripDatabaseHelper;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     private BluetoothManagerClass bluetoothManagerClass;
     private CommunicationHandler communicationHandler;
+    private TripDatabaseHelper tripDbHelper;
     private final String TAG = "MainActivity";
 
     private Button matinTest;
@@ -39,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler.passContext(this);
-        this.matinTest = (Button) findViewById(R.id.matinTest);
         initButtonListners();
         initSpeedos();
     }
@@ -52,13 +56,6 @@ public class MainActivity extends AppCompatActivity {
                 if (!communicationHandler.checkBluetoothStatus()) {
 
                 } else showDeviceSelectScreen();
-            }
-        });
-
-        this.matinTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                communicationHandler.stopObdJobService();
             }
         });
     }
@@ -116,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
                 return String.valueOf((int) Math.round(progress));
             }
         });
-
     }
 
     private void requestPermission() {
@@ -150,7 +146,6 @@ public class MainActivity extends AppCompatActivity {
                 speedoSpeed.setSpeed(speed, 0, 0);
             }
         });
-
     }
 }
 
