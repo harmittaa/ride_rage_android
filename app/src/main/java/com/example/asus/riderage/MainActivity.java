@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void activateDeviceSelectScreen(){
-        if (!communicationHandler.checkBluetoothStatus()) {
+        if (!communicationHandler.checkBluetoothStatus(true)) {
 
         } else showDeviceSelectScreen();
     }
@@ -93,8 +94,9 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
-                // TODO: 27/09/2016 create connection
-                communicationHandler.createBluetoothConnection(which);
+                if(communicationHandler.createBluetoothConnection(which))
+                    Log.e(TAG, "onClick: success" );
+                else Log.e(TAG, "onClick: failure");
             }
         });
         alertDialog.setTitle("Choose Bluetooth device");

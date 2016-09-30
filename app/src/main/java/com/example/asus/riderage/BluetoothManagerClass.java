@@ -9,6 +9,8 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -34,13 +36,16 @@ public class BluetoothManagerClass {
         return bluetoothManagerClass;
     }
 
-    public boolean checkBluetooth() {
+    public boolean checkBluetoothIsOn(boolean withPrompt) {
         if (!this.btAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            CommunicationHandler.getCommunicationHandlerInstance().getContext().startActivityForResult(enableBtIntent, RESULT_OK);
+            if(withPrompt) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                CommunicationHandler.getCommunicationHandlerInstance().getContext().startActivityForResult(enableBtIntent, RESULT_OK);
+            }
             return false;
         } else return true;
     }
+
 
     public ArrayList<String> getDeviceStrings() {
         deviceStrs = new ArrayList();
@@ -56,15 +61,26 @@ public class BluetoothManagerClass {
         return this.deviceStrs;
     }
 
-    public void createBluetoothConnection(int position) {
+    public boolean createBluetoothConnection(int position) {
         String deviceAddress = devices.get(position).getAddress();
         BluetoothDevice device = btAdapter.getRemoteDevice(deviceAddress);
         //UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
         UUID uuid = UUID.fromString(devices.get(position).getUuids()[0].toString());
         Log.e(TAG, "createBluetoothConnection: the UUID is" + uuid.toString());
         Log.e(TAG, "createBluetoothConnection: the UUID should be 00001101-0000-1000-8000-00805f9b34fb");
-        Thread connectionCreationThread = new Thread(new BluetoothConnection(uuid, device));
-        connectionCreationThread.start();
+
+        FutureTask<Boolean> futureTask = new FutureTask<>(new BluetoothConnection(uuid, device));
+        Thread t=new Thread(futureTask);
+        t.start();
+        try {
+            return futureTask.get().booleanValue();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        //with thread instead of callable
+        /*Thread connectionCreationThread = new Thread(new BluetoothConnection(uuid, device));
+        connectionCreationThread.start();*/
     }
 
 /*    protected void initBluetooth() {
@@ -103,6 +119,10 @@ public class BluetoothManagerClass {
 
     protected BluetoothSocket getBluetoothSocket() {
         return bluetoothSocket;
+    }
+
+    public boolean bluetoothIsConnected(){
+        return bluetoothSocket.isConnected();
     }
 
     protected void setBluetoothSocket(BluetoothSocket bluetoothSocket) {

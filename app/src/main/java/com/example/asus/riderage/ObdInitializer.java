@@ -1,6 +1,7 @@
 package com.example.asus.riderage;
 
 import android.bluetooth.BluetoothSocket;
+import android.telecom.Call;
 import android.util.Log;
 
 import com.github.pires.obd.commands.protocol.EchoOffCommand;
@@ -11,12 +12,13 @@ import com.github.pires.obd.commands.protocol.TimeoutCommand;
 import com.github.pires.obd.enums.ObdProtocols;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 
 
 // class used for initializing the OBD connection
 // init sequence is required when a new connection is made to wake up the ELM327
 
-public class ObdInitializer implements Runnable {
+public class ObdInitializer implements Callable<Boolean> {
     private static final String TAG = "ObdInitializer";
     BluetoothManagerClass bluetoothManagerInstance;
     private BluetoothSocket bluetoothSocket;
@@ -29,7 +31,7 @@ public class ObdInitializer implements Runnable {
     }
 
     // https://www.elmelectronics.com/help/obd/tips/#327_Commands
-    public void initializeObd() {
+    public boolean initializeObd() {
         try {
             Log.e(TAG, "InitOBD");
             // reset the ELM327
@@ -52,7 +54,8 @@ public class ObdInitializer implements Runnable {
             // set the bluetoothsocket back and star the ObdJobService
             this.bluetoothManagerInstance.setBluetoothSocket(this.bluetoothSocket);
             commHandler.startObdJobService();
-        } catch (IOException e) {
+            return true;
+        } catch (Exception e) {
             Log.e(TAG, "ERROR", e);
             try {
                 Log.e(TAG, "Read return -1, closing BT socket");
@@ -60,14 +63,14 @@ public class ObdInitializer implements Runnable {
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
-        } catch (InterruptedException e) {
-            Log.e(TAG, "ERROR", e);
+            return false;
         }
     }
 
+
     @Override
-    public void run() {
-        initializeObd();
+    public Boolean call() throws Exception {
+        return initializeObd();
     }
 }
 

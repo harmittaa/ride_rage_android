@@ -31,16 +31,16 @@ public class CommunicationHandler {
         return communicationHandlerInstance;
     }
 
-    public boolean checkBluetoothStatus() {
-        return this.btManager.checkBluetooth();
+    public boolean checkBluetoothStatus(boolean withPrompt) {
+        return this.btManager.checkBluetoothIsOn(withPrompt);
     }
 
     public ArrayList<String> getDeviceStrings() {
        return this.btManager.getDeviceStrings();
     }
 
-    public void createBluetoothConnection(int position) {
-        this.btManager.createBluetoothConnection(position);
+    public boolean createBluetoothConnection(int position) {
+        return this.btManager.createBluetoothConnection(position);
     }
 
     public void makeToast(int couldNotConnect) {
@@ -60,5 +60,8 @@ public class CommunicationHandler {
         mainActivity.updateGauges(rpm, speed);
     }
 
+    public boolean bluetoothSocketIsConnected(){
+        return btManager.bluetoothIsConnected();
+    }
 
 }

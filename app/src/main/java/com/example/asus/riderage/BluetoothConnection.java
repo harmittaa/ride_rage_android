@@ -6,6 +6,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 /**
  * Created by Asus on 26/09/2016.
@@ -13,7 +14,7 @@ import java.util.UUID;
 
 // for making a connection between the user's device and the OBDII device
 
-public class BluetoothConnection implements Runnable {
+public class BluetoothConnection implements Callable<Boolean> {
     private static final String TAG = "BluetoothConnection";
     private UUID uuidToConnect;
     private BluetoothDevice device;
@@ -29,7 +30,7 @@ public class BluetoothConnection implements Runnable {
     }
 
     @Override
-    public void run() {
+    public Boolean call() throws Exception {
         try {
             this.btSocket = this.bluetoothManagerClass.getBluetoothSocket();
             this.btSocket = device.createRfcommSocketToServiceRecord(uuidToConnect);
@@ -38,9 +39,10 @@ public class BluetoothConnection implements Runnable {
             this.bluetoothManagerClass.setBluetoothSocket(this.btSocket);
             startObdInit();
             Log.e(TAG, "Connected with " + uuidToConnect.toString());
+            return true;
         } catch (IOException e) {
             Log.e(TAG, "ERROR", e);
-            connectWithFallbackSocket();
+            return connectWithFallbackSocket();
         }
     }
 
@@ -49,7 +51,7 @@ public class BluetoothConnection implements Runnable {
         obdInitThread.start();
     }
 
-    private void connectWithFallbackSocket() {
+    private boolean connectWithFallbackSocket() {
         try {
             Log.e(TAG, "Trying fallback socket");
             this.btSocket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(device, 1);
@@ -58,9 +60,11 @@ public class BluetoothConnection implements Runnable {
             this.bluetoothManagerClass.setBluetoothSocket(this.btSocket);
             startObdInit();
             Log.e(TAG, "Connection established");
+            return true;
         } catch (Exception e2) {
             Log.e(TAG, "Couldn't establish Bluetooth connection!", e2);
             this.communicationHandler.makeToast(R.string.couldNotConnect);
+            return false;
         }
     }
 }

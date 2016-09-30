@@ -11,6 +11,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,9 @@ import android.widget.TextView;
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
 
 import java.util.ArrayList;
+import java.util.concurrent.FutureTask;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Created by Daniel on 28/09/2016.
@@ -111,9 +115,50 @@ public class GaugesFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.stopTrip:
-                break;
             case R.id.startTrip:
+                /*
+                Thread t1 = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.e(TAG, "run: jeeben on eka" );
+                    }
+                });
+                Thread t2 = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.e(TAG, "run: huuben on toke");
+                    }
+                });
+
+                try {
+                    t1.start();
+                    t1.join();
+                    t2.start();
+                    t2.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                */
+                //TODO #1 check bluetooh on #2 check if connection ok #3 check if obd is ok
+                if(CommunicationHandler.getCommunicationHandlerInstance().checkBluetoothStatus(false)){
+                    if(CommunicationHandler.getCommunicationHandlerInstance().bluetoothSocketIsConnected()){
+                        FutureTask<Boolean> futureTask = new FutureTask<>(new ObdInitializer());
+                        Thread t=new Thread(futureTask);
+                        t.start();
+                        try {
+                             if(futureTask.get()){
+                                 //TODO Continue with shit
+                             }else {
+                                 //TODO popup for user "error occured"
+                             }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    };
+                }
+
+                break;
+            case R.id.stopTrip:
                 break;
 
         }
