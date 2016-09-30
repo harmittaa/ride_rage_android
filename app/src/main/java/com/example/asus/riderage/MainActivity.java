@@ -18,6 +18,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -143,9 +144,7 @@ public class MainActivity extends AppCompatActivity{
         //TODO change to call fragment method
         runOnUiThread(new Runnable() {
             @Override
-            public void run() {/*
-                speedoRPM.setSpeed((rpm / 100), 0, 0);
-                speedoSpeed.setSpeed(speed, 0, 0);*/
+            public void run() {
                 gaugeFragment.updateGauges(rpm, speed);
             }
         });
