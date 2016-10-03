@@ -7,6 +7,8 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 /**
  * Created by Asus on 26/09/2016.
@@ -37,18 +39,13 @@ public class BluetoothConnection implements Callable<Boolean> {
             Log.e(TAG, "Connecting with " + uuidToConnect.toString());
             this.btSocket.connect();
             this.bluetoothManagerClass.setBluetoothSocket(this.btSocket);
-            startObdInit();
+         //   startObdInit();
             Log.e(TAG, "Connected with " + uuidToConnect.toString());
             return true;
         } catch (IOException e) {
-            Log.e(TAG, "ERROR", e);
+            Log.e(TAG, "call: " ,  e);
             return connectWithFallbackSocket();
         }
-    }
-
-    private void startObdInit() {
-        Thread obdInitThread = new Thread(new ObdInitializer());
-        obdInitThread.start();
     }
 
     private boolean connectWithFallbackSocket() {
@@ -58,7 +55,7 @@ public class BluetoothConnection implements Callable<Boolean> {
             Log.e(TAG, "Fallback socket created, trying to connect...");
             this.btSocket.connect();
             this.bluetoothManagerClass.setBluetoothSocket(this.btSocket);
-            startObdInit();
+          //  startObdInit();
             Log.e(TAG, "Connection established");
             return true;
         } catch (Exception e2) {

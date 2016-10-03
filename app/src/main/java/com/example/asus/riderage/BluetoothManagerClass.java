@@ -83,40 +83,6 @@ public class BluetoothManagerClass {
         connectionCreationThread.start();*/
     }
 
-/*    protected void initBluetooth() {
-        Log.e(TAG, "InitBL starting");
-        deviceStrs = new ArrayList();
-        devices = new ArrayList();
-        Set<BluetoothDevice> pairedDevices = this.btAdapter.getBondedDevices();
-
-        if (pairedDevices.size() > 0) {
-            for (BluetoothDevice device : pairedDevices) {
-                deviceStrs.add(device.getName() + "\n" + device.getAddress());
-                devices.add(device);
-            }
-        }
-
-        // show list
-        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-        ArrayAdapter adapter = new ArrayAdapter(context, android.R.layout.select_dialog_singlechoice, deviceStrs.toArray(new String[deviceStrs.size()]));
-
-        alertDialog.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
-                String deviceAddress = devices.get(position).getAddress();
-                BluetoothDevice device = btAdapter.getRemoteDevice(deviceAddress);
-                UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
-                Thread connectionCreationThread = new Thread(new BluetoothConnection(uuid, device));
-                connectionCreationThread.start();
-            }
-        });
-
-        alertDialog.setTitle("Choose Bluetooth device");
-        alertDialog.show();
-    }*/
-
     protected BluetoothSocket getBluetoothSocket() {
         return bluetoothSocket;
     }

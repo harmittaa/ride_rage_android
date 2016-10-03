@@ -5,14 +5,16 @@ package com.example.asus.riderage;
  */
 
 public class DataPoint {
-    private int speed,rpm;
+    private double speed,rpm;
+    private long tripId;
     private double acceleration,consumption;
 
-    public DataPoint(int spd, int r, double accel, double cons){
+    public DataPoint(long tripId, double spd, double r, double accel, double cons){
         this.speed = spd;
         this.rpm = r;
         this.acceleration = accel;
         this.consumption = cons;
+        this.tripId = tripId;
     }
 
     public double getAcceleration() {
@@ -31,7 +33,7 @@ public class DataPoint {
         this.consumption = consumption;
     }
 
-    public int getRpm() {
+    public double getRpm() {
         return rpm;
     }
 
@@ -39,11 +41,15 @@ public class DataPoint {
         this.rpm = rpm;
     }
 
-    public int getSpeed() {
+    public double getSpeed() {
         return speed;
     }
 
     public void setSpeed(int speed) {
         this.speed = speed;
     }
+
+    public long getTripId() {return tripId;}
+
+    public void setTripId(long tripId) {this.tripId = tripId;}
 }

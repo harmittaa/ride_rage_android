@@ -30,9 +30,9 @@ import static android.content.ContentValues.TAG;
  * Created by Daniel on 28/09/2016.
  */
 
-public class GaugesFragment extends Fragment implements View.OnClickListener{
+public class GaugesFragment extends Fragment implements View.OnClickListener {
 
-    private Button startTrip,stopTrip;
+    private Button startTrip, stopTrip;
     ImageButton blSelectBtn;
     SpeedometerGauge speedoRPM, speedoSpeed;
     ArrayList<BluetoothDevice> devices;
@@ -60,11 +60,10 @@ public class GaugesFragment extends Fragment implements View.OnClickListener{
     private void initButtonListners() {
 
         this.startTrip = (Button) fragmentView.findViewById(R.id.startTrip);
-        this.stopTrip = (Button)fragmentView.findViewById(R.id.stopTrip);
+        this.stopTrip = (Button) fragmentView.findViewById(R.id.stopTrip);
         this.startTrip.setOnClickListener(this);
         this.stopTrip.setOnClickListener(this);
     }
-
 
 
     private void initSpeedos() {
@@ -108,55 +107,19 @@ public class GaugesFragment extends Fragment implements View.OnClickListener{
         speedoSpeed.setSpeed(speed, 0, 0);
     }
 
-    private MainActivity getMainActivity(){
+    private MainActivity getMainActivity() {
         return (MainActivity) getActivity();
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.startTrip:
-                /*
-                Thread t1 = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.e(TAG, "run: jeeben on eka" );
-                    }
-                });
-                Thread t2 = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.e(TAG, "run: huuben on toke");
-                    }
-                });
-
-                try {
-                    t1.start();
-                    t1.join();
-                    t2.start();
-                    t2.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                if (CommunicationHandler.getCommunicationHandlerInstance().checkSafeConnection()) {
+                    Log.e(TAG, "Started succesfully");
+                } else {
+                    Log.e(TAG, "Something failed in the checkSafeConnection");
                 }
-                */
-                //TODO #1 check bluetooh on #2 check if connection ok #3 check if obd is ok
-                if(CommunicationHandler.getCommunicationHandlerInstance().checkBluetoothStatus(false)){
-                    if(CommunicationHandler.getCommunicationHandlerInstance().bluetoothSocketIsConnected()){
-                        FutureTask<Boolean> futureTask = new FutureTask<>(new ObdInitializer());
-                        Thread t=new Thread(futureTask);
-                        t.start();
-                        try {
-                             if(futureTask.get()){
-                                 //TODO Continue with shit
-                             }else {
-                                 //TODO popup for user "error occured"
-                             }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    };
-                }
-
                 break;
             case R.id.stopTrip:
                 break;

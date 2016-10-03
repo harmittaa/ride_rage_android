@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.example.asus.riderage.DataPoint;
+
 import java.util.Date;
 
 /**
@@ -35,20 +37,40 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     public static final String TRIP_TOTAL_CONSUMPTION = "total_consumption";
     public static final String TRIP_GAS_COST = "gas_cost";
     public static final String TRIP_DRIVING_ANALYSIS = "driving_analysis";
+
     private static final String SQL_CREATE_TRIP_TABLE =
             "CREATE TABLE " + TABLE_TRIP + " (" +
                     TRIP_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     TRIP_TITLE + " text not null, " +
-                    TRIP_VEHICLE_ID + " integer not null, " +
-                    TRIP_DISTANCE + " real not null, " +
+                    TRIP_VEHICLE_ID + " integer, " +
+                    TRIP_DISTANCE + " real, " +
                     TRIP_START_TIME + " DATETIME not null, " +
-                    TRIP_END_TIME + " DATETIME not null, " +
-                    TRIP_DURATION_MS + " integer not null, " +
-                    TRIP_AVERAGE_SPEED + " real not null, " +
-                    TRIP_AVERAGE_CONSUMPTION + " real not null, " +
-                    TRIP_TOTAL_CONSUMPTION + " real not null, " +
-                    TRIP_GAS_COST + " real not null, " +
-                    TRIP_DRIVING_ANALYSIS + " text not null);";
+                    TRIP_END_TIME + " DATETIME, " +
+                    TRIP_DURATION_MS + " integer, " +
+                    TRIP_AVERAGE_SPEED + " real, " +
+                    TRIP_AVERAGE_CONSUMPTION + " real, " +
+                    TRIP_TOTAL_CONSUMPTION + " real, " +
+                    TRIP_GAS_COST + " real, " +
+                    TRIP_DRIVING_ANALYSIS + " text);";
+
+    public static final String TABLE_DATAPOINT = "datapoint";
+    public static final String DATAPOINT_ID = "datapoint_id";
+    public static final String DATAPOINT_TRIP_ID = "datapoint_trip_id";
+    public static final String DATAPOINT_SPEED = "datapoint_speed";
+    public static final String DATAPOINT_RPM = "datapoint_rpm";
+    public static final String DATAPOINT_ACCELERATION = "datapoint_acceleration";
+    public static final String DATAPOINT_CONSUMPTION = "datapoint_consumption";
+
+
+    private static final String SQL_CREATE_DATAPOINT_TABLE =
+            "CREATE TABLE " + TABLE_DATAPOINT + " (" +
+                    DATAPOINT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    DATAPOINT_TRIP_ID + " integer not null, " +
+                    DATAPOINT_SPEED + " real not null, " +
+                    DATAPOINT_RPM + " real not null, " +
+                    DATAPOINT_ACCELERATION + " real not null, " +
+                    DATAPOINT_CONSUMPTION + " real not null);";
+
 
     private static final String TABLE_VEHICLE = "vehicle";
     private static final String VEHICLE_ID = "vehicle_id";
@@ -67,6 +89,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(SQL_CREATE_TRIP_TABLE);
         db.execSQL(SQL_CREATE_VEHICLE_TABLE);
+        db.execSQL(SQL_CREATE_DATAPOINT_TABLE);
         Log.e(TAG, "SQLite DB created");
     }
 
@@ -74,25 +97,26 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS trip");
         db.execSQL("DROP TABLE IF EXISTS vehicle");
+        db.execSQL("DROP TABLE IF EXISTS datapoint");
     }
 
     // once trip is finished save all the data to the DB
-    public long saveTrip(String title, int vehicleId, double distance, Date start_time, Date end_time,
-                         long durationMs, double averageSpeed, double averageConsumption, double totalConsumption,
-                         double gasCost, String analysis) {
+    public long saveTrip(String title, Integer vehicleId, Double distance, String start_time, String end_time,
+                         Long durationMs, Double averageSpeed, Double averageConsumption, Double totalConsumption,
+                         Double gasCost, String analysis) {
         this.database = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(TRIP_TITLE, title);
         values.put(TRIP_VEHICLE_ID, vehicleId);
         values.put(TRIP_DISTANCE, distance);
-        values.put(TRIP_START_TIME, start_time.toString());
-        values.put(TRIP_END_TIME, end_time.toString());
+        values.put(TRIP_START_TIME, start_time);/*
+        if(end_time != null) values.put(TRIP_END_TIME, end_time.toString());
         values.put(TRIP_DURATION_MS, durationMs);
         values.put(TRIP_AVERAGE_SPEED, averageSpeed);
         values.put(TRIP_AVERAGE_CONSUMPTION, averageConsumption);
         values.put(TRIP_TOTAL_CONSUMPTION, totalConsumption);
         values.put(TRIP_GAS_COST, gasCost);
-        values.put(TRIP_DRIVING_ANALYSIS, analysis);
+        values.put(TRIP_DRIVING_ANALYSIS, analysis);*/
 
         long newRowId = this.database.insert(TABLE_TRIP, null, values);
         Log.e(TAG, "New trip saved for ID " + newRowId);
@@ -152,6 +176,22 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                 " ON " + TRIP_VEHICLE_ID +  " = " + VEHICLE_ID, null, null);
         return this.cursor;
     }
+
+    public void saveDataPoint(DataPoint dataPoint) {
+        Log.e(TAG, "saveDataPoint: ");
+        this.database = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DATAPOINT_TRIP_ID, dataPoint.getTripId());
+        values.put(DATAPOINT_RPM, dataPoint.getRpm());
+        values.put(DATAPOINT_SPEED, dataPoint.getSpeed());
+        values.put(DATAPOINT_ACCELERATION, dataPoint.getAcceleration());
+        values.put(DATAPOINT_CONSUMPTION, dataPoint.getConsumption());
+        long datapointId = this.database.insert(TABLE_DATAPOINT, null, values);
+        Log.e(TAG, "Datapoint saved id " + datapointId);
+        values.clear();
+        this.database.close();
+    }
+
 
     public long saveVehicle(String vehicleName) {
         this.database = this.getWritableDatabase();

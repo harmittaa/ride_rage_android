@@ -53,7 +53,7 @@ public class ObdInitializer implements Callable<Boolean> {
             Log.e(TAG, "Bluetooth socket connection " + bluetoothSocket.isConnected());
             // set the bluetoothsocket back and star the ObdJobService
             this.bluetoothManagerInstance.setBluetoothSocket(this.bluetoothSocket);
-            commHandler.startObdJobService();
+            /*commHandler.startObdJobService();*/
             return true;
         } catch (Exception e) {
             Log.e(TAG, "ERROR", e);
