@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.util.Log;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
@@ -81,6 +82,16 @@ public class BluetoothManagerClass {
         //with thread instead of callable
         /*Thread connectionCreationThread = new Thread(new BluetoothConnection(uuid, device));
         connectionCreationThread.start();*/
+    }
+
+    public void closeSocket(){
+        try {
+            if(this.getBluetoothSocket() != null) {
+                this.getBluetoothSocket().close();
+            }else Log.e(TAG, "closeSocket: Attempt to close socket that does not exist" );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     protected BluetoothSocket getBluetoothSocket() {

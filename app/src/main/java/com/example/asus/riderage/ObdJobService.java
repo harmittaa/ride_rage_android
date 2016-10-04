@@ -34,6 +34,7 @@ public class ObdJobService extends Service implements SensorEventListener {
     private boolean isAccelerationInProgress = false;
     private double speed, rpm, acceleration, consumption;
     TripHandler tripHandler;
+    volatile boolean isRunning = false;
 
     @Override
     public void onCreate() {
@@ -52,24 +53,27 @@ public class ObdJobService extends Service implements SensorEventListener {
             public void run() {
                 Log.e(TAG, "onStartCommand: ObdJobService started");
                 bluetoothSocket = bluetoothManagerClass.getBluetoothSocket();
-                Log.e(TAG, "onStartCommand: bluetooth socket connection is " + bluetoothSocket.isConnected());
+                Log.e(TAG, "onStartCommand: bluetooth socket connection is " + BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().isConnected());
                 Log.e(TAG, "Starting thread to get RPM");
                 final RPMCommand rpmCommand = new RPMCommand();
                 SpeedCommand speedCommand = new SpeedCommand();
                 Thread t = new Thread(new LoggerThread());
                 t.start();
+                isRunning = true;
 
-                while (!Thread.interrupted()) {
+                while (isRunning) {
                     try {
-                        speedCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                        rpmCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                        speed = Double.parseDouble(speedCommand.getCalculatedResult());
-                        rpm = Double.parseDouble(rpmCommand.getCalculatedResult());
-                        consumption =  10 ;
-                        communicationHandler.updateGauges(rpm, speed);
-                        Log.e(TAG, "RPM formatted " + rpm);
-                        Log.e(TAG, "Speed formatted " + speed);
-                        Log.e(TAG, "Consumption formatted " + consumption);
+                        if(isRunning) {
+                            speedCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
+                            rpmCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
+                            speed = Double.parseDouble(speedCommand.getCalculatedResult());
+                            rpm = Double.parseDouble(rpmCommand.getCalculatedResult());
+                            consumption = 10;
+                            communicationHandler.updateGauges(rpm, speed);
+                            Log.e(TAG, "RPM formatted " + rpm);
+                            Log.e(TAG, "Speed formatted " + speed);
+                            Log.e(TAG, "Consumption formatted " + consumption);
+                        }
                     } catch (Exception e) {
                         Log.e(TAG, "ERROR running commands ", e);
                         closeConnection();
@@ -92,13 +96,17 @@ public class ObdJobService extends Service implements SensorEventListener {
 
     private void closeConnection() {
         try {
-            if (this.bluetoothSocket.isConnected()) {
+            if (BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().isConnected()) {
                 ObdRawCommand rawCommand = new ObdRawCommand("AT PC");
-                rawCommand.run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-                Log.e(TAG, "Raw command returns " + rawCommand.getFormattedResult());
-                this.bluetoothSocket.close();
-                Log.e(TAG, "closeConnection: connection closed");
-                this.bluetoothManagerClass.setBluetoothSocket(this.bluetoothSocket);
+                rawCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
+                /*
+                 * Moved closing of actual socket to BluetoothManagerClass, only closing command to OBD remains
+                 */
+                //Log.e(TAG, "Raw command returns " + rawCommand.getFormattedResult());
+                //BluetoothManagerClass.getBluetoothManagerClass().closeSocket();
+                //Log.e(TAG, "closeConnection: connection closed");
+                //this.bluetoothManagerClass.setBluetoothSocket(this.bluetoothSocket);
+                Log.e(TAG, "closeConnection: OBD connection closed");
             }
         } catch (Exception e) {
             Log.e(TAG, "closeConnection: error when closing connection ", e);
@@ -106,10 +114,15 @@ public class ObdJobService extends Service implements SensorEventListener {
 
     }
 
+    public void setRunning(boolean bool) {
+        isRunning = bool;
+    }
+
     @Override
     public void onDestroy() {
         Log.e(TAG, "onDestroy: called");
-        this.serviceThread.interrupt();
+        this.setRunning(false);
+        this.closeConnection();
         stopSelf();
     }
 
@@ -174,14 +187,21 @@ public class ObdJobService extends Service implements SensorEventListener {
     private class LoggerThread implements Runnable {
         @Override
         public void run() {
-            while (!Thread.interrupted()) {
+            while (isRunning) {
                 try {
                     Thread.sleep(2000);
                     tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), getSpeed(), getRpm(), getAcceleration(), getConsumption()));
+                    if (Thread.currentThread().isInterrupted() || Thread.interrupted()) {
+                        throw new InterruptedException();
+                    }
                 } catch (InterruptedException e) {
                     Log.e(TAG, "LoggerThread interupted ", e);
+                    Thread.currentThread().interrupt();
+                    Thread.interrupted();
+                    return;
                 }
             }
+            Log.e(TAG, "run: Logger thread should end now");
 
         }
     }

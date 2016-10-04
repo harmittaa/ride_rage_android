@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -30,7 +31,7 @@ import static android.content.ContentValues.TAG;
  * Created by Daniel on 28/09/2016.
  */
 
-public class GaugesFragment extends Fragment implements View.OnClickListener {
+public class GaugesFragment extends Fragment implements View.OnClickListener,UpdatableFragment {
 
     private Button startTrip, stopTrip;
     ImageButton blSelectBtn;
@@ -47,7 +48,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener {
         accelTest = (TextView) fragmentView.findViewById(R.id.accelTest);
         initButtonListners();
         initSpeedos();
-
+        updateOnStateChanged(CommunicationHandler.getCommunicationHandlerInstance().getConnection_state());
         return fragmentView;
     }
 
@@ -122,8 +123,28 @@ public class GaugesFragment extends Fragment implements View.OnClickListener {
                 }
                 break;
             case R.id.stopTrip:
+                //TODO 1. send obd close comand through obdjobservice 2. close bluetooth socket
+                CommunicationHandler.getCommunicationHandlerInstance().getCurrentTripHandler().stopCurrentTrip();
                 break;
 
+        }
+    }
+
+    @Override
+    public void updateOnStateChanged(Constants.CONNECTION_STATE connection_state) {
+        switch (connection_state){
+            case CONNECTED_NOT_RUNNING:
+                startTrip.setVisibility(View.VISIBLE);
+                stopTrip.setVisibility(View.GONE);
+                break;
+            case CONNECTED_RUNNING:
+                startTrip.setVisibility(View.VISIBLE);
+                stopTrip.setVisibility(View.VISIBLE);
+                break;
+            case DISCONNECTED:
+                startTrip.setVisibility(View.GONE);
+                stopTrip.setVisibility(View.GONE);
+                break;
         }
     }
 }

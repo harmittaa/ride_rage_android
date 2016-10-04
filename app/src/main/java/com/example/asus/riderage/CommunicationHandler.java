@@ -17,9 +17,11 @@ public class CommunicationHandler {
     private BluetoothManagerClass btManager;
     private static TripHandler currentTripHandler;
 
+    private Constants.CONNECTION_STATE connection_state;
     private CommunicationHandler() {
         this.btManager = BluetoothManagerClass.getBluetoothManagerClass();
         Log.e(TAG, "CommunicationHandler: created");
+        this.connection_state = Constants.CONNECTION_STATE.DISCONNECTED;
     }
 
     public void passContext(MainActivity ma) {
@@ -43,7 +45,11 @@ public class CommunicationHandler {
     }
 
     public boolean createBluetoothConnection(int position) {
-        return this.btManager.createBluetoothConnection(position);
+        boolean jeeben = this.btManager.createBluetoothConnection(position);
+        if (jeeben) {
+            setConnection_state(Constants.CONNECTION_STATE.CONNECTED_NOT_RUNNING);
+        }
+        return jeeben;
     }
 
     public void makeToast(int couldNotConnect) {
@@ -106,4 +112,14 @@ public class CommunicationHandler {
     public void setCurrentTripHandler(TripHandler currentTripHandler) {
         CommunicationHandler.currentTripHandler = currentTripHandler;
     }
+
+    public Constants.CONNECTION_STATE getConnection_state() {
+        return connection_state;
+    }
+
+    public void setConnection_state(Constants.CONNECTION_STATE connection_state) {
+        this.connection_state = connection_state;
+        this.getContext().updateOnConnectionStateChanged(this.connection_state);
+    }
+
 }

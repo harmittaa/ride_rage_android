@@ -2,12 +2,15 @@ package com.example.asus.riderage;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -25,6 +28,7 @@ import com.cardiomood.android.controls.gauge.SpeedometerGauge;
 import com.example.asus.riderage.Database.TripDatabaseHelper;
 
 import java.util.ArrayList;
+import java.util.concurrent.FutureTask;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -32,6 +36,7 @@ public class MainActivity extends AppCompatActivity{
     private CommunicationHandler communicationHandler;
     private TripDatabaseHelper tripDbHelper;
     private final String TAG = "MainActivity";
+    private UpdatableFragment currentFragment;
     TextView accelTest;
     GaugesFragment gaugeFragment;
 
@@ -62,6 +67,8 @@ public class MainActivity extends AppCompatActivity{
         gaugeFragment = new GaugesFragment();
         fragmentTransaction.add(R.id.replaceWithFragment, gaugeFragment);
         fragmentTransaction.commit();
+
+        this.currentFragment = gaugeFragment;
     }
 
     @Override
@@ -87,22 +94,29 @@ public class MainActivity extends AppCompatActivity{
         ArrayList<String> deviceStrs = this.communicationHandler.getDeviceStrings();
 
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.select_dialog_singlechoice,
+        final ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.select_dialog_singlechoice,
                 deviceStrs.toArray(new String[deviceStrs.size()]));
 
         alertDialog.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                Log.e(TAG, "onClick: aids is go" );
+                ConnectToOBDTask aidsTask = new ConnectToOBDTask(which);
+                aidsTask.execute();
                 dialog.dismiss();
-                if(communicationHandler.createBluetoothConnection(which))
-                    Log.e(TAG, "onClick: success" );
-                else Log.e(TAG, "onClick: failure");
             }
         });
         alertDialog.setTitle("Choose Bluetooth device");
         alertDialog.show();
     }
 
+    @Override
+    protected void onDestroy() {
+        Log.e(TAG, "onDestroy: Main activity destroyed" );
+        stopService(new Intent(this,ObdJobService.class));
+        BluetoothManagerClass.getBluetoothManagerClass().closeSocket();
+        super.onDestroy();
+    }
 
 
     private void requestPermission() {
@@ -137,6 +151,50 @@ public class MainActivity extends AppCompatActivity{
                 gaugeFragment.updateGauges(rpm, speed);
             }
         });
+    }
+
+    public void updateOnConnectionStateChanged(Constants.CONNECTION_STATE newConnectionState) {
+        this.currentFragment.updateOnStateChanged(newConnectionState);
+    }
+
+
+    private class ConnectToOBDTask extends AsyncTask<Integer,Long,Boolean>{
+        ProgressDialog dialog;
+        int which;
+        public ConnectToOBDTask(int which) {
+            this.which = which;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            dialog = ProgressDialog.show(MainActivity.this, "",
+                    "Connecting. Please wait...", true);
+        }
+
+        @Override
+        protected Boolean doInBackground(Integer... params) {
+
+            if(BluetoothManagerClass.getBluetoothManagerClass().createBluetoothConnection(this.which)){
+                Log.e(TAG, "onClick: success" );
+                return true;
+            }
+            else {
+                Log.e(TAG, "onClick: failure");
+                return false;
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            //TODO show either connection complete or failed, dismiss popup
+            dialog.dismiss();
+            if(aBoolean){
+                makeToast("Connection Succesfull");
+            }else {
+                makeToast("Connection Failed");
+            }
+        }
     }
 
 }
