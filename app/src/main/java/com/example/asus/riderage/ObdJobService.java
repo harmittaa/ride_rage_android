@@ -9,7 +9,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -21,8 +20,12 @@ import com.github.pires.obd.commands.engine.RPMCommand;
 import com.github.pires.obd.commands.protocol.ObdRawCommand;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 /**
  * Created by Asus on 27/09/2016.
@@ -41,15 +44,19 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     private LocationRequest locationRequest;
     private GoogleApiClient googleApiClient;
     volatile boolean isRunning = false;
+    private ArrayList<Double> speeds,rpms;
 
     @Override
     public void onCreate() {
         Log.e(TAG, "onCreate: ObdJobService created");
+        speeds = new ArrayList<>();
+        rpms = new ArrayList<>();
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
         tripHandler = CommunicationHandler.getCurrentTripHandler();
         initGoogleApiClient();
         createLocationRequest();
+        googleApiClient.connect();
         ((SensorManager) CommunicationHandler.getCommunicationHandlerInstance().getContext().getSystemService(Context.SENSOR_SERVICE)).registerListener(this, ((SensorManager) CommunicationHandler.getCommunicationHandlerInstance().getContext().getSystemService(Context.SENSOR_SERVICE)).getSensorList(Sensor.TYPE_ACCELEROMETER).get(0), SensorManager.SENSOR_DELAY_NORMAL);
     }
 
@@ -238,7 +245,6 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
 
     public void setAverageRpm(double averageRpm) {
         this.averageRpm = averageRpm;
-        this.tripHandler.setAverageRPM(averageRpm);
     }
 
     // GOOGLE MAPS API starts here
@@ -250,24 +256,20 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
         setLongitude(location.getLongitude());
     }
 
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-        Log.e(TAG, "onProviderDisabled: Google maps provider disabled");
-    }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Log.e(TAG, "onConnected: Google maps connected");
+        System.out.println("In onconnected");
+        try {
+            Location loc = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, ObdJobService.this);
+
+            Log.e(TAG, "onConnected: LATTARI"+loc.getLatitude() );
+        } catch (SecurityException e) {
+            e.printStackTrace();
+            System.out.println("Security Failed");
+        }
+
     }
 
     @Override
@@ -280,7 +282,29 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
         Log.e(TAG, "onConnectionFailed: Google maps connection failed");
     }
 
+    public void addToRpms(Double rpmToAdd){
+        this.rpms.add(rpmToAdd);
+    }
 
+    public void addToSpeeds(Double speedToAdd){
+        this.speeds.add(speedToAdd);
+    }
+
+    public ArrayList<Double> getRpms(){
+        return this.rpms;
+    }
+
+    public ArrayList<Double> getSpeeds(){
+        return this.speeds;
+    }
+
+    public Double getTotalOfDoubleArray(ArrayList<Double> arrayToCount){
+        Double jeeben = 0.0;
+        for (Double d : arrayToCount){
+            jeeben += d;
+        }
+        return jeeben;
+    }
     // Thread that logs all the data from the sensors
     private class LoggerThread implements Runnable {
         int counter;
@@ -291,8 +315,9 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                 try {
                     Thread.sleep(2000);
                     counter++;
-                    setAverageRpm((getRpm() + getAverageRpm()) / counter);
-                    setAverageSpeed((getSpeed() + getAverageSpeed()) / counter);
+                    addToRpms(getRpm());
+                    setAverageRpm(getTotalOfDoubleArray(getRpms())/getRpms().size());
+                    setAverageSpeed(getTotalOfDoubleArray(getSpeeds())/getSpeeds().size());
                     tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), getSpeed(), getRpm(), getAcceleration(), getConsumption(), getLongitude(), getLatitude()));
                     if (Thread.currentThread().isInterrupted() || Thread.interrupted()) {
                         throw new InterruptedException();

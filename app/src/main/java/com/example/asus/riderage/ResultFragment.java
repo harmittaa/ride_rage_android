@@ -19,7 +19,7 @@ import com.example.asus.riderage.Database.TripDatabaseHelper;
 public class ResultFragment extends Fragment implements UpdatableFragment {
     private final String TAG = "ResultFragment";
     private View fragmentView;
-    private TextView textView;
+    private TextView durationTextView,distanceTextView,avgSpeedTextView,avgRpmTextView,textView;
     private Constants.FRAGMENT_CALLER fragment_caller;
     private static long tripId;
 
@@ -29,6 +29,12 @@ public class ResultFragment extends Fragment implements UpdatableFragment {
         fragmentView = inflater.inflate(R.layout.fragment_result, container, false);
         textView = (TextView) fragmentView.findViewById(R.id.avgRpmResultLabel);
         textView.setText("It works");
+
+
+        durationTextView = (TextView)fragmentView.findViewById(R.id.durationResultLabel);
+        distanceTextView = (TextView)fragmentView.findViewById(R.id.distanceResultLabel);
+        avgSpeedTextView = (TextView)fragmentView.findViewById(R.id.avgSpeedResultLabel);
+        avgRpmTextView = (TextView)fragmentView.findViewById(R.id.avgRpmResultLabel);
 
         DataFetcher dataFetcher = new DataFetcher(tripId);
         dataFetcher.execute();
@@ -41,12 +47,16 @@ public class ResultFragment extends Fragment implements UpdatableFragment {
         super.onCreate(savedInstanceState);
     }
 
-    public void updateFragmentView(final String update) {
+    public void updateFragmentView(final String duration, final String distance, final String avgSpeed, final String avgRpm, final String placeHolder) {
         Log.e(TAG, "updateFragmentView: trying to update view");
         getMainActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                textView.setText(update);
+                durationTextView.setText(duration);
+                distanceTextView.setText(distance);
+                avgSpeedTextView.setText(avgSpeed);
+                avgRpmTextView.setText(avgRpm);
+                textView.setText(placeHolder);
             }
         });
     }
@@ -95,8 +105,11 @@ public class ResultFragment extends Fragment implements UpdatableFragment {
             Cursor cursor = dbHelper.getFullTripData(getTripId());
             cursor.moveToFirst();
             Log.e(TAG, "doInBackground: num of stufs:" + cursor.getCount() + "\n Trip Id: " + this.tripId);
-            String make = (cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_END_TIME))) + "\n" + cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM));
-            updateFragmentView(make);
+            String duration = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DURATION_MS)) + "MS";
+            String distance = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DISTANCE)) + "KM";
+            String avgSpd = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_SPEED)) + "KM/H";
+            String avgrpm = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM)) + "RPM";
+            updateFragmentView(duration,distance,avgSpd,avgrpm,"jeeben");
             return null;
         }
 
