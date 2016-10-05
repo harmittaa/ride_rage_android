@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -42,12 +43,18 @@ public class MainActivity extends AppCompatActivity {
     TextView accelTest;
     private GaugesFragment gaugeFragment;
     private ResultFragment resultFragment;
+    Menu menu;
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.bar_main, menu);
+        this.menu = menu;
+        /*
+         * Change visible fragment here, because menu is inflated after onresume, so menu will be null
+         */
+        changeVisibleFragmentType(Constants.FRAGMENT_TYPES.GAUGES_FRAGMENT);
         return true;
     }
 
@@ -62,21 +69,13 @@ public class MainActivity extends AppCompatActivity {
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler.passContext(this);
+
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        this.currentFragment = gaugeFragment;
-        FragmentManager fragmentManager = getFragmentManager();
-
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        //gaugeFragment = new GaugesFragment();
-        fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
-        fragmentTransaction.commit();
-
     }
 
     public void changeVisibleFragmentType(Constants.FRAGMENT_TYPES fragment_type) {
@@ -91,13 +90,32 @@ public class MainActivity extends AppCompatActivity {
         switch (this.currentFragmentType) {
             case GAUGES_FRAGMENT:
                 this.currentFragment = this.gaugeFragment;
+                fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
+                fragmentTransaction.commit();
+                changeActionBarIcons(this.currentFragmentType);
                 break;
             case RESULT_FRAGMENT:
                 this.currentFragment = this.resultFragment;
+                fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("jeeben");
+                fragmentTransaction.commit();
+                changeActionBarIcons(this.currentFragmentType);
                 break;
         }
-        fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
-        fragmentTransaction.commit();
+    }
+
+    private void changeActionBarIcons(Constants.FRAGMENT_TYPES fragType){
+        switch (this.currentFragmentType) {
+            case GAUGES_FRAGMENT:
+                menu.findItem(R.id.action_bluetooth).setVisible(true);
+                menu.findItem(R.id.action_delete).setVisible(false);
+                menu.findItem(R.id.action_edit).setVisible(false);
+                break;
+            case RESULT_FRAGMENT:
+                menu.findItem(R.id.action_bluetooth).setVisible(false);
+                menu.findItem(R.id.action_delete).setVisible(true);
+                menu.findItem(R.id.action_edit).setVisible(true);
+                break;
+        }
     }
 
     public void setFragmentTripId(long tripId) {
