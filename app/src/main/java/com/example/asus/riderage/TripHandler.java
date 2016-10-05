@@ -73,6 +73,8 @@ public class TripHandler {
         //TODO: step numero 3
         Log.e(TAG, "stopCurrentTrip: TRIP ENDED:\n TIME TAKEN: " + TimeUnit.MILLISECONDS.toSeconds(this.tripTimeTotal));
         this.tripDbHelper.endTrip(this.tripId, null, dateFormat.format(this.endDate), this.tripTimeTotal, this.getAverageSpeed(), this.getAverageRPM(), null, null, null, null);
+        CommunicationHandler.getCommunicationHandlerInstance().getContext().setFragmentTripId(this.tripId);
+        CommunicationHandler.getCommunicationHandlerInstance().getContext().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
     }
 
 

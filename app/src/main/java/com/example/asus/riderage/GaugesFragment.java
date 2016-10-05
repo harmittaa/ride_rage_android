@@ -123,9 +123,9 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
                 }
                 break;
             case R.id.stopTrip:
-                //TODO 1. send obd close comand through obdjobservice 2. close bluetooth socket
+                //TODO 1. send obd close command through obdjobservice 2. close bluetooth socket
                 CommunicationHandler.getCommunicationHandlerInstance().getCurrentTripHandler().stopCurrentTrip();
-                getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
+                //getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
                 break;
 
         }

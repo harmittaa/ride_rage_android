@@ -100,6 +100,10 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.commit();
     }
 
+    public void setFragmentTripId(long tripId) {
+        this.resultFragment.setTripId(tripId);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {

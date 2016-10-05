@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,6 +31,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment {
         textView.setText("It works");
 
         DataFetcher dataFetcher = new DataFetcher(tripId);
+        dataFetcher.execute();
 
         return fragmentView;
     }
@@ -76,7 +76,6 @@ public class ResultFragment extends Fragment implements UpdatableFragment {
         ResultFragment.tripId = tripId;
     }
 
-
     private class DataFetcher extends AsyncTask<Integer, Long, Boolean> {
         private long tripId;
 
@@ -93,13 +92,12 @@ public class ResultFragment extends Fragment implements UpdatableFragment {
         @Override
         protected Boolean doInBackground(Integer... params) {
             TripDatabaseHelper dbHelper = new TripDatabaseHelper(getContext());
-            Cursor cursor = dbHelper.getFullTripData(this.tripId);
+            Cursor cursor = dbHelper.getFullTripData(getTripId());
             cursor.moveToFirst();
             String make = (cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_END_TIME)));
             updateFragmentView(make);
             return null;
         }
-
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
