@@ -8,33 +8,38 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.example.asus.riderage.Database.TripDatabaseHelper;
 import com.github.pires.obd.commands.SpeedCommand;
 import com.github.pires.obd.commands.engine.RPMCommand;
-import com.github.pires.obd.commands.fuel.ConsumptionRateCommand;
-import com.github.pires.obd.commands.fuel.FuelLevelCommand;
 import com.github.pires.obd.commands.protocol.ObdRawCommand;
-
-import java.io.IOException;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 
 /**
  * Created by Asus on 27/09/2016.
  */
 
 // BG service to run the ObdJobs
-public class ObdJobService extends Service implements SensorEventListener {
+public class ObdJobService extends Service implements SensorEventListener, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "ObdJobService";
     private BluetoothSocket bluetoothSocket;
     private BluetoothManagerClass bluetoothManagerClass;
     private CommunicationHandler communicationHandler;
     private Thread serviceThread;
     private boolean isAccelerationInProgress = false;
-    private double speed, rpm, acceleration, consumption, averageSpeed, averageRpm;
+    private double speed, rpm, acceleration, consumption, averageSpeed, averageRpm, longitude, latitude;
     TripHandler tripHandler;
+    private LocationRequest locationRequest;
+    private GoogleApiClient googleApiClient;
     volatile boolean isRunning = false;
 
     @Override
@@ -42,9 +47,21 @@ public class ObdJobService extends Service implements SensorEventListener {
         Log.e(TAG, "onCreate: ObdJobService created");
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
-        //i like spaghetti
         tripHandler = CommunicationHandler.getCurrentTripHandler();
+        initGoogleApiClient();
+        createLocationRequest();
         ((SensorManager) CommunicationHandler.getCommunicationHandlerInstance().getContext().getSystemService(Context.SENSOR_SERVICE)).registerListener(this, ((SensorManager) CommunicationHandler.getCommunicationHandlerInstance().getContext().getSystemService(Context.SENSOR_SERVICE)).getSensorList(Sensor.TYPE_ACCELEROMETER).get(0), SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    private void initGoogleApiClient() {
+        googleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addOnConnectionFailedListener(this).addApi(LocationServices.API).build();
+    }
+
+    private void createLocationRequest() {
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(1000);
+        locationRequest.setFastestInterval(500);
+        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
     }
 
     @Override
@@ -65,8 +82,7 @@ public class ObdJobService extends Service implements SensorEventListener {
 
                 while (isRunning) {
                     try {
-                        if(isRunning) {
-
+                        if (isRunning) {
                             Log.e(TAG, "onStartCommand: bluetooth socket connection is " + BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().isConnected());
                             speedCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
                             rpmCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
@@ -119,6 +135,7 @@ public class ObdJobService extends Service implements SensorEventListener {
         isRunning = bool;
     }
 
+    // service is closed
     @Override
     public void onDestroy() {
         Log.e(TAG, "onDestroy: called");
@@ -127,6 +144,7 @@ public class ObdJobService extends Service implements SensorEventListener {
         stopSelf();
     }
 
+    // Accelerometer sensor gets new data
     @Override
     public void onSensorChanged(SensorEvent event) {
         for (double d : event.values) {
@@ -141,16 +159,22 @@ public class ObdJobService extends Service implements SensorEventListener {
         }
     }
 
+    // Accelerometer sensor's accuracy has changed
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
 
+    // Binder for the service, not used because this is a manually started/stopped service
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
+
+    /*********
+     * Getters and setters
+     *********/
 
     public double getSpeed() {
         return speed;
@@ -196,14 +220,71 @@ public class ObdJobService extends Service implements SensorEventListener {
         return averageRpm;
     }
 
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
     public void setAverageRpm(double averageRpm) {
         this.averageRpm = averageRpm;
         this.tripHandler.setAverageRPM(averageRpm);
     }
 
+    // GOOGLE MAPS API starts here
+    @Override
+    public void onLocationChanged(Location location) {
+        Log.e(TAG, "onLocationChanged: longitued " + location.getLongitude());
+        Log.e(TAG, "onLocationChanged: latitude " + location.getLatitude());
+        setLatitude(location.getLatitude());
+        setLongitude(location.getLongitude());
+    }
 
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        Log.e(TAG, "onProviderDisabled: Google maps provider disabled");
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.e(TAG, "onConnected: Google maps connected");
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.e(TAG, "onConnectionSuspended: Google maps suspended");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.e(TAG, "onConnectionFailed: Google maps connection failed");
+    }
+
+
+    // Thread that logs all the data from the sensors
     private class LoggerThread implements Runnable {
         int counter;
+
         @Override
         public void run() {
             while (isRunning) {
@@ -212,7 +293,7 @@ public class ObdJobService extends Service implements SensorEventListener {
                     counter++;
                     setAverageRpm((getRpm() + getAverageRpm()) / counter);
                     setAverageSpeed((getSpeed() + getAverageSpeed()) / counter);
-                    tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), getSpeed(), getRpm(), getAcceleration(), getConsumption()));
+                    tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), getSpeed(), getRpm(), getAcceleration(), getConsumption(), getLongitude(), getLatitude()));
                     if (Thread.currentThread().isInterrupted() || Thread.interrupted()) {
                         throw new InterruptedException();
                     }

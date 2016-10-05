@@ -11,8 +11,10 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -62,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler.passContext(this);
+        checkGpsStatus();
     }
 
     @Override
@@ -121,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
         } else showDeviceSelectScreen();
     }
 
-
     private void showDeviceSelectScreen() {
 
         ArrayList<String> deviceStrs = this.communicationHandler.getDeviceStrings();
@@ -150,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
         BluetoothManagerClass.getBluetoothManagerClass().closeSocket();
         super.onDestroy();
     }
-
 
     private void requestPermission() {
         int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
@@ -188,6 +189,22 @@ public class MainActivity extends AppCompatActivity {
 
     public void updateOnConnectionStateChanged(Constants.CONNECTION_STATE newConnectionState) {
         this.currentFragment.updateOnStateChanged(newConnectionState);
+    }
+
+    private void checkGpsStatus() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            Log.e(TAG, "Access");
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+            Log.e(TAG, "Access");
+        }
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        Log.e(TAG, "Permission " + permissionCheck);
+
     }
 
 

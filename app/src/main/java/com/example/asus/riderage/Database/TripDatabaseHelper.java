@@ -62,6 +62,8 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     public static final String DATAPOINT_RPM = "datapoint_rpm";
     public static final String DATAPOINT_ACCELERATION = "datapoint_acceleration";
     public static final String DATAPOINT_CONSUMPTION = "datapoint_consumption";
+    public static final String DATAPOINT_LONGITUDE = "datapoint_longitude";
+    public static final String DATAPOINT_LATITUDE = "datapoint_latitude";
 
 
     private static final String SQL_CREATE_DATAPOINT_TABLE =
@@ -71,6 +73,8 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                     DATAPOINT_SPEED + " real not null, " +
                     DATAPOINT_RPM + " real not null, " +
                     DATAPOINT_ACCELERATION + " real not null, " +
+                    DATAPOINT_LONGITUDE + " real not null, " +
+                    DATAPOINT_LATITUDE + " real not null, " +
                     DATAPOINT_CONSUMPTION + " real not null);";
 
 
@@ -191,6 +195,8 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         values.put(DATAPOINT_SPEED, dataPoint.getSpeed());
         values.put(DATAPOINT_ACCELERATION, dataPoint.getAcceleration());
         values.put(DATAPOINT_CONSUMPTION, dataPoint.getConsumption());
+        values.put(DATAPOINT_LONGITUDE, dataPoint.getLongitude());
+        values.put(DATAPOINT_LATITUDE, dataPoint.getLatitude());
         long datapointId = this.database.insert(TABLE_DATAPOINT, null, values);
         Log.e(TAG, "Datapoint saved id " + datapointId);
         values.clear();
