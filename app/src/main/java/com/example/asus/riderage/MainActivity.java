@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast toast = Toast.makeText(getApplicationContext(), stringToShow, Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(getApplicationContext(), stringToShow, Toast.LENGTH_SHORT);
                 toast.show();
             }
         });

@@ -94,7 +94,8 @@ public class ResultFragment extends Fragment implements UpdatableFragment {
             TripDatabaseHelper dbHelper = new TripDatabaseHelper(getContext());
             Cursor cursor = dbHelper.getFullTripData(getTripId());
             cursor.moveToFirst();
-            String make = (cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_END_TIME)));
+            Log.e(TAG, "doInBackground: num of stufs:" + cursor.getCount() + "\n Trip Id: " + this.tripId);
+            String make = (cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_END_TIME))) + "\n" + cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM));
             updateFragmentView(make);
             return null;
         }

@@ -141,6 +141,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                 TRIP_END_TIME,
                 TRIP_DURATION_MS,
                 TRIP_AVERAGE_SPEED,
+                TRIP_AVERAGE_RPM,
                 TRIP_AVERAGE_CONSUMPTION,
                 TRIP_GAS_COST,
                 TRIP_DRIVING_ANALYSIS

@@ -197,7 +197,8 @@ public class ObdJobService extends Service implements SensorEventListener {
     }
 
     public void setAverageRpm(double averageRpm) {
-        this.averageRpm = (this.averageSpeed + averageRpm) / 2;
+        this.averageRpm = averageRpm;
+        this.tripHandler.setAverageRPM(averageRpm);
     }
 
 

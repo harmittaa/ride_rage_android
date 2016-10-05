@@ -26,7 +26,7 @@ public class TripHandler {
     private DateFormat dateFormat;
     private Date startDate, endDate;
     private long tripTimeTotal;
-    private double averageSpeed, currentTripId, averageRPM;
+    private double averageSpeed, averageRPM;
 
     public TripHandler(){
         this.dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
@@ -49,7 +49,7 @@ public class TripHandler {
 
     public void startNewTrip() {
         this.startDate = new Date();
-        this.currentTripId = this.tripDbHelper.saveTrip("Maken reissu", null, null, dateFormat.format(this.startDate), null, null, null, null, null, null, null, null);
+        this.tripId = this.tripDbHelper.saveTrip("Maken reissu", null, null, dateFormat.format(this.startDate), null, null, null, null, null, null, null, null);
     }
 
 
@@ -84,14 +84,6 @@ public class TripHandler {
 
     public void setAverageSpeed(double averageSpeed) {
         this.averageSpeed = averageSpeed;
-    }
-
-    public double getCurrentTripId() {
-        return currentTripId;
-    }
-
-    public void setCurrentTripId(double currentTripId) {
-        this.currentTripId = currentTripId;
     }
 
     public double getAverageRPM() {
