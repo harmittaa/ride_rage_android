@@ -2,12 +2,60 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_weight="10"
     android:orientation="vertical">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="4">
+        
+    </RelativeLayout>
 
-    <TextView
-        android:id="@+id/resultTextView"
-        android:text="ASD ASD ASDASD SAD ASD AD S DSA DSA DSA DSA"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="6"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_weight="1"
+            android:id="@+id/durationResultLabel"
+            style="@style/font_small"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Duration(dur-dur)" />
+
+        <TextView
+            android:layout_weight="1"
+            android:id="@+id/distanceResultLabel"
+            style="@style/font_small"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="9001 km" />
+
+        <TextView
+            android:layout_weight="1"
+            android:id="@+id/avgSpeedResultLabel"
+            style="@style/font_small"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="81 km/h" />
+
+        <TextView
+            android:layout_weight="1"
+            android:id="@+id/avgRpmResultLabel"
+            style="@style/font_small"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="2560 rpm" />
+
+        <TextView
+            android:layout_weight="1"
+            android:id="@+id/placeHolderResultLabel"
+            style="@style/font_small"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="More data here" />
+    </LinearLayout>
 
 </LinearLayout>
