@@ -8,6 +8,7 @@ import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -30,15 +31,18 @@ import com.example.asus.riderage.Database.TripDatabaseHelper;
 import java.util.ArrayList;
 import java.util.concurrent.FutureTask;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
 
     private BluetoothManagerClass bluetoothManagerClass;
     private CommunicationHandler communicationHandler;
     private TripDatabaseHelper tripDbHelper;
     private final String TAG = "MainActivity";
     private UpdatableFragment currentFragment;
+    private Constants.FRAGMENT_TYPES currentFragmentType;
     TextView accelTest;
-    GaugesFragment gaugeFragment;
+    private GaugesFragment gaugeFragment;
+    private ResultFragment resultFragment;
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -52,23 +56,48 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         requestPermission();
         setContentView(R.layout.activity_main);
-        accelTest = (TextView)findViewById(R.id.accelTest);
+        accelTest = (TextView) findViewById(R.id.accelTest);
+        gaugeFragment = new GaugesFragment();
+        resultFragment = new ResultFragment();
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler.passContext(this);
-        }
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
+
+        this.currentFragment = gaugeFragment;
+        FragmentManager fragmentManager = getFragmentManager();
+
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        //gaugeFragment = new GaugesFragment();
+        fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
+        fragmentTransaction.commit();
+
+    }
+
+    public void changeVisibleFragmentType(Constants.FRAGMENT_TYPES fragment_type) {
+        this.currentFragmentType = fragment_type;
+        changeVisibleFragment();
+    }
+
+    private void changeVisibleFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        gaugeFragment = new GaugesFragment();
-        fragmentTransaction.add(R.id.replaceWithFragment, gaugeFragment);
+        switch (this.currentFragmentType) {
+            case GAUGES_FRAGMENT:
+                this.currentFragment = this.gaugeFragment;
+                break;
+            case RESULT_FRAGMENT:
+                this.currentFragment = this.resultFragment;
+                break;
+        }
+        fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
         fragmentTransaction.commit();
-
-        this.currentFragment = gaugeFragment;
     }
 
     @Override
@@ -82,7 +111,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    public void activateDeviceSelectScreen(){
+    public void activateDeviceSelectScreen() {
         if (!communicationHandler.checkBluetoothStatus(true)) {
 
         } else showDeviceSelectScreen();
@@ -100,7 +129,7 @@ public class MainActivity extends AppCompatActivity{
         alertDialog.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Log.e(TAG, "onClick: aids is go" );
+                Log.e(TAG, "onClick: aids is go");
                 ConnectToOBDTask aidsTask = new ConnectToOBDTask(which);
                 aidsTask.execute();
                 dialog.dismiss();
@@ -112,8 +141,8 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     protected void onDestroy() {
-        Log.e(TAG, "onDestroy: Main activity destroyed" );
-        stopService(new Intent(this,ObdJobService.class));
+        Log.e(TAG, "onDestroy: Main activity destroyed");
+        stopService(new Intent(this, ObdJobService.class));
         BluetoothManagerClass.getBluetoothManagerClass().closeSocket();
         super.onDestroy();
     }
@@ -158,9 +187,10 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    private class ConnectToOBDTask extends AsyncTask<Integer,Long,Boolean>{
+    private class ConnectToOBDTask extends AsyncTask<Integer, Long, Boolean> {
         ProgressDialog dialog;
         int which;
+
         public ConnectToOBDTask(int which) {
             this.which = which;
         }
@@ -173,30 +203,28 @@ public class MainActivity extends AppCompatActivity{
 
         @Override
         protected Boolean doInBackground(Integer... params) {
-
-            if(BluetoothManagerClass.getBluetoothManagerClass().createBluetoothConnection(this.which)){
-                Log.e(TAG, "onClick: success" );
+            if (BluetoothManagerClass.getBluetoothManagerClass().createBluetoothConnection(this.which)) {
+                Log.e(TAG, "onClick: success");
                 return true;
-            }
-            else {
+            } else {
                 Log.e(TAG, "onClick: failure");
                 return false;
             }
-
         }
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             //TODO show either connection complete or failed, dismiss popup
             dialog.dismiss();
-            if(aBoolean){
-                makeToast("Connection Succesfull");
-            }else {
+            if (aBoolean) {
+                makeToast("Connection Succesful");
+                CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.CONNECTED_NOT_RUNNING);
+            } else {
                 makeToast("Connection Failed");
+                CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
             }
         }
     }
-
 }
 
 

@@ -85,6 +85,7 @@ public class CommunicationHandler {
                         Log.e(TAG, "checkSafeConnection: createhanlder done" );
                         startObdJobService();
                         Log.e(TAG, "checkSafeConnection: start obdservice done" );
+                        CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.CONNECTED_RUNNING);
                         return true;
                     } else {
                         //TODO popup for user "error occured"

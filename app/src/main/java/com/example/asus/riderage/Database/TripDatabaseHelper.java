@@ -33,6 +33,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     public static final String TRIP_START_TIME = "start_time";
     public static final String TRIP_END_TIME = "end_time";
     public static final String TRIP_AVERAGE_SPEED = "average_speed";
+    public static final String TRIP_AVERAGE_RPM = "average_rpm";
     public static final String TRIP_AVERAGE_CONSUMPTION = "average_consumption";
     public static final String TRIP_TOTAL_CONSUMPTION = "total_consumption";
     public static final String TRIP_GAS_COST = "gas_cost";
@@ -48,6 +49,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                     TRIP_END_TIME + " DATETIME, " +
                     TRIP_DURATION_MS + " integer, " +
                     TRIP_AVERAGE_SPEED + " real, " +
+                    TRIP_AVERAGE_RPM + " real, " +
                     TRIP_AVERAGE_CONSUMPTION + " real, " +
                     TRIP_TOTAL_CONSUMPTION + " real, " +
                     TRIP_GAS_COST + " real, " +
@@ -102,7 +104,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 
     // once trip is finished save all the data to the DB
     public long saveTrip(String title, Integer vehicleId, Double distance, String start_time, String end_time,
-                         Long durationMs, Double averageSpeed, Double averageConsumption, Double totalConsumption,
+                         Long durationMs, Double averageSpeed, Double averageRPM, Double averageConsumption, Double totalConsumption,
                          Double gasCost, String analysis) {
         this.database = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -113,6 +115,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         if(end_time != null) values.put(TRIP_END_TIME, end_time.toString());
         values.put(TRIP_DURATION_MS, durationMs);
         values.put(TRIP_AVERAGE_SPEED, averageSpeed);
+        values.put(TRIP_AVERAGE_RPM, averageRPM);
         values.put(TRIP_AVERAGE_CONSUMPTION, averageConsumption);
         values.put(TRIP_TOTAL_CONSUMPTION, totalConsumption);
         values.put(TRIP_GAS_COST, gasCost);
@@ -126,7 +129,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     }
 
     // called when user clicks on a trip from the trip list
-    public Cursor getFullTripData(int id) {
+    public Cursor getFullTripData(long id) {
         this.database = this.getReadableDatabase();
         // define SELECT fields
         String[] projection = {
@@ -155,6 +158,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                 null,
                 null
         );
+        Log.e(TAG, "getFullTripData: data fetched");
         return this.cursor;
     }
 
@@ -173,7 +177,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         this.cursor = this.database.rawQuery("SELECT " + TRIP_ID + ", " + TRIP_TITLE + ", " + TRIP_START_TIME + ", " + TRIP_DISTANCE + ", " + TRIP_VEHICLE_ID + ", " + VEHICLE_NAME +
                 " FROM " + TABLE_TRIP +
                 " JOIN " + TABLE_VEHICLE +
-                " ON " + TRIP_VEHICLE_ID +  " = " + VEHICLE_ID, null, null);
+                " ON " + TRIP_VEHICLE_ID + " = " + VEHICLE_ID, null, null);
         return this.cursor;
     }
 
@@ -223,5 +227,23 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                 null
         );
         return this.cursor;
+    }
+
+    public void endTrip(long tripId, Double distance, String end_time, Long durationMs, Double averageSpeed, Double averageRPM, Double averageConsumption, Double totalConsumption,
+                        Double gasCost, String analysis) {
+        this.database = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(TRIP_END_TIME, end_time);
+        values.put(TRIP_DISTANCE, "100");
+        values.put(TRIP_END_TIME, end_time);
+        values.put(TRIP_DURATION_MS, durationMs);
+        values.put(TRIP_AVERAGE_SPEED, averageSpeed);
+        values.put(TRIP_AVERAGE_RPM, averageRPM);
+        values.put(TRIP_AVERAGE_CONSUMPTION, averageConsumption);
+        values.put(TRIP_TOTAL_CONSUMPTION, totalConsumption);
+        values.put(TRIP_GAS_COST, "2");
+        values.put(TRIP_DRIVING_ANALYSIS, "Example analysis");
+        this.database.update(TABLE_TRIP, values, TRIP_ID + "="+tripId, null);
+        Log.e(TAG, "endTrip: Database Updated");
     }
 }

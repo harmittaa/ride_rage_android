@@ -31,7 +31,7 @@ import static android.content.ContentValues.TAG;
  * Created by Daniel on 28/09/2016.
  */
 
-public class GaugesFragment extends Fragment implements View.OnClickListener,UpdatableFragment {
+public class GaugesFragment extends Fragment implements View.OnClickListener, UpdatableFragment {
 
     private Button startTrip, stopTrip;
     ImageButton blSelectBtn;
@@ -125,27 +125,34 @@ public class GaugesFragment extends Fragment implements View.OnClickListener,Upd
             case R.id.stopTrip:
                 //TODO 1. send obd close comand through obdjobservice 2. close bluetooth socket
                 CommunicationHandler.getCommunicationHandlerInstance().getCurrentTripHandler().stopCurrentTrip();
+                getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
                 break;
 
         }
     }
 
+    // Requires runOnUiThread because GaugesFragment didn't create the view hierarchy
     @Override
-    public void updateOnStateChanged(Constants.CONNECTION_STATE connection_state) {
-        switch (connection_state){
-            case CONNECTED_NOT_RUNNING:
-                startTrip.setVisibility(View.VISIBLE);
-                stopTrip.setVisibility(View.GONE);
-                break;
-            case CONNECTED_RUNNING:
-                startTrip.setVisibility(View.VISIBLE);
-                stopTrip.setVisibility(View.VISIBLE);
-                break;
-            case DISCONNECTED:
-                startTrip.setVisibility(View.GONE);
-                stopTrip.setVisibility(View.GONE);
-                break;
-        }
+    public void updateOnStateChanged(final Constants.CONNECTION_STATE connection_state) {
+        getMainActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                switch (connection_state) {
+                    case CONNECTED_NOT_RUNNING:
+                        startTrip.setVisibility(View.VISIBLE);
+                        stopTrip.setVisibility(View.GONE);
+                        break;
+                    case CONNECTED_RUNNING:
+                        startTrip.setVisibility(View.GONE);
+                        stopTrip.setVisibility(View.VISIBLE);
+                        break;
+                    case DISCONNECTED:
+                        startTrip.setVisibility(View.GONE);
+                        stopTrip.setVisibility(View.GONE);
+                        break;
+                }
+            }
+        });
     }
 }
 

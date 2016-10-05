@@ -12,6 +12,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.example.asus.riderage.Database.TripDatabaseHelper;
 import com.github.pires.obd.commands.SpeedCommand;
 import com.github.pires.obd.commands.engine.RPMCommand;
 import com.github.pires.obd.commands.fuel.ConsumptionRateCommand;
@@ -32,7 +33,7 @@ public class ObdJobService extends Service implements SensorEventListener {
     private CommunicationHandler communicationHandler;
     private Thread serviceThread;
     private boolean isAccelerationInProgress = false;
-    private double speed, rpm, acceleration, consumption;
+    private double speed, rpm, acceleration, consumption, averageSpeed, averageRpm;
     TripHandler tripHandler;
     volatile boolean isRunning = false;
 
@@ -57,6 +58,7 @@ public class ObdJobService extends Service implements SensorEventListener {
                 Log.e(TAG, "Starting thread to get RPM");
                 final RPMCommand rpmCommand = new RPMCommand();
                 SpeedCommand speedCommand = new SpeedCommand();
+
                 Thread t = new Thread(new LoggerThread());
                 t.start();
                 isRunning = true;
@@ -64,6 +66,8 @@ public class ObdJobService extends Service implements SensorEventListener {
                 while (isRunning) {
                     try {
                         if(isRunning) {
+
+                            Log.e(TAG, "onStartCommand: bluetooth socket connection is " + BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().isConnected());
                             speedCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
                             rpmCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
                             speed = Double.parseDouble(speedCommand.getCalculatedResult());
@@ -72,11 +76,11 @@ public class ObdJobService extends Service implements SensorEventListener {
                             communicationHandler.updateGauges(rpm, speed);
                             Log.e(TAG, "RPM formatted " + rpm);
                             Log.e(TAG, "Speed formatted " + speed);
-                            Log.e(TAG, "Consumption formatted " + consumption);
                         }
                     } catch (Exception e) {
                         Log.e(TAG, "ERROR running commands ", e);
                         closeConnection();
+                        CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
                         return;
                     }
                     try {
@@ -84,10 +88,12 @@ public class ObdJobService extends Service implements SensorEventListener {
                     } catch (InterruptedException e) {
                         Log.e(TAG, "Thread interrupted " + e);
                         closeConnection();
+                        CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
                         return;
                     }
                 }
                 closeConnection();
+                CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
             }
         });
         serviceThread.start();
@@ -99,17 +105,12 @@ public class ObdJobService extends Service implements SensorEventListener {
             if (BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().isConnected()) {
                 ObdRawCommand rawCommand = new ObdRawCommand("AT PC");
                 rawCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
-                /*
-                 * Moved closing of actual socket to BluetoothManagerClass, only closing command to OBD remains
-                 */
-                //Log.e(TAG, "Raw command returns " + rawCommand.getFormattedResult());
-                //BluetoothManagerClass.getBluetoothManagerClass().closeSocket();
-                //Log.e(TAG, "closeConnection: connection closed");
-                //this.bluetoothManagerClass.setBluetoothSocket(this.bluetoothSocket);
                 Log.e(TAG, "closeConnection: OBD connection closed");
+                isRunning = false;
             }
         } catch (Exception e) {
             Log.e(TAG, "closeConnection: error when closing connection ", e);
+            isRunning = false;
         }
 
     }
@@ -183,13 +184,33 @@ public class ObdJobService extends Service implements SensorEventListener {
         this.consumption = consumption;
     }
 
+    public double getAverageSpeed() {
+        return averageSpeed;
+    }
+
+    public void setAverageSpeed(double averageSpeed) {
+        this.averageSpeed = averageSpeed;
+    }
+
+    public double getAverageRpm() {
+        return averageRpm;
+    }
+
+    public void setAverageRpm(double averageRpm) {
+        this.averageRpm = (this.averageSpeed + averageRpm) / 2;
+    }
+
 
     private class LoggerThread implements Runnable {
+        int counter;
         @Override
         public void run() {
             while (isRunning) {
                 try {
                     Thread.sleep(2000);
+                    counter++;
+                    setAverageRpm((getRpm() + getAverageRpm()) / counter);
+                    setAverageSpeed((getSpeed() + getAverageSpeed()) / counter);
                     tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), getSpeed(), getRpm(), getAcceleration(), getConsumption()));
                     if (Thread.currentThread().isInterrupted() || Thread.interrupted()) {
                         throw new InterruptedException();
@@ -201,8 +222,9 @@ public class ObdJobService extends Service implements SensorEventListener {
                     return;
                 }
             }
-            Log.e(TAG, "run: Logger thread should end now");
-
+            Log.e(TAG, "run: Logger thread should end now, passing averages");
+            tripHandler.setAverageSpeed(getAverageSpeed());
+            tripHandler.setAverageRPM(getAverageRpm());
         }
     }
 }

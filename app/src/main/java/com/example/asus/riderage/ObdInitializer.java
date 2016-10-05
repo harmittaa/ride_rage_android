@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothSocket;
 import android.telecom.Call;
 import android.util.Log;
 
+import com.github.pires.obd.commands.SpeedCommand;
+import com.github.pires.obd.commands.engine.RPMCommand;
 import com.github.pires.obd.commands.protocol.EchoOffCommand;
 import com.github.pires.obd.commands.protocol.LineFeedOffCommand;
 import com.github.pires.obd.commands.protocol.ObdResetCommand;
@@ -36,18 +38,23 @@ public class ObdInitializer implements Callable<Boolean> {
             Log.e(TAG, "InitOBD");
             // reset the ELM327
             new ObdResetCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-            Log.d(TAG, "ObdResetComand was run");
+            Log.e(TAG, "ObdResetComand was run");
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
                 Log.e(TAG, "Thread sleep: error", e);
             }
             // init commands
-            Log.d(TAG, "Thread sleep done");
+            Log.e(TAG, "Thread sleep done");
             new EchoOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
             new LineFeedOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
             new TimeoutCommand(62).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
             new SelectProtocolCommand(ObdProtocols.AUTO).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
+
+            //RPMCommand make = new RPMCommand();
+            //make.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
+            //Log.e(TAG, "rpm : " + make.getFormattedResult());
+
 
             Log.e(TAG, "Init finished without errors ");
             Log.e(TAG, "Bluetooth socket connection " + bluetoothSocket.isConnected());
