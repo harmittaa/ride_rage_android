@@ -27,7 +27,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         fragmentView = inflater.inflate(R.layout.fragment_result, container, false);
-        textView = (TextView) fragmentView.findViewById(R.id.resultTextView);
+        textView = (TextView) fragmentView.findViewById(R.id.avgRpmResultLabel);
         textView.setText("It works");
 
         DataFetcher dataFetcher = new DataFetcher(tripId);
