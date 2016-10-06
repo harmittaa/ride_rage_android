@@ -28,6 +28,7 @@ public class TripHandler {
     private Date startDate, endDate;
     private long tripTimeTotal;
     private double averageSpeed, averageRPM;
+    private double totalDistance;
 
     public TripHandler(){
         this.dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
@@ -73,7 +74,7 @@ public class TripHandler {
         //BluetoothManagerClass.getBluetoothManagerClass().closeSocket();
         //TODO: step numero 3
         Log.e(TAG, "stopCurrentTrip: TRIP ENDED:\n TIME TAKEN: " + TimeUnit.MILLISECONDS.toSeconds(this.tripTimeTotal));
-        this.tripDbHelper.endTrip(this.tripId, null, dateFormat.format(this.endDate), this.tripTimeTotal, this.getAverageSpeed(), this.getAverageRPM(), null, null, null, null);
+        this.tripDbHelper.endTrip(this.tripId, this.getTotalDistance(), dateFormat.format(this.endDate), this.tripTimeTotal, this.getAverageSpeed(), this.getAverageRPM(), null, null, null, null);
         CommunicationHandler.getCommunicationHandlerInstance().getContext().setFragmentTripId(this.tripId);
         CommunicationHandler.getCommunicationHandlerInstance().getContext().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
     }
@@ -94,4 +95,8 @@ public class TripHandler {
     public void setAverageRPM(double averageRPM) {
         this.averageRPM = averageRPM;
     }
+
+    public void setTotalDistance(double totalDistance) { this.totalDistance = totalDistance;}
+
+    public double getTotalDistance() {return totalDistance;}
 }

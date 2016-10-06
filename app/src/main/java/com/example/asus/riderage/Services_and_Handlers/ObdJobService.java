@@ -47,6 +47,8 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     private GoogleApiClient googleApiClient;
     volatile boolean isRunning = false;
     private ArrayList<Double> speeds, rpms;
+    private double totalDistance;
+    private Location previousLocation;
 
     @Override
     public void onCreate() {
@@ -254,6 +256,11 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
         this.averageRpm = averageRpm;
     }
 
+    public double getTotalDistance() {return totalDistance;}
+
+    public void setTotalDistance(double totalDistance) {this.totalDistance = totalDistance;}
+
+
     // GOOGLE MAPS API starts here
     @Override
     public void onLocationChanged(Location location) {
@@ -262,9 +269,11 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
             Log.e(TAG, "onLocationChanged: latitude " + location.getLatitude());
             setLatitude(location.getLatitude());
             setLongitude(location.getLongitude());
+            if (this.previousLocation != null) this.totalDistance += location.distanceTo(this.previousLocation);
+            setTotalDistance(this.totalDistance);
+            this.previousLocation = location;
         }
     }
-
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
@@ -306,14 +315,14 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     public ArrayList<Double> getSpeeds() {
         return this.speeds;
     }
-
     public Double getTotalOfDoubleArray(ArrayList<Double> arrayToCount) {
         Double jeeben = 0.0;
         for (Double d : arrayToCount) {
-            jeeben += d;
+        jeeben += d;
         }
         return jeeben;
     }
+
 
     // Thread that logs all the data from the sensors
     private class LoggerThread implements Runnable {
@@ -343,6 +352,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
             Log.e(TAG, "run: Logger thread should end now, passing averages");
             tripHandler.setAverageSpeed(getAverageSpeed());
             tripHandler.setAverageRPM(getAverageRpm());
+            tripHandler.setTotalDistance(getTotalDistance());
         }
     }
 }

@@ -166,15 +166,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     //called for populating the list view of all the trips
     public Cursor getTripHeaders() {
         this.database = this.getReadableDatabase();
-        String[] projection = {
-                TRIP_ID + " as " + "_id",
-                TRIP_TITLE,
-                TRIP_START_TIME,
-                TRIP_DISTANCE,
-                TRIP_DURATION_MS
-        };
 
-        // raw query with join to get vehicle name from the VEHICLE table
         this.cursor = this.database.rawQuery("SELECT " + TRIP_ID + " as " + "_id, " + TRIP_TITLE + ", " + TRIP_START_TIME + ", " + TRIP_DISTANCE + ", " + TRIP_DURATION_MS +
                 " FROM " + TABLE_TRIP + ";", null, null);
         return this.cursor;
@@ -235,7 +227,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         this.database = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(TRIP_END_TIME, end_time);
-        values.put(TRIP_DISTANCE, "100");
+        values.put(TRIP_DISTANCE, distance);
         values.put(TRIP_END_TIME, end_time);
         values.put(TRIP_DURATION_MS, durationMs);
         values.put(TRIP_AVERAGE_SPEED, averageSpeed);
