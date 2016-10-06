@@ -175,7 +175,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         };
 
         // raw query with join to get vehicle name from the VEHICLE table
-        this.cursor = this.database.rawQuery("SELECT " + TRIP_ID + ", " + TRIP_TITLE + ", " + TRIP_START_TIME + ", " + TRIP_DISTANCE + ", " + TRIP_DURATION_MS +
+        this.cursor = this.database.rawQuery("SELECT " + TRIP_ID + " as " + "_id, " + TRIP_TITLE + ", " + TRIP_START_TIME + ", " + TRIP_DISTANCE + ", " + TRIP_DURATION_MS +
                 " FROM " + TABLE_TRIP + ";", null, null);
         return this.cursor;
     }
