@@ -171,14 +171,12 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                 TRIP_TITLE,
                 TRIP_START_TIME,
                 TRIP_DISTANCE,
-                TRIP_VEHICLE_ID
+                TRIP_DURATION_MS
         };
 
         // raw query with join to get vehicle name from the VEHICLE table
-        this.cursor = this.database.rawQuery("SELECT " + TRIP_ID + ", " + TRIP_TITLE + ", " + TRIP_START_TIME + ", " + TRIP_DISTANCE + ", " + TRIP_VEHICLE_ID + ", " + VEHICLE_NAME +
-                " FROM " + TABLE_TRIP +
-                " JOIN " + TABLE_VEHICLE +
-                " ON " + TRIP_VEHICLE_ID + " = " + VEHICLE_ID, null, null);
+        this.cursor = this.database.rawQuery("SELECT " + TRIP_ID + ", " + TRIP_TITLE + ", " + TRIP_START_TIME + ", " + TRIP_DISTANCE + ", " + TRIP_DURATION_MS +
+                " FROM " + TABLE_TRIP + ";", null, null);
         return this.cursor;
     }
 
@@ -246,7 +244,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         values.put(TRIP_TOTAL_CONSUMPTION, totalConsumption);
         values.put(TRIP_GAS_COST, "2");
         values.put(TRIP_DRIVING_ANALYSIS, "Example analysis");
-        this.database.update(TABLE_TRIP, values, TRIP_ID + "="+tripId, null);
+        this.database.update(TABLE_TRIP, values, TRIP_ID + "=" + tripId, null);
         Log.e(TAG, "endTrip: Database Updated");
     }
 
@@ -255,7 +253,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         this.cursor = this.database.rawQuery("SELECT " + DATAPOINT_ID + ", " + DATAPOINT_RPM + ", " + DATAPOINT_LATITUDE + ", " + DATAPOINT_LONGITUDE +
                 " FROM " + TABLE_DATAPOINT +
                 " WHERE " + DATAPOINT_TRIP_ID + " = " + tripId, null, null);
-        Log.e(TAG, "getDataPoints: datapoints fetched get count" + cursor.getCount() );
+        Log.e(TAG, "getDataPoints: datapoints fetched get count" + cursor.getCount());
         return this.cursor;
 
     }

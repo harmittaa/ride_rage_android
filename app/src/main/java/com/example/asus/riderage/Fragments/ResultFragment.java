@@ -151,6 +151,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             String duration = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DURATION_MS)) + "MS";
             String distance = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DISTANCE)) + "KM";
             String avgSpd = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_SPEED)) + "KM/H";
+            Log.e(TAG, "doInBackground: average RPM is " + cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM));
             String avgrpm = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM)) + "RPM";
             updateFragmentView(avgrpm
                     , distance, avgSpd, avgrpm, "jeeben");
@@ -242,6 +243,5 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
         }
-
     }
 }
