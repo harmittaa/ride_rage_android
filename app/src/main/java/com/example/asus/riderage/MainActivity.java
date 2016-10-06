@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void changeActionBarIcons(Constants.FRAGMENT_TYPES fragType){
-        switch (this.currentFragmentType) {
+        /*switch (this.currentFragmentType) {
             case GAUGES_FRAGMENT:
                 menu.findItem(R.id.action_bluetooth).setVisible(true);
                 menu.findItem(R.id.action_delete).setVisible(false);
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                 menu.findItem(R.id.action_delete).setVisible(true);
                 menu.findItem(R.id.action_edit).setVisible(true);
                 break;
-        }
+        }*/
     }
 
     public void setFragmentTripId(long tripId) {

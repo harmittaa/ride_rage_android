@@ -20,6 +20,7 @@ public class CommunicationHandler {
     private MainActivity mainActivity;
     private BluetoothManagerClass btManager;
     private static TripHandler currentTripHandler;
+    private long tripId;
 
     private Constants.CONNECTION_STATE connection_state;
     private CommunicationHandler() {
@@ -125,5 +126,13 @@ public class CommunicationHandler {
     public void setConnection_state(Constants.CONNECTION_STATE connection_state) {
         this.connection_state = connection_state;
         this.getContext().updateOnConnectionStateChanged(this.connection_state);
+    }
+
+    public long getTripId() {
+        return tripId;
+    }
+
+    public void setTripId(long tripId) {
+        this.tripId = tripId;
     }
 }

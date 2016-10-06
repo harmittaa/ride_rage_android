@@ -12,12 +12,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import com.example.asus.riderage.Misc.Constants;
 import com.example.asus.riderage.Database.TripDatabaseHelper;
 import com.example.asus.riderage.MainActivity;
 import com.example.asus.riderage.R;
 import com.example.asus.riderage.Misc.UpdatableFragment;
+import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -43,6 +45,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        this.setTripId(CommunicationHandler.getCommunicationHandlerInstance().getTripId());
         fragmentView = inflater.inflate(R.layout.fragment_result, container, false);
         textView = (TextView) fragmentView.findViewById(R.id.avgRpmResultLabel);
         textView.setText("It works");
@@ -147,14 +150,15 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             this.dbHelper = new TripDatabaseHelper(getContext());
             Cursor cursor = this.dbHelper.getFullTripData(getTripId());
             cursor.moveToFirst();
-            Log.e(TAG, "doInBackground: num of stufs:" + cursor.getCount() + "\n Trip Id: " + this.tripId);
-            String duration = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DURATION_MS)) + "MS";
+            //Log.e(TAG, "doInBackground: num of stufs:" + cursor.getCount() + "\n Trip Id: " + this.tripId);
+            String duration = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DURATION_MS));
             String distance = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DISTANCE)) + "KM";
+            Log.e(TAG, "doInBackground: shittershow" + cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM))  );
             String avgSpd = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_SPEED)) + "KM/H";
-            Log.e(TAG, "doInBackground: average RPM is " + cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM));
+            //Log.e(TAG, "doInBackground: average RPM is " + cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM));
             String avgrpm = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM)) + "RPM";
-            updateFragmentView(avgrpm
-                    , distance, avgSpd, avgrpm, "jeeben");
+            Log.e(TAG, "doInBackground: SHITSHOW:\n" + duration + "\n" + distance + "\n" + avgSpd + "\n" + avgrpm);
+            updateFragmentView(TimeUnit.MILLISECONDS.toSeconds(Integer.parseInt(duration))+"Sec", distance, avgSpd, avgrpm, "jeeben");
             getDataPoints();
             return null;
         }

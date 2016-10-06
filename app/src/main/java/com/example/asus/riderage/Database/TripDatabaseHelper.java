@@ -21,7 +21,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     private static final int DB_VERSION = 1;
 
     private static final String TABLE_TRIP = "trip";
-    private static final String TRIP_ID = "trip_id";
+    public static final String TRIP_ID = "trip_id";
     public static final String TRIP_TITLE = "title";
     public static final String TRIP_VEHICLE_ID = "trip_vehicle_id";
     public static final String TRIP_DISTANCE = "distance";

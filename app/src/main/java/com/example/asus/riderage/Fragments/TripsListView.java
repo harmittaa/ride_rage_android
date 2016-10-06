@@ -5,28 +5,37 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.asus.riderage.Database.TripDatabaseHelper;
+import com.example.asus.riderage.MainActivity;
 import com.example.asus.riderage.Misc.Constants;
 import com.example.asus.riderage.Misc.UpdatableFragment;
 import com.example.asus.riderage.R;
 import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static android.content.ContentValues.TAG;
+
 /**
  * Created by Daniel on 06/10/2016.
  */
 
-public class TripsListView extends Fragment implements UpdatableFragment {
+public class TripsListView extends Fragment implements UpdatableFragment, AdapterView.OnItemClickListener {
 
     private View fragmentView;
     private ListView listView;
     TripDatabaseHelper dbHelper;
+    private ArrayList<Long> tripIds = new ArrayList<>();
 
     @Nullable
     @Override
@@ -46,7 +55,19 @@ public class TripsListView extends Fragment implements UpdatableFragment {
     private void setupListView() {
         TripsCursorAdapter jeebenAdapter = new TripsCursorAdapter(CommunicationHandler.getCommunicationHandlerInstance().getContext(),dbHelper.getTripHeaders(),false);
         this.listView.setAdapter(jeebenAdapter);
+        this.listView.setOnItemClickListener(this);
     }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        CommunicationHandler.getCommunicationHandlerInstance().setTripId(tripIds.get(position));
+        getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
+    }
+
+    private MainActivity getMainActivity() {
+        return (MainActivity) getActivity();
+    }
+
 
     private class TripsCursorAdapter extends CursorAdapter {
 
@@ -61,6 +82,9 @@ public class TripsListView extends Fragment implements UpdatableFragment {
 
         @Override
         public void bindView(View view, Context context, Cursor cursor) {
+
+            tripIds.add(Long.parseLong(cursor.getString(cursor.getColumnIndexOrThrow("_id"))));
+
             TextView nameText = (TextView) view.findViewById(R.id.trip_name);
             TextView durationText = (TextView) view.findViewById(R.id.trip_duration);
             TextView distanceText = (TextView) view.findViewById(R.id.trip_distance);
