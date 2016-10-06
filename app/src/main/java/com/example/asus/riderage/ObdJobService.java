@@ -16,6 +16,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.github.pires.obd.commands.SpeedCommand;
+import com.github.pires.obd.commands.engine.MassAirFlowCommand;
 import com.github.pires.obd.commands.engine.RPMCommand;
 import com.github.pires.obd.commands.protocol.ObdRawCommand;
 import com.google.android.gms.common.ConnectionResult;
@@ -82,7 +83,6 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                 Log.e(TAG, "Starting thread to get RPM");
                 final RPMCommand rpmCommand = new RPMCommand();
                 SpeedCommand speedCommand = new SpeedCommand();
-
                 Thread t = new Thread(new LoggerThread());
                 t.start();
                 isRunning = true;

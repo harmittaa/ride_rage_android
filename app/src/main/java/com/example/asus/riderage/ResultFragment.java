@@ -109,7 +109,8 @@ public class ResultFragment extends Fragment implements UpdatableFragment {
             String distance = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DISTANCE)) + "KM";
             String avgSpd = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_SPEED)) + "KM/H";
             String avgrpm = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM)) + "RPM";
-            updateFragmentView(duration,distance,avgSpd,avgrpm,"jeeben");
+            updateFragmentView(avgrpm
+                    ,distance,avgSpd,avgrpm,"jeeben");
             return null;
         }
 
