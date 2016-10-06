@@ -1,4 +1,4 @@
-package com.example.asus.riderage;
+package com.example.asus.riderage.Misc;
 
 /**
  * Created by Daniel on 04/10/2016.

@@ -1,17 +1,18 @@
-package com.example.asus.riderage;
+package com.example.asus.riderage.Services_and_Handlers;
 
 import android.content.Intent;
 import android.util.Log;
 
 import java.text.DateFormat;
 
+import com.example.asus.riderage.Misc.Constants;
+import com.example.asus.riderage.Database.DataPoint;
 import com.example.asus.riderage.Database.TripDatabaseHelper;
+import com.example.asus.riderage.Database.TripObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
-
-import javax.security.auth.login.LoginException;
 
 import static android.content.ContentValues.TAG;
 

@@ -1,4 +1,4 @@
-package com.example.asus.riderage;
+package com.example.asus.riderage.Bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -6,11 +6,12 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.util.Log;
 
+import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
 import static android.app.Activity.RESULT_OK;
@@ -94,7 +95,7 @@ public class BluetoothManagerClass {
         }
     }
 
-    protected BluetoothSocket getBluetoothSocket() {
+    public BluetoothSocket getBluetoothSocket() {
         return bluetoothSocket;
     }
 
@@ -102,7 +103,7 @@ public class BluetoothManagerClass {
         return bluetoothSocket.isConnected();
     }
 
-    protected void setBluetoothSocket(BluetoothSocket bluetoothSocket) {
+    public void setBluetoothSocket(BluetoothSocket bluetoothSocket) {
         Log.e(TAG, "setBluetoothSocket: Something is setting the BT socket, socket connection status is  " + bluetoothSocket.isConnected());
         BluetoothManagerClass.bluetoothSocket = bluetoothSocket;
     }

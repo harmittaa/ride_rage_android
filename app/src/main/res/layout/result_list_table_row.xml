@@ -12,15 +12,18 @@
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:id="@+id/trip_name"/>
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:id="@+id/trip_duration"/>
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:id="@+id/trip_distance"/>
 
     </LinearLayout>
 
@@ -32,11 +35,13 @@
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:id="@+id/trip_date"/>
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:id="@+id/trip_cost"/>
 
     </LinearLayout>
 </LinearLayout>

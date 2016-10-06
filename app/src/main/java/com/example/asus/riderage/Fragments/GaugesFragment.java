@@ -1,15 +1,9 @@
-package com.example.asus.riderage;
+package com.example.asus.riderage.Fragments;
 
 import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -21,9 +15,13 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
+import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
+import com.example.asus.riderage.Misc.Constants;
+import com.example.asus.riderage.MainActivity;
+import com.example.asus.riderage.R;
+import com.example.asus.riderage.Misc.UpdatableFragment;
 
 import java.util.ArrayList;
-import java.util.concurrent.FutureTask;
 
 import static android.content.ContentValues.TAG;
 
@@ -33,7 +31,7 @@ import static android.content.ContentValues.TAG;
 
 public class GaugesFragment extends Fragment implements View.OnClickListener, UpdatableFragment {
 
-    private Button startTrip, stopTrip;
+    private Button startTrip, stopTrip,tripsListButton;
     ImageButton blSelectBtn;
     SpeedometerGauge speedoRPM, speedoSpeed;
     ArrayList<BluetoothDevice> devices;
@@ -62,8 +60,10 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
 
         this.startTrip = (Button) fragmentView.findViewById(R.id.startTrip);
         this.stopTrip = (Button) fragmentView.findViewById(R.id.stopTrip);
+        this.tripsListButton = (Button)fragmentView.findViewById(R.id.listFragmentButton);
         this.startTrip.setOnClickListener(this);
         this.stopTrip.setOnClickListener(this);
+        this.tripsListButton.setOnClickListener(this);
     }
 
 
@@ -126,6 +126,9 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
                 //TODO 1. send obd close command through obdjobservice 2. close bluetooth socket
                 CommunicationHandler.getCommunicationHandlerInstance().getCurrentTripHandler().stopCurrentTrip();
                 //getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
+                break;
+            case R.id.listFragmentButton:
+                getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.TRIPS_LIST_FRAGMENT);
                 break;
 
         }

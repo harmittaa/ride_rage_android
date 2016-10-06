@@ -1,11 +1,9 @@
-package com.example.asus.riderage;
+package com.example.asus.riderage.Services_and_Handlers;
 
 import android.bluetooth.BluetoothSocket;
-import android.telecom.Call;
 import android.util.Log;
 
-import com.github.pires.obd.commands.SpeedCommand;
-import com.github.pires.obd.commands.engine.RPMCommand;
+import com.example.asus.riderage.Bluetooth.BluetoothManagerClass;
 import com.github.pires.obd.commands.protocol.EchoOffCommand;
 import com.github.pires.obd.commands.protocol.LineFeedOffCommand;
 import com.github.pires.obd.commands.protocol.ObdResetCommand;

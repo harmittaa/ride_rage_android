@@ -1,4 +1,4 @@
-package com.example.asus.riderage;
+package com.example.asus.riderage.Services_and_Handlers;
 
 import android.app.Service;
 import android.bluetooth.BluetoothSocket;
@@ -15,8 +15,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.example.asus.riderage.Bluetooth.BluetoothManagerClass;
+import com.example.asus.riderage.Misc.Constants;
+import com.example.asus.riderage.Database.DataPoint;
 import com.github.pires.obd.commands.SpeedCommand;
-import com.github.pires.obd.commands.engine.MassAirFlowCommand;
 import com.github.pires.obd.commands.engine.RPMCommand;
 import com.github.pires.obd.commands.protocol.ObdRawCommand;
 import com.google.android.gms.common.ConnectionResult;
@@ -25,7 +27,6 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -317,25 +318,26 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     // Thread that logs all the data from the sensors
     private class LoggerThread implements Runnable {
         int counter;
-
         @Override
         public void run() {
             while (isRunning) {
-                try {
-                    Thread.sleep(2000);
-                    counter++;
-                    addToRpms(getRpm());
-                    setAverageRpm(getTotalOfDoubleArray(getRpms()) / getRpms().size());
-                    setAverageSpeed(getTotalOfDoubleArray(getSpeeds()) / getSpeeds().size());
-                    tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), getSpeed(), getRpm(), getAcceleration(), getConsumption(), getLongitude(), getLatitude()));
-                    if (Thread.currentThread().isInterrupted() || Thread.interrupted()) {
-                        throw new InterruptedException();
+                if (getSpeed() > 5) {
+                    try {
+                        Thread.sleep(2000);
+                        counter++;
+                        addToRpms(getRpm());
+                        setAverageRpm(getTotalOfDoubleArray(getRpms()) / getRpms().size());
+                        setAverageSpeed(getTotalOfDoubleArray(getSpeeds()) / getSpeeds().size());
+                        tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), getSpeed(), getRpm(), getAcceleration(), getConsumption(), getLongitude(), getLatitude()));
+                        if (Thread.currentThread().isInterrupted() || Thread.interrupted()) {
+                            throw new InterruptedException();
+                        }
+                    } catch (InterruptedException e) {
+                        Log.e(TAG, "LoggerThread interupted ", e);
+                        Thread.currentThread().interrupt();
+                        Thread.interrupted();
+                        return;
                     }
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "LoggerThread interupted ", e);
-                    Thread.currentThread().interrupt();
-                    Thread.interrupted();
-                    return;
                 }
             }
             Log.e(TAG, "run: Logger thread should end now, passing averages");

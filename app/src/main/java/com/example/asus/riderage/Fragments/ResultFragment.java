@@ -1,10 +1,8 @@
-package com.example.asus.riderage;
+package com.example.asus.riderage.Fragments;
 
 import android.app.Fragment;
-import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -15,12 +13,15 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import java.util.ArrayList;
 
+import com.example.asus.riderage.Misc.Constants;
 import com.example.asus.riderage.Database.TripDatabaseHelper;
+import com.example.asus.riderage.MainActivity;
+import com.example.asus.riderage.R;
+import com.example.asus.riderage.Misc.UpdatableFragment;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 /*

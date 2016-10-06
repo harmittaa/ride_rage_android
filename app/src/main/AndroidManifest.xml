@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".ObdJobService" />
+        <service android:name=".Services_and_Handlers.ObdJobService" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyD4AFZBvA2mMOzhYtXcjmUTeUCmCycxffw"/>

@@ -1,6 +1,10 @@
-package com.example.asus.riderage;
+package com.example.asus.riderage.Services_and_Handlers;
 
 import android.util.Log;
+
+import com.example.asus.riderage.Bluetooth.BluetoothManagerClass;
+import com.example.asus.riderage.Misc.Constants;
+import com.example.asus.riderage.MainActivity;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;

@@ -7,10 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.example.asus.riderage.DataPoint;
-
-import java.util.Date;
-
 /**
  * Created by Asus on 29/09/2016.
  */

@@ -1,14 +1,15 @@
-package com.example.asus.riderage;
+package com.example.asus.riderage.Bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
+import com.example.asus.riderage.R;
+import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
+
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 
 /**
  * Created by Asus on 26/09/2016.

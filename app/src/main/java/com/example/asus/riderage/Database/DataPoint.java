@@ -1,4 +1,4 @@
-package com.example.asus.riderage;
+package com.example.asus.riderage.Database;
 
 /**
  * Created by Daniel on 30/09/2016.

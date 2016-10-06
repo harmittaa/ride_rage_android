@@ -6,9 +6,6 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -21,18 +18,21 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.cardiomood.android.controls.gauge.SpeedometerGauge;
+import com.example.asus.riderage.Bluetooth.BluetoothManagerClass;
 import com.example.asus.riderage.Database.TripDatabaseHelper;
+import com.example.asus.riderage.Fragments.GaugesFragment;
+import com.example.asus.riderage.Fragments.ResultFragment;
+import com.example.asus.riderage.Fragments.TripsListView;
+import com.example.asus.riderage.Misc.Constants;
+import com.example.asus.riderage.Misc.UpdatableFragment;
+import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
+import com.example.asus.riderage.Services_and_Handlers.ObdJobService;
 
 import java.util.ArrayList;
-import java.util.concurrent.FutureTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     TextView accelTest;
     private GaugesFragment gaugeFragment;
     private ResultFragment resultFragment;
+    private TripsListView tripsListFragment;
     Menu menu;
 
 
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         accelTest = (TextView) findViewById(R.id.accelTest);
         gaugeFragment = new GaugesFragment();
         resultFragment = new ResultFragment();
+        tripsListFragment = new TripsListView();
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler.passContext(this);
@@ -103,6 +105,13 @@ public class MainActivity extends AppCompatActivity {
                 fragmentTransaction.commit();
                 changeActionBarIcons(this.currentFragmentType);
                 break;
+            case TRIPS_LIST_FRAGMENT:
+                this.currentFragment = this.tripsListFragment;
+                fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("jeeben");
+                fragmentTransaction.commit();
+                changeActionBarIcons(this.currentFragmentType);
+                break;
+
         }
     }
 
