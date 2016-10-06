@@ -45,7 +45,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     private LocationRequest locationRequest;
     private GoogleApiClient googleApiClient;
     volatile boolean isRunning = false;
-    private ArrayList<Double> speeds,rpms;
+    private ArrayList<Double> speeds, rpms;
 
     @Override
     public void onCreate() {
@@ -148,7 +148,13 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
         Log.e(TAG, "onDestroy: called");
         this.setRunning(false);
         this.closeConnection();
+        stopLocationUpdates();
         stopSelf();
+    }
+
+    private void stopLocationUpdates() {
+        Log.e(TAG, "stopLocationUpdates: ending location updates");
+        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
     }
 
     // Accelerometer sensor gets new data
@@ -250,10 +256,12 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     // GOOGLE MAPS API starts here
     @Override
     public void onLocationChanged(Location location) {
-        Log.e(TAG, "onLocationChanged: longitued " + location.getLongitude());
-        Log.e(TAG, "onLocationChanged: latitude " + location.getLatitude());
-        setLatitude(location.getLatitude());
-        setLongitude(location.getLongitude());
+        if (isRunning) {
+            Log.e(TAG, "onLocationChanged: longitued " + location.getLongitude());
+            Log.e(TAG, "onLocationChanged: latitude " + location.getLatitude());
+            setLatitude(location.getLatitude());
+            setLongitude(location.getLongitude());
+        }
     }
 
 
@@ -264,7 +272,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
             Location loc = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
             LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, ObdJobService.this);
 
-            Log.e(TAG, "onConnected: LATTARI"+loc.getLatitude() );
+            Log.e(TAG, "onConnected: LATTARI" + loc.getLatitude());
         } catch (SecurityException e) {
             e.printStackTrace();
             System.out.println("Security Failed");
@@ -282,29 +290,30 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
         Log.e(TAG, "onConnectionFailed: Google maps connection failed");
     }
 
-    public void addToRpms(Double rpmToAdd){
+    public void addToRpms(Double rpmToAdd) {
         this.rpms.add(rpmToAdd);
     }
 
-    public void addToSpeeds(Double speedToAdd){
+    public void addToSpeeds(Double speedToAdd) {
         this.speeds.add(speedToAdd);
     }
 
-    public ArrayList<Double> getRpms(){
+    public ArrayList<Double> getRpms() {
         return this.rpms;
     }
 
-    public ArrayList<Double> getSpeeds(){
+    public ArrayList<Double> getSpeeds() {
         return this.speeds;
     }
 
-    public Double getTotalOfDoubleArray(ArrayList<Double> arrayToCount){
+    public Double getTotalOfDoubleArray(ArrayList<Double> arrayToCount) {
         Double jeeben = 0.0;
-        for (Double d : arrayToCount){
+        for (Double d : arrayToCount) {
             jeeben += d;
         }
         return jeeben;
     }
+
     // Thread that logs all the data from the sensors
     private class LoggerThread implements Runnable {
         int counter;
@@ -316,8 +325,8 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                     Thread.sleep(2000);
                     counter++;
                     addToRpms(getRpm());
-                    setAverageRpm(getTotalOfDoubleArray(getRpms())/getRpms().size());
-                    setAverageSpeed(getTotalOfDoubleArray(getSpeeds())/getSpeeds().size());
+                    setAverageRpm(getTotalOfDoubleArray(getRpms()) / getRpms().size());
+                    setAverageSpeed(getTotalOfDoubleArray(getSpeeds()) / getSpeeds().size());
                     tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), getSpeed(), getRpm(), getAcceleration(), getConsumption(), getLongitude(), getLatitude()));
                     if (Thread.currentThread().isInterrupted() || Thread.interrupted()) {
                         throw new InterruptedException();

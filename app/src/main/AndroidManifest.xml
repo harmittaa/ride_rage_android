@@ -25,7 +25,9 @@
         </activity>
 
         <service android:name=".ObdJobService" />
-
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyD4AFZBvA2mMOzhYtXcjmUTeUCmCycxffw"/>
     </application>
 
 </manifest>

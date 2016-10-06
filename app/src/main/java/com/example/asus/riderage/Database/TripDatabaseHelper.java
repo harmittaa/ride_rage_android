@@ -253,4 +253,14 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         this.database.update(TABLE_TRIP, values, TRIP_ID + "="+tripId, null);
         Log.e(TAG, "endTrip: Database Updated");
     }
+
+    public Cursor getDataPoints(long tripId) {
+        this.database = this.getReadableDatabase();
+        this.cursor = this.database.rawQuery("SELECT " + DATAPOINT_ID + ", " + DATAPOINT_RPM + ", " + DATAPOINT_LATITUDE + ", " + DATAPOINT_LONGITUDE +
+                " FROM " + TABLE_DATAPOINT +
+                " WHERE " + DATAPOINT_TRIP_ID + " = " + tripId, null, null);
+        Log.e(TAG, "getDataPoints: datapoints fetched get count" + cursor.getCount() );
+        return this.cursor;
+
+    }
 }

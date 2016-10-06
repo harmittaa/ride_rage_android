@@ -122,5 +122,4 @@ public class CommunicationHandler {
         this.connection_state = connection_state;
         this.getContext().updateOnConnectionStateChanged(this.connection_state);
     }
-
 }
