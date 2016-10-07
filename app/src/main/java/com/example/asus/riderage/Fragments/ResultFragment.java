@@ -177,15 +177,11 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             this.dbHelper = new TripDatabaseHelper(getContext());
             Cursor cursor = this.dbHelper.getFullTripData(getTripId());
             cursor.moveToFirst();
-            ////Log.e(TAG, "doInBackground: num of stufs:" + cursor.getCount() + "\n Trip Id: " + this.tripId);
-            String duration = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DURATION_MS));
-            String distance = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DISTANCE));
-            //Log.e(TAG, "doInBackground: shittershow" + cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM))  );
+            String duration = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DURATION));
+            String distance = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DISTANCE)) + "KM";
             String avgSpd = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_SPEED)) + "KM/H";
-            ////Log.e(TAG, "doInBackground: average RPM is " + cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM));
             String avgrpm = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM)) + "RPM";
-            //Log.e(TAG, "doInBackground: SHITSHOW:\n" + duration + "\n" + distance + "\n" + avgSpd + "\n" + avgrpm);
-            updateFragmentView(TimeUnit.MILLISECONDS.toSeconds(Integer.parseInt(duration)) + "Sec", distance, avgSpd, avgrpm, "jeeben");
+            updateFragmentView(duration, distance, avgSpd, avgrpm, "jeeben");
             getDataPoints();
             return null;
         }
@@ -194,19 +190,19 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         public void getDataPoints() {
             Cursor cursor = this.dbHelper.getDataPoints(tripId);
             cursor.moveToFirst();
-
-            // TODO: 07/10/2016 fix crash   Caused by: android.database.CursorIndexOutOfBoundsException: Index 0 requested, with a size of 0
-            prevLatLng = (new LatLng(Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LATITUDE))),
-                    (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LONGITUDE))))));
-            parseLatLng(cursor);
-
-            drawLinesOnMap();
-            /*initGoogleMap();*/
+            if (cursor.getCount() > 0) {
+                prevLatLng = (new LatLng(Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LATITUDE))),
+                        (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LONGITUDE))))));
+                parseLatLng(cursor);
+                drawLinesOnMap();
+            } else {
+                Log.e(TAG, "getDataPoints: no datapoints available");
+            }
         }
 
+        // Creates PolyLineOption objects from DataPoint rows retrieved from the cursor
         public void parseLatLng(Cursor cursor) {
-            //Log.e(TAG, "getDataPoints: Moving to next");
-            // get the current LatLang
+
             LatLng currentLatLng = new LatLng(Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LATITUDE))), (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LONGITUDE)))));
             while (currentLatLng.latitude == 0 && currentLatLng.longitude == 0) {
                 cursor.moveToNext();

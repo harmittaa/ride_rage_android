@@ -95,7 +95,7 @@ public class TripsListView extends Fragment implements UpdatableFragment, Adapte
             durationText.setText(cursor.getString(cursor.getColumnIndexOrThrow("duration")));
             distanceText.setText(cursor.getString(cursor.getColumnIndexOrThrow("distance")));
             dateText.setText(cursor.getString(cursor.getColumnIndexOrThrow("start_time")));
-            trip_cost.setText("90€");
+            trip_cost.setText("N/A");
         }
     }
 

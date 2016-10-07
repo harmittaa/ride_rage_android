@@ -117,14 +117,13 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                         return;
                     }
                 }
-                Log.e(TAG, "ObdJobService: 2." );
+                Log.e(TAG, "ObdJobService: 2.");
                 tripHandler.setAverageSpeed(getAverageSpeed());
                 tripHandler.setAverageRPM(getAverageRpm());
-                //Log.e(TAG, "run: before passing to triphandler" + getAverageRpm() + " " + getAverageSpeed());
                 tripHandler.setTotalDistance(getTotalDistance());
                 CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
                 tripHandler.saveTripToDb();
-                Log.e(TAG, "stopself: 5." );
+                Log.e(TAG, "stopself: 5.");
                 stopSelf();
             }
         });
@@ -273,14 +272,12 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     @Override
     public void onLocationChanged(Location location) {
         if (isRunning) {
-            //Log.e(TAG, "onLocationChanged: longitued " + location.getLongitude());
-            //Log.e(TAG, "onLocationChanged: latitude " + location.getLatitude());
             setLatitude(location.getLatitude());
             setLongitude(location.getLongitude());
-            if (this.previousLocation != null)
-                this.totalDistance += location.distanceTo(this.previousLocation);
+            if (this.previousLocation != null) {
+                this.totalDistance += location.distanceTo(this.previousLocation) / 1000;
+            }
             setTotalDistance(this.totalDistance);
-            //Log.e(TAG, "onLocationChanged: total distance" + getTotalDistance());
             this.previousLocation = location;
         }
     }
@@ -350,7 +347,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                         addToSpeeds(getSpeed());
                         setAverageRpm(getTotalOfDoubleArray(getRpms()) / getRpms().size());
                         setAverageSpeed(getTotalOfDoubleArray(getSpeeds()) / getSpeeds().size());
-                        Log.e(TAG, "obdloggerthread: averages set to " +(getTotalOfDoubleArray(getSpeeds()) / getSpeeds().size()) + " & " + (getTotalOfDoubleArray(getRpms()) / getRpms().size()));
+                        Log.e(TAG, "obdloggerthread: averages set to " + (getTotalOfDoubleArray(getSpeeds()) / getSpeeds().size()) + " & " + (getTotalOfDoubleArray(getRpms()) / getRpms().size()));
                         tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), getSpeed(), getRpm(), getAcceleration(), getConsumption(), getLongitude(), getLatitude()));
                         if (Thread.currentThread().isInterrupted() || Thread.interrupted()) {
                             throw new InterruptedException();

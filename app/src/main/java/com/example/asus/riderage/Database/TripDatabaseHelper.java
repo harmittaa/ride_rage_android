@@ -25,7 +25,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     public static final String TRIP_TITLE = "title";
     public static final String TRIP_VEHICLE_ID = "trip_vehicle_id";
     public static final String TRIP_DISTANCE = "distance";
-    public static final String TRIP_DURATION_MS = "duration";
+    public static final String TRIP_DURATION = "duration";
     public static final String TRIP_START_TIME = "start_time";
     public static final String TRIP_END_TIME = "end_time";
     public static final String TRIP_AVERAGE_SPEED = "average_speed";
@@ -43,7 +43,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                     TRIP_DISTANCE + " real, " +
                     TRIP_START_TIME + " DATETIME not null, " +
                     TRIP_END_TIME + " DATETIME, " +
-                    TRIP_DURATION_MS + " integer, " +
+                    TRIP_DURATION + " text, " +
                     TRIP_AVERAGE_SPEED + " real, " +
                     TRIP_AVERAGE_RPM + " real, " +
                     TRIP_AVERAGE_CONSUMPTION + " real, " +
@@ -113,7 +113,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         values.put(TRIP_DISTANCE, distance);
         values.put(TRIP_START_TIME, start_time);/*
         if(end_time != null) values.put(TRIP_END_TIME, end_time.toString());
-        values.put(TRIP_DURATION_MS, durationMs);
+        values.put(TRIP_DURATION, durationMs);
         values.put(TRIP_AVERAGE_SPEED, averageSpeed);
         values.put(TRIP_AVERAGE_RPM, averageRPM);
         values.put(TRIP_AVERAGE_CONSUMPTION, averageConsumption);
@@ -139,7 +139,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                 TRIP_DISTANCE,
                 TRIP_START_TIME,
                 TRIP_END_TIME,
-                TRIP_DURATION_MS,
+                TRIP_DURATION,
                 TRIP_AVERAGE_SPEED,
                 TRIP_AVERAGE_RPM,
                 TRIP_AVERAGE_CONSUMPTION,
@@ -167,7 +167,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     public Cursor getTripHeaders() {
         this.database = this.getReadableDatabase();
 
-        this.cursor = this.database.rawQuery("SELECT " + TRIP_ID + " as " + "_id, " + TRIP_TITLE + ", " + TRIP_START_TIME + ", " + TRIP_DISTANCE + ", " + TRIP_DURATION_MS +
+        this.cursor = this.database.rawQuery("SELECT " + TRIP_ID + " as " + "_id, " + TRIP_TITLE + ", " + TRIP_START_TIME + ", " + TRIP_DISTANCE + ", " + TRIP_DURATION +
                 " FROM " + TABLE_TRIP + ";", null, null);
         return this.cursor;
     }
@@ -222,15 +222,15 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         return this.cursor;
     }
 
-    public void endTrip(long tripId, Double distance, String end_time, Long durationMs, Double averageSpeed, Double averageRPM, Double averageConsumption, Double totalConsumption,
+    public void endTrip(long tripId, Double distance, String end_time, String duration, Double averageSpeed, Double averageRPM, Double averageConsumption, Double totalConsumption,
                         Double gasCost, String analysis) {
-        Log.e(TAG, "endTrip params:\ntripid "+tripId+"\ndistance " + end_time + "\nduration " + durationMs + "\naveragespeed " + averageSpeed + "\naveragerpm " + averageRPM + "\nconsumption " + totalConsumption);
+        Log.e(TAG, "endTrip params:\ntripid "+tripId+"\ndistance " + end_time + "\nduration " + duration + "\naveragespeed " + averageSpeed + "\naveragerpm " + averageRPM + "\nconsumption " + totalConsumption);
         this.database = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(TRIP_END_TIME, end_time);
         values.put(TRIP_DISTANCE, distance);
         values.put(TRIP_END_TIME, end_time);
-        values.put(TRIP_DURATION_MS, durationMs);
+        values.put(TRIP_DURATION, duration);
         values.put(TRIP_AVERAGE_SPEED, averageSpeed);
         values.put(TRIP_AVERAGE_RPM, averageRPM);
         values.put(TRIP_AVERAGE_CONSUMPTION, averageConsumption);
