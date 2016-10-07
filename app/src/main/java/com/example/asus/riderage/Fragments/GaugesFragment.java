@@ -56,6 +56,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getMainActivity().changeActionBarIcons(Constants.FRAGMENT_TYPES.GAUGES_FRAGMENT);
 
     }
 
@@ -110,6 +111,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
     public void onResume() {
         super.onResume();
         setupBackButtonActon();
+        getMainActivity().changeActionBarIcons(Constants.FRAGMENT_TYPES.GAUGES_FRAGMENT);
     }
 
     private void setupBackButtonActon() {

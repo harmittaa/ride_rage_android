@@ -62,6 +62,12 @@ public class TripsListView extends Fragment implements UpdatableFragment, Adapte
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        getMainActivity().changeActionBarIcons(Constants.FRAGMENT_TYPES.TRIPS_LIST_FRAGMENT);
+    }
+
+    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         CommunicationHandler.getCommunicationHandlerInstance().setTripId(tripIds.get(position));
         getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);

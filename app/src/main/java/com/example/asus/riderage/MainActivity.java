@@ -98,26 +98,26 @@ public class MainActivity extends AppCompatActivity {
                 this.currentFragment = this.gaugeFragment;
                 fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
                 fragmentTransaction.commit();
-                changeActionBarIcons(this.currentFragmentType);
+                //changeActionBarIcons(this.currentFragmentType);
                 break;
             case RESULT_FRAGMENT:
                 this.currentFragment = this.resultFragment;
                 fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("jeeben");
                 fragmentTransaction.commit();
-                changeActionBarIcons(this.currentFragmentType);
+                //changeActionBarIcons(this.currentFragmentType);
                 break;
             case TRIPS_LIST_FRAGMENT:
                 this.currentFragment = this.tripsListFragment;
                 fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("jeeben");
                 fragmentTransaction.commit();
-                changeActionBarIcons(this.currentFragmentType);
+                //changeActionBarIcons(this.currentFragmentType);
                 break;
 
         }
     }
 
-    private void changeActionBarIcons(Constants.FRAGMENT_TYPES fragType){
-        /*switch (this.currentFragmentType) {
+    public void changeActionBarIcons(Constants.FRAGMENT_TYPES fragType){
+        switch (fragType) {
             case GAUGES_FRAGMENT:
                 menu.findItem(R.id.action_bluetooth).setVisible(true);
                 menu.findItem(R.id.action_delete).setVisible(false);
@@ -128,7 +128,11 @@ public class MainActivity extends AppCompatActivity {
                 menu.findItem(R.id.action_delete).setVisible(true);
                 menu.findItem(R.id.action_edit).setVisible(true);
                 break;
-        }*/
+            case TRIPS_LIST_FRAGMENT:
+                menu.findItem(R.id.action_bluetooth).setVisible(false);
+                menu.findItem(R.id.action_delete).setVisible(false);
+                menu.findItem(R.id.action_edit).setVisible(false);
+        }
     }
 
     public void setFragmentTripId(long tripId) {
