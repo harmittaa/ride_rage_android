@@ -5,7 +5,7 @@
         android:id="@+id/action_bluetooth"
         android:icon="@android:drawable/stat_sys_data_bluetooth"
         android:title=""
-        compat:showAsAction="ifRoom" />
+        compat:showAsAction="always" />
     <item
         android:id="@+id/action_edit"
         android:icon="@android:drawable/ic_menu_delete"

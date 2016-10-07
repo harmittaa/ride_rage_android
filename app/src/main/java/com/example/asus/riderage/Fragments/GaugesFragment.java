@@ -1,12 +1,15 @@
 package com.example.asus.riderage.Fragments;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +34,7 @@ import static android.content.ContentValues.TAG;
 
 public class GaugesFragment extends Fragment implements View.OnClickListener, UpdatableFragment {
 
-    private Button startTrip, stopTrip,tripsListButton;
+    private Button startTrip, stopTrip, tripsListButton;
     ImageButton blSelectBtn;
     SpeedometerGauge speedoRPM, speedoSpeed;
     ArrayList<BluetoothDevice> devices;
@@ -60,7 +63,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
 
         this.startTrip = (Button) fragmentView.findViewById(R.id.startTrip);
         this.stopTrip = (Button) fragmentView.findViewById(R.id.stopTrip);
-        this.tripsListButton = (Button)fragmentView.findViewById(R.id.listFragmentButton);
+        this.tripsListButton = (Button) fragmentView.findViewById(R.id.listFragmentButton);
         this.startTrip.setOnClickListener(this);
         this.stopTrip.setOnClickListener(this);
         this.tripsListButton.setOnClickListener(this);
@@ -102,6 +105,47 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
         });
 
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setupBackButtonActon();
+    }
+
+    private void setupBackButtonActon() {
+        getView().setFocusableInTouchMode(true);
+        getView().requestFocus();
+        getView().setOnKeyListener(
+                new View.OnKeyListener() {
+                    @Override
+                    public boolean onKey(View v, int keyCode, KeyEvent event) {
+                        if (keyCode == KeyEvent.KEYCODE_BACK) {
+                            if (event.getAction()!=KeyEvent.ACTION_DOWN)
+                                return true;
+                            Log.e(TAG, "onKey: BACK PRESSED");
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder.setMessage(R.string.quit_confirmation)
+                                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            getMainActivity().finishAffinity();
+                                        }
+                                    })
+                                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            // User cancelled the dialog
+                                        }
+                                    })
+                                    .create()
+                                    .show();
+
+                        }
+                        return true;
+                    }
+                }
+
+        );
+    }
+
 
     public void updateGauges(final double rpm, final double speed) {
         speedoRPM.setSpeed((rpm / 100), 0, 0);

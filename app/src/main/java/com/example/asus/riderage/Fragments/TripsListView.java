@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,8 +44,10 @@ public class TripsListView extends Fragment implements UpdatableFragment, Adapte
         fragmentView = inflater.inflate(R.layout.fragment_trips_list, container, false);
         this.listView = (ListView) fragmentView.findViewById(R.id.tripsListView);
         setupListView();
+        //setupBackButtonActon();
         return fragmentView;
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,6 +66,8 @@ public class TripsListView extends Fragment implements UpdatableFragment, Adapte
         CommunicationHandler.getCommunicationHandlerInstance().setTripId(tripIds.get(position));
         getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
     }
+
+
 
     private MainActivity getMainActivity() {
         return (MainActivity) getActivity();
