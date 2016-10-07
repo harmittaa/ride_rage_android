@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Log.e(TAG, "onClick: aids is go");
+                //Log.e(TAG, "onClick: aids is go");
                 ConnectToOBDTask aidsTask = new ConnectToOBDTask(which);
                 aidsTask.execute();
                 dialog.dismiss();
@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        Log.e(TAG, "onDestroy: Main activity destroyed");
+        //Log.e(TAG, "onDestroy: Main activity destroyed");
         stopService(new Intent(this, ObdJobService.class));
         BluetoothManagerClass.getBluetoothManagerClass().closeSocket();
         super.onDestroy();
@@ -222,15 +222,15 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-            Log.e(TAG, "Access");
+            //Log.e(TAG, "Access");
         }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-            Log.e(TAG, "Access");
+            //Log.e(TAG, "Access");
         }
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        Log.e(TAG, "Permission " + permissionCheck);
+        //Log.e(TAG, "Permission " + permissionCheck);
 
     }
 
@@ -252,10 +252,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Integer... params) {
             if (BluetoothManagerClass.getBluetoothManagerClass().createBluetoothConnection(this.which)) {
-                Log.e(TAG, "onClick: success");
+                //Log.e(TAG, "onClick: success");
                 return true;
             } else {
-                Log.e(TAG, "onClick: failure");
+                //Log.e(TAG, "onClick: failure");
                 return false;
             }
         }

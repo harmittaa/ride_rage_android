@@ -25,7 +25,7 @@ public class CommunicationHandler {
     private Constants.CONNECTION_STATE connection_state;
     private CommunicationHandler() {
         this.btManager = BluetoothManagerClass.getBluetoothManagerClass();
-        Log.e(TAG, "CommunicationHandler: created");
+        //Log.e(TAG, "CommunicationHandler: created");
         this.connection_state = Constants.CONNECTION_STATE.DISCONNECTED;
     }
 
@@ -58,7 +58,7 @@ public class CommunicationHandler {
     }
 
     public void makeToast(int couldNotConnect) {
-        Log.e(TAG, "makeToast: " + mainActivity.getString(couldNotConnect));
+        //Log.e(TAG, "makeToast: " + mainActivity.getString(couldNotConnect));
         mainActivity.makeToast(mainActivity.getString(couldNotConnect));
     }
 
@@ -87,9 +87,9 @@ public class CommunicationHandler {
                 try {
                     if (futureTask.get()) {
                         createTripHandler();
-                        Log.e(TAG, "checkSafeConnection: createhanlder done" );
+                        //Log.e(TAG, "checkSafeConnection: createhanlder done" );
                         startObdJobService();
-                        Log.e(TAG, "checkSafeConnection: start obdservice done" );
+                        //Log.e(TAG, "checkSafeConnection: start obdservice done" );
                         CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.CONNECTED_RUNNING);
                         return true;
                     } else {
@@ -100,11 +100,12 @@ public class CommunicationHandler {
                     Log.e(TAG, "checkSafeConnection: interrupt" , e );
                 } catch (ExecutionException e) {
                     Log.e(TAG, "checkSafeConnection:execution ", e );}
+                }
+                return false;
             }
             return false;
         }
-        return false;
-    }
+
 
     private void createTripHandler() {
         setCurrentTripHandler(new TripHandler());

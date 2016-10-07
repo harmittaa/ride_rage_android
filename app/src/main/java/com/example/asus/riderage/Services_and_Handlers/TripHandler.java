@@ -64,20 +64,27 @@ public class TripHandler {
     }
 
     public void stopCurrentTrip(){
+        Log.e(TAG, "stopCurrentTrip: 1." );
         //TODO 1. stop services and logging, disconnect socket 2. get duration of trip and store it here 3. save trip in database
-        CommunicationHandler.getCommunicationHandlerInstance().getContext().stopService(new Intent(CommunicationHandler.getCommunicationHandlerInstance().getContext(),ObdJobService.class));
-        Log.e(TAG, "stopCurrentTrip: starting to log trip data");
+        /*
+         * CommunicationHandler.getCommunicationHandlerInstance().getContext().stopService(new Intent(CommunicationHandler.getCommunicationHandlerInstance().getContext(),ObdJobService.class));
+         *
+         * change this to stoprunning boolean toggle
+         */
+
+        ObdJobService.isRunning = false;
 
         this.endDate = new Date();
         this.tripTimeTotal = endDate.getTime() - startDate.getTime();
 
         //BluetoothManagerClass.getBluetoothManagerClass().closeSocket();
         //TODO: step numero 3
-        Log.e(TAG, "stopCurrentTrip: TRIP ENDED:\n TIME TAKEN: " + TimeUnit.MILLISECONDS.toSeconds(this.tripTimeTotal) + " avg rpm" + this.getAverageRPM());
+        //Log.e(TAG, "stopCurrentTrip: TRIP ENDED:\n TIME TAKEN: " + TimeUnit.MILLISECONDS.toSeconds(this.tripTimeTotal) + " avg rpm" + this.getAverageRPM());
 
     }
 
     public void saveTripToDb(){
+        Log.e(TAG, "saveTripToDb: 4." );
         this.tripDbHelper.endTrip(this.tripId, this.getTotalDistance(), dateFormat.format(this.endDate), this.tripTimeTotal, this.getAverageSpeed(), this.getAverageRPM(), null, null, null, null);
         CommunicationHandler.getCommunicationHandlerInstance().setTripId(this.tripId);
         CommunicationHandler.getCommunicationHandlerInstance().getContext().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
@@ -89,6 +96,7 @@ public class TripHandler {
     }
 
     public void setAverageSpeed(double averageSpeed) {
+        Log.e(TAG, "setAverageSpeed: ¤avg speed set to# " + averageSpeed );
         this.averageSpeed = averageSpeed;
     }
 
@@ -97,6 +105,7 @@ public class TripHandler {
     }
 
     public void setAverageRPM(double averageRPM) {
+        Log.e(TAG, "setAverageRPM: #average rpm set to#" + averageRPM );
         this.averageRPM = averageRPM;
     }
 

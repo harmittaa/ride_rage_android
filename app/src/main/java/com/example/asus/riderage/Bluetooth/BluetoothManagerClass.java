@@ -31,7 +31,7 @@ public class BluetoothManagerClass {
 
     private BluetoothManagerClass() {
         this.btAdapter = BluetoothAdapter.getDefaultAdapter();
-        Log.e(TAG, "BluetoothManagerClass: BT manager created");
+        //Log.e(TAG, "BluetoothManagerClass: BT manager created");
     }
 
     public static BluetoothManagerClass getBluetoothManagerClass() {
@@ -68,8 +68,8 @@ public class BluetoothManagerClass {
         BluetoothDevice device = btAdapter.getRemoteDevice(deviceAddress);
         //UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
         UUID uuid = UUID.fromString(devices.get(position).getUuids()[0].toString());
-        Log.e(TAG, "createBluetoothConnection: the UUID is" + uuid.toString());
-        Log.e(TAG, "createBluetoothConnection: the UUID should be 00001101-0000-1000-8000-00805f9b34fb");
+        //Log.e(TAG, "createBluetoothConnection: the UUID is" + uuid.toString());
+        //Log.e(TAG, "createBluetoothConnection: the UUID should be 00001101-0000-1000-8000-00805f9b34fb");
 
         FutureTask<Boolean> futureTask = new FutureTask<>(new BluetoothConnection(uuid, device));
         Thread t=new Thread(futureTask);
@@ -104,7 +104,7 @@ public class BluetoothManagerClass {
     }
 
     public void setBluetoothSocket(BluetoothSocket bluetoothSocket) {
-        Log.e(TAG, "setBluetoothSocket: Something is setting the BT socket, socket connection status is  " + bluetoothSocket.isConnected());
+        //Log.e(TAG, "setBluetoothSocket: Something is setting the BT socket, socket connection status is  " + bluetoothSocket.isConnected());
         BluetoothManagerClass.bluetoothSocket = bluetoothSocket;
     }
 }

@@ -117,9 +117,9 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
         switch (v.getId()) {
             case R.id.startTrip:
                 if (CommunicationHandler.getCommunicationHandlerInstance().checkSafeConnection()) {
-                    Log.e(TAG, "Started succesfully");
+                    //Log.e(TAG, "Started succesfully");
                 } else {
-                    Log.e(TAG, "Something failed in the checkSafeConnection");
+                    //Log.e(TAG, "Something failed in the checkSafeConnection");
                 }
                 break;
             case R.id.stopTrip:
@@ -140,7 +140,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
         getMainActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                switch (connection_state) {
+                /*switch (connection_state) {
                     case CONNECTED_NOT_RUNNING:
                         startTrip.setVisibility(View.VISIBLE);
                         stopTrip.setVisibility(View.GONE);
@@ -153,7 +153,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
                         startTrip.setVisibility(View.GONE);
                         stopTrip.setVisibility(View.GONE);
                         break;
-                }
+                }*/
             }
         });
     }

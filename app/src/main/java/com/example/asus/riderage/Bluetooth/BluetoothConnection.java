@@ -37,30 +37,30 @@ public class BluetoothConnection implements Callable<Boolean> {
         try {
             this.btSocket = this.bluetoothManagerClass.getBluetoothSocket();
             this.btSocket = device.createRfcommSocketToServiceRecord(uuidToConnect);
-            Log.e(TAG, "Connecting with " + uuidToConnect.toString());
+            //Log.e(TAG, "Connecting with " + uuidToConnect.toString());
             this.btSocket.connect();
             this.bluetoothManagerClass.setBluetoothSocket(this.btSocket);
          //   startObdInit();
-            Log.e(TAG, "Connected with " + uuidToConnect.toString());
+            //Log.e(TAG, "Connected with " + uuidToConnect.toString());
             return true;
         } catch (IOException e) {
-            Log.e(TAG, "call: " ,  e);
+            //Log.e(TAG, "call: " ,  e);
             return connectWithFallbackSocket();
         }
     }
 
     private boolean connectWithFallbackSocket() {
         try {
-            Log.e(TAG, "Trying fallback socket");
+            //Log.e(TAG, "Trying fallback socket");
             this.btSocket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(device, 1);
-            Log.e(TAG, "Fallback socket created, trying to connect...");
+            //Log.e(TAG, "Fallback socket created, trying to connect...");
             this.btSocket.connect();
             this.bluetoothManagerClass.setBluetoothSocket(this.btSocket);
           //  startObdInit();
-            Log.e(TAG, "Connection established");
+            //Log.e(TAG, "Connection established");
             return true;
         } catch (Exception e2) {
-            Log.e(TAG, "Couldn't establish Bluetooth connection!", e2);
+            //Log.e(TAG, "Couldn't establish Bluetooth connection!", e2);
             this.communicationHandler.makeToast(R.string.couldNotConnect);
             return false;
         }

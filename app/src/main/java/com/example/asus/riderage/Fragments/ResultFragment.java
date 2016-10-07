@@ -47,7 +47,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         this.setTripId(CommunicationHandler.getCommunicationHandlerInstance().getTripId());
         fragmentView = inflater.inflate(R.layout.fragment_result, container, false);
-        textView = (TextView) fragmentView.findViewById(R.id.avgRpmResultLabel);
+        textView = (TextView) fragmentView.findViewById(R.id.placeHolderResultLabel);
         textView.setText("It works");
         mapFragment = (MapFragment) getChildFragmentManager().findFragmentById(R.id.mapFragment);
         mapFragment.getMapAsync(this);
@@ -56,12 +56,13 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         distanceTextView = (TextView) fragmentView.findViewById(R.id.distanceResultLabel);
         avgSpeedTextView = (TextView) fragmentView.findViewById(R.id.avgSpeedResultLabel);
         avgRpmTextView = (TextView) fragmentView.findViewById(R.id.avgRpmResultLabel);
+
         return fragmentView;
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        Log.e(TAG, "onMapReady: maps ready to use");
+        //Log.e(TAG, "onMapReady: maps ready to use");
         this.googleMap = googleMap;
         DataFetcher dataFetcher = new DataFetcher(tripId);
         dataFetcher.execute();
@@ -70,30 +71,31 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e(TAG, "onCreate result fragment: 6." );
     }
 
     public void updateFragmentView(final String duration, final String distance, final String avgSpeed, final String avgRpm, final String placeHolder) {
-        Log.e(TAG, "updateFragmentView: trying to update view");
+        Log.e(TAG, "endTrip params:\ntripid "+tripId+"\ndistance " + distance + "\nduration " + duration + "\naveragespeed " + avgSpeed + "\naveragerpm " + avgRpm + "\nconsumption " + placeHolder);
         getMainActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                durationTextView.setText(duration);
-                distanceTextView.setText(distance);
-                avgSpeedTextView.setText(avgSpeed);
-                avgRpmTextView.setText(avgRpm);
-                textView.setText(placeHolder);
+                ResultFragment.this.durationTextView.setText(duration);
+                ResultFragment.this.distanceTextView.setText(distance);
+                ResultFragment.this.avgSpeedTextView.setText(avgSpeed);
+                ResultFragment.this.avgRpmTextView.setText(avgRpm);
+                ResultFragment.this.textView.setText(placeHolder);
             }
         });
     }
 
     // calls runonuithread to draw the polylines on the map
     private void drawLinesOnMap() {
-        Log.e(TAG, "drawLinesOnMap: adding polylines, size " + polylineOptionsList.size());
+        //Log.e(TAG, "drawLinesOnMap: adding polylines, size " + polylineOptionsList.size());
         getMainActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 for (PolylineOptions po : polylineOptionsList) {
-                    Log.e(TAG, "run: color of polyline " + po.getColor());
+                    //Log.e(TAG, "run: color of polyline " + po.getColor());
                     googleMap.addPolyline(po);
                 }
             }
@@ -147,17 +149,18 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         // gets trip data first, then gets datapoints
         @Override
         protected Boolean doInBackground(Integer... params) {
+            Log.e(TAG, "doInBackground: 7." );
             this.dbHelper = new TripDatabaseHelper(getContext());
             Cursor cursor = this.dbHelper.getFullTripData(getTripId());
             cursor.moveToFirst();
-            //Log.e(TAG, "doInBackground: num of stufs:" + cursor.getCount() + "\n Trip Id: " + this.tripId);
+            ////Log.e(TAG, "doInBackground: num of stufs:" + cursor.getCount() + "\n Trip Id: " + this.tripId);
             String duration = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DURATION_MS));
-            String distance = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DISTANCE)) + "KM";
-            Log.e(TAG, "doInBackground: shittershow" + cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM))  );
+            String distance = ((Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DISTANCE))))/1000) + "KM";
+            //Log.e(TAG, "doInBackground: shittershow" + cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM))  );
             String avgSpd = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_SPEED)) + "KM/H";
-            //Log.e(TAG, "doInBackground: average RPM is " + cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM));
+            ////Log.e(TAG, "doInBackground: average RPM is " + cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM));
             String avgrpm = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM)) + "RPM";
-            Log.e(TAG, "doInBackground: SHITSHOW:\n" + duration + "\n" + distance + "\n" + avgSpd + "\n" + avgrpm);
+            //Log.e(TAG, "doInBackground: SHITSHOW:\n" + duration + "\n" + distance + "\n" + avgSpd + "\n" + avgrpm);
             updateFragmentView(TimeUnit.MILLISECONDS.toSeconds(Integer.parseInt(duration))+"Sec", distance, avgSpd, avgrpm, "jeeben");
             getDataPoints();
             return null;
@@ -167,6 +170,8 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         public void getDataPoints() {
             Cursor cursor = this.dbHelper.getDataPoints(tripId);
             cursor.moveToFirst();
+
+            // TODO: 07/10/2016 fix crash   Caused by: android.database.CursorIndexOutOfBoundsException: Index 0 requested, with a size of 0
             prevLatLng = (new LatLng(Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LATITUDE))),
                     (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LONGITUDE))))));
             parseLatLng(cursor);
@@ -176,17 +181,17 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         }
 
         public void parseLatLng(Cursor cursor) {
-            Log.e(TAG, "getDataPoints: Moving to next");
+            //Log.e(TAG, "getDataPoints: Moving to next");
             // get the current LatLang
             LatLng currentLatLng = new LatLng(Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LATITUDE))), (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LONGITUDE)))));
-            Log.e(TAG, "parseLatLng: cursor data " + Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_RPM))));
+            //Log.e(TAG, "parseLatLng: cursor data " + Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_RPM))));
             if (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_RPM))) > 2500) {
                 if (prevRPM > 2500) {
                     currentPolylineOption.add(currentLatLng);
                     prevLatLng = currentLatLng;
                 } else {
                     polylineOptionsList.add(currentPolylineOption);
-                    Log.e(TAG, "parseLatLng: Added to polylines");
+                    //Log.e(TAG, "parseLatLng: Added to polylines");
                     currentPolylineOption = new PolylineOptions();
                     currentPolylineOption.add(prevLatLng, currentLatLng);
                     currentPolylineOption = currentPolylineOption.color(Color.RED);
@@ -195,7 +200,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             } else {
                 if (prevRPM > 2500) {
                     polylineOptionsList.add(currentPolylineOption);
-                    Log.e(TAG, "parseLatLng: Added to polylines");
+                    //Log.e(TAG, "parseLatLng: Added to polylines");
                     // make new line
                     currentPolylineOption = new PolylineOptions();
                     currentPolylineOption.add(prevLatLng, currentLatLng);
@@ -208,9 +213,9 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             }
 
             while (cursor.moveToNext()) {
-                Log.e(TAG, "getDataPoints: Moving to next");
+                //Log.e(TAG, "getDataPoints: Moving to next");
                 currentLatLng = new LatLng(Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LATITUDE))), (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LONGITUDE)))));
-                Log.e(TAG, "parseLatLng: cursor data " + Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_RPM))));
+                //Log.e(TAG, "parseLatLng: cursor data " + Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_RPM))));
                 if (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_RPM))) > 2500) {
                     if (prevRPM > 2500) {
                         // use previous line
@@ -218,7 +223,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                         prevLatLng = currentLatLng;
                     } else {
                         polylineOptionsList.add(currentPolylineOption);
-                        Log.e(TAG, "parseLatLng: Added to polylines");
+                        //Log.e(TAG, "parseLatLng: Added to polylines");
                         // make new line red color
                         currentPolylineOption = new PolylineOptions();
                         currentPolylineOption.add(prevLatLng, currentLatLng);
@@ -228,7 +233,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                 } else {
                     if (prevRPM > 2500) {
                         polylineOptionsList.add(currentPolylineOption);
-                        Log.e(TAG, "parseLatLng: Added to polylines");
+                        //Log.e(TAG, "parseLatLng: Added to polylines");
                         // make new line
                         currentPolylineOption = new PolylineOptions();
                         currentPolylineOption.add(prevLatLng, currentLatLng);

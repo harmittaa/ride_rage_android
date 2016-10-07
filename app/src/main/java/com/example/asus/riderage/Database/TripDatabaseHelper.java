@@ -92,7 +92,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_TRIP_TABLE);
         db.execSQL(SQL_CREATE_VEHICLE_TABLE);
         db.execSQL(SQL_CREATE_DATAPOINT_TABLE);
-        Log.e(TAG, "SQLite DB created");
+        //Log.e(TAG, "SQLite DB created");
     }
 
     @Override
@@ -122,7 +122,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         values.put(TRIP_DRIVING_ANALYSIS, analysis);*/
 
         long newRowId = this.database.insert(TABLE_TRIP, null, values);
-        Log.e(TAG, "New trip saved for ID " + newRowId);
+        //Log.e(TAG, "New trip saved for ID " + newRowId);
         values.clear();
         this.database.close();
         return newRowId;
@@ -159,7 +159,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                 null,
                 null
         );
-        Log.e(TAG, "getFullTripData: data fetched");
+        //Log.e(TAG, "getFullTripData: data fetched");
         return this.cursor;
     }
 
@@ -173,7 +173,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void saveDataPoint(DataPoint dataPoint) {
-        Log.e(TAG, "saveDataPoint: ");
+        //Log.e(TAG, "saveDataPoint: ");
         this.database = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DATAPOINT_TRIP_ID, dataPoint.getTripId());
@@ -184,7 +184,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         values.put(DATAPOINT_LONGITUDE, dataPoint.getLongitude());
         values.put(DATAPOINT_LATITUDE, dataPoint.getLatitude());
         long datapointId = this.database.insert(TABLE_DATAPOINT, null, values);
-        Log.e(TAG, "Datapoint saved id " + datapointId);
+        //Log.e(TAG, "Datapoint saved id " + datapointId);
         values.clear();
         this.database.close();
     }
@@ -195,7 +195,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(VEHICLE_NAME, vehicleName);
         long vehicleId = this.database.insert(TABLE_VEHICLE, null, values);
-        Log.e(TAG, "Vehicle saved");
+        //Log.e(TAG, "Vehicle saved");
         values.clear();
         this.database.close();
         return vehicleId;
@@ -224,6 +224,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 
     public void endTrip(long tripId, Double distance, String end_time, Long durationMs, Double averageSpeed, Double averageRPM, Double averageConsumption, Double totalConsumption,
                         Double gasCost, String analysis) {
+        Log.e(TAG, "endTrip params:\ntripid "+tripId+"\ndistance " + end_time + "\nduration " + durationMs + "\naveragespeed " + averageSpeed + "\naveragerpm " + averageRPM + "\nconsumption " + totalConsumption);
         this.database = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(TRIP_END_TIME, end_time);
@@ -237,7 +238,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         values.put(TRIP_GAS_COST, "2");
         values.put(TRIP_DRIVING_ANALYSIS, "Example analysis");
         this.database.update(TABLE_TRIP, values, TRIP_ID + "=" + tripId, null);
-        Log.e(TAG, "endTrip: Database Updated");
+        //Log.e(TAG, "endTrip: Database Updated");
     }
 
     public Cursor getDataPoints(long tripId) {
@@ -245,7 +246,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         this.cursor = this.database.rawQuery("SELECT " + DATAPOINT_ID + ", " + DATAPOINT_RPM + ", " + DATAPOINT_LATITUDE + ", " + DATAPOINT_LONGITUDE +
                 " FROM " + TABLE_DATAPOINT +
                 " WHERE " + DATAPOINT_TRIP_ID + " = " + tripId, null, null);
-        Log.e(TAG, "getDataPoints: datapoints fetched get count" + cursor.getCount());
+        //Log.e(TAG, "getDataPoints: datapoints fetched get count" + cursor.getCount());
         return this.cursor;
 
     }

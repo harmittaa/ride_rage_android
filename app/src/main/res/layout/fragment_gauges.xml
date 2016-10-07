@@ -73,15 +73,13 @@
         android:text="Start Trip"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:visibility="gone"/>
+        android:layout_weight="1"/>
     <Button
         android:id="@+id/stopTrip"
         android:text="Stop Trip"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:visibility="gone"/>
+        android:layout_weight="1"/>
 
     <Button
         android:layout_width="match_parent"
