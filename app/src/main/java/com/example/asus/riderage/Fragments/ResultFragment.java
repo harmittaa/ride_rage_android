@@ -20,10 +20,13 @@ import com.example.asus.riderage.MainActivity;
 import com.example.asus.riderage.R;
 import com.example.asus.riderage.Misc.UpdatableFragment;
 import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 /*
@@ -41,6 +44,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     private GoogleMap googleMap;
     private MapFragment mapFragment;
     ArrayList<PolylineOptions> polylineOptionsList = new ArrayList<>();
+    ArrayList<LatLng> allLatLngs = new ArrayList<>();
 
     @Nullable
     @Override
@@ -64,6 +68,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     public void onMapReady(GoogleMap googleMap) {
         //Log.e(TAG, "onMapReady: maps ready to use");
         this.googleMap = googleMap;
+        this.googleMap.getUiSettings().setZoomControlsEnabled(true);
         DataFetcher dataFetcher = new DataFetcher(tripId);
         dataFetcher.execute();
     }
@@ -98,6 +103,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                     //Log.e(TAG, "run: color of polyline " + po.getColor());
                     googleMap.addPolyline(po);
                 }
+                zoomMap();
             }
         });
     }
@@ -127,6 +133,20 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         ResultFragment.tripId = tripId;
     }
 
+    private void zoomMap(){
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        Log.e(TAG, "zoomMap: alllats size" + allLatLngs.size() );
+        for (LatLng l: allLatLngs) {
+            builder.include(l);
+        }
+        LatLngBounds bounds = builder.build();
+
+        int padding = 50; // offset from edges of the map in pixels
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+        googleMap.animateCamera(cu);
+    }
+
+
     /* Inner class for fetching data from the DB */
     private class DataFetcher extends AsyncTask<Integer, Long, Boolean> {
         private long tripId;
@@ -155,7 +175,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             cursor.moveToFirst();
             ////Log.e(TAG, "doInBackground: num of stufs:" + cursor.getCount() + "\n Trip Id: " + this.tripId);
             String duration = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DURATION_MS));
-            String distance = ((Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DISTANCE))))/1000) + "KM";
+            String distance = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_DISTANCE));
             //Log.e(TAG, "doInBackground: shittershow" + cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM))  );
             String avgSpd = cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_SPEED)) + "KM/H";
             ////Log.e(TAG, "doInBackground: average RPM is " + cursor.getColumnIndexOrThrow(dbHelper.TRIP_AVERAGE_RPM));
@@ -184,10 +204,16 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             //Log.e(TAG, "getDataPoints: Moving to next");
             // get the current LatLang
             LatLng currentLatLng = new LatLng(Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LATITUDE))), (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LONGITUDE)))));
+            while ( currentLatLng.latitude == 0 && currentLatLng.longitude == 0){
+                cursor.moveToNext();
+                currentLatLng = new LatLng(Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LATITUDE))), (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LONGITUDE)))));
+                Log.e(TAG, "parseLatLng: latlong was at equator" );
+            }
             //Log.e(TAG, "parseLatLng: cursor data " + Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_RPM))));
             if (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_RPM))) > 2500) {
                 if (prevRPM > 2500) {
                     currentPolylineOption.add(currentLatLng);
+                    currentPolylineOption = currentPolylineOption.color(Color.RED);
                     prevLatLng = currentLatLng;
                 } else {
                     polylineOptionsList.add(currentPolylineOption);
@@ -208,6 +234,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                     prevLatLng = currentLatLng;
                 } else {
                     currentPolylineOption.add(currentLatLng);
+                    currentPolylineOption = currentPolylineOption.color(Color.GREEN);
                     prevLatLng = currentLatLng;
                 }
             }
@@ -215,6 +242,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             while (cursor.moveToNext()) {
                 //Log.e(TAG, "getDataPoints: Moving to next");
                 currentLatLng = new LatLng(Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LATITUDE))), (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_LONGITUDE)))));
+                allLatLngs.add(currentLatLng);
                 //Log.e(TAG, "parseLatLng: cursor data " + Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_RPM))));
                 if (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_RPM))) > 2500) {
                     if (prevRPM > 2500) {
