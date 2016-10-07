@@ -91,32 +91,33 @@ public class MainActivity extends AppCompatActivity {
     private void changeVisibleFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.setCustomAnimations(R.animator.slide_left,R.animator.slide_right,R.animator.slide_left_back,R.animator.slide_right_back);
 
         switch (this.currentFragmentType) {
             case GAUGES_FRAGMENT:
                 this.currentFragment = this.gaugeFragment;
                 fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
                 fragmentTransaction.commit();
-                changeActionBarIcons(this.currentFragmentType);
+                //changeActionBarIcons(this.currentFragmentType);
                 break;
             case RESULT_FRAGMENT:
                 this.currentFragment = this.resultFragment;
                 fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("jeeben");
                 fragmentTransaction.commit();
-                changeActionBarIcons(this.currentFragmentType);
+                //changeActionBarIcons(this.currentFragmentType);
                 break;
             case TRIPS_LIST_FRAGMENT:
                 this.currentFragment = this.tripsListFragment;
                 fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("jeeben");
                 fragmentTransaction.commit();
-                changeActionBarIcons(this.currentFragmentType);
+                //changeActionBarIcons(this.currentFragmentType);
                 break;
 
         }
     }
 
-    private void changeActionBarIcons(Constants.FRAGMENT_TYPES fragType){
-        /*switch (this.currentFragmentType) {
+    public void changeActionBarIcons(Constants.FRAGMENT_TYPES fragType){
+        switch (fragType) {
             case GAUGES_FRAGMENT:
                 menu.findItem(R.id.action_bluetooth).setVisible(true);
                 menu.findItem(R.id.action_delete).setVisible(false);
@@ -127,7 +128,11 @@ public class MainActivity extends AppCompatActivity {
                 menu.findItem(R.id.action_delete).setVisible(true);
                 menu.findItem(R.id.action_edit).setVisible(true);
                 break;
-        }*/
+            case TRIPS_LIST_FRAGMENT:
+                menu.findItem(R.id.action_bluetooth).setVisible(false);
+                menu.findItem(R.id.action_delete).setVisible(false);
+                menu.findItem(R.id.action_edit).setVisible(false);
+        }
     }
 
     public void setFragmentTripId(long tripId) {

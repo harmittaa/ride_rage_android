@@ -80,6 +80,13 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         Log.e(TAG, "onCreate result fragment: 6.");
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        getMainActivity().changeActionBarIcons(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
+
+    }
+
     public void updateFragmentView(final String duration, final String distance, final String avgSpeed, final String avgRpm, final String placeHolder) {
         Log.e(TAG, "endTrip params:\ntripid " + tripId + "\ndistance " + distance + "\nduration " + duration + "\naveragespeed " + avgSpeed + "\naveragerpm " + avgRpm + "\nconsumption " + placeHolder);
         getMainActivity().runOnUiThread(new Runnable() {
