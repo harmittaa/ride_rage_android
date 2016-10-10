@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 /**
- * Created by Asus on 29/09/2016.
+ * SQLiteOpenHelper class, includes DB methods
  */
 
 // Class used for saving trip data into SQL database

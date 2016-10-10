@@ -85,6 +85,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                 bluetoothSocket = bluetoothManagerClass.getBluetoothSocket();
                 final RPMCommand rpmCommand = new RPMCommand();
                 SpeedCommand speedCommand = new SpeedCommand();
+
                 Thread t = new Thread(new LoggerThread());
                 t.start();
                 isRunning = true;

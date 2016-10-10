@@ -17,7 +17,7 @@ import java.util.concurrent.FutureTask;
 import static android.app.Activity.RESULT_OK;
 
 /**
- * Created by Asus on 26/09/2016.
+ * Checks that bluetooth service is on, gets paired devices and holds BT socket
  */
 
 public class BluetoothManagerClass {
@@ -29,15 +29,18 @@ public class BluetoothManagerClass {
     private ArrayList<String> deviceStrs;
     private ArrayList<BluetoothDevice> devices;
 
+
     private BluetoothManagerClass() {
         this.btAdapter = BluetoothAdapter.getDefaultAdapter();
-        //Log.e(TAG, "BluetoothManagerClass: BT manager created");
     }
 
     public static BluetoothManagerClass getBluetoothManagerClass() {
         return bluetoothManagerClass;
     }
 
+    /**
+     * Creates a prompt to enable bluetooth service if it's not enabled
+     */
     public boolean checkBluetoothIsOn(boolean withPrompt) {
         if (!this.btAdapter.isEnabled()) {
             if(withPrompt) {
@@ -49,6 +52,10 @@ public class BluetoothManagerClass {
     }
 
 
+    /**
+     * Gets paired device information
+     * @return
+     */
     public ArrayList<String> getDeviceStrings() {
         deviceStrs = new ArrayList();
         devices = new ArrayList();
@@ -63,14 +70,13 @@ public class BluetoothManagerClass {
         return this.deviceStrs;
     }
 
+    /**
+     * Handles calling BluetoothConnection and passing the correct bluetooth device selected by user
+     */
     public boolean createBluetoothConnection(int position) {
         String deviceAddress = devices.get(position).getAddress();
         BluetoothDevice device = btAdapter.getRemoteDevice(deviceAddress);
-        //UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
         UUID uuid = UUID.fromString(devices.get(position).getUuids()[0].toString());
-        //Log.e(TAG, "createBluetoothConnection: the UUID is" + uuid.toString());
-        //Log.e(TAG, "createBluetoothConnection: the UUID should be 00001101-0000-1000-8000-00805f9b34fb");
-
         FutureTask<Boolean> futureTask = new FutureTask<>(new BluetoothConnection(uuid, device));
         Thread t=new Thread(futureTask);
         t.start();
@@ -80,11 +86,11 @@ public class BluetoothManagerClass {
             e.printStackTrace();
             return false;
         }
-        //with thread instead of callable
-        /*Thread connectionCreationThread = new Thread(new BluetoothConnection(uuid, device));
-        connectionCreationThread.start();*/
     }
 
+    /**
+     * Handles closing the BT socket
+     */
     public void closeSocket(){
         try {
             if(this.getBluetoothSocket() != null) {
@@ -104,7 +110,6 @@ public class BluetoothManagerClass {
     }
 
     public void setBluetoothSocket(BluetoothSocket bluetoothSocket) {
-        //Log.e(TAG, "setBluetoothSocket: Something is setting the BT socket, socket connection status is  " + bluetoothSocket.isConnected());
         BluetoothManagerClass.bluetoothSocket = bluetoothSocket;
     }
 }

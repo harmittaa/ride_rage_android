@@ -8,14 +8,13 @@ import com.example.asus.riderage.R;
 import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
 /**
- * Created by Asus on 26/09/2016.
+ * Class is used for establishing connection to OBD device
  */
-
-// for making a connection between the user's device and the OBDII device
 
 public class BluetoothConnection implements Callable<Boolean> {
     private static final String TAG = "BluetoothConnection";
@@ -32,36 +31,46 @@ public class BluetoothConnection implements Callable<Boolean> {
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
     }
 
+    /**
+     * Tries to create a normal RfCommSocket connection, if it fails calls fallback method
+     * @throws Exception
+     */
     @Override
     public Boolean call() throws Exception {
         try {
             this.btSocket = this.bluetoothManagerClass.getBluetoothSocket();
             this.btSocket = device.createRfcommSocketToServiceRecord(uuidToConnect);
-            //Log.e(TAG, "Connecting with " + uuidToConnect.toString());
             this.btSocket.connect();
             this.bluetoothManagerClass.setBluetoothSocket(this.btSocket);
-         //   startObdInit();
-            //Log.e(TAG, "Connected with " + uuidToConnect.toString());
             return true;
         } catch (IOException e) {
-            //Log.e(TAG, "call: " ,  e);
+            Log.e(TAG, "IOException while connecting: " ,  e);
             return connectWithFallbackSocket();
         }
     }
 
+    /**
+     * Fallback connection method in case createRfcommSocketToServiceRecord connection fails.
+     * Uses hidden method "crteRfcommScoket" instead
+     */
     private boolean connectWithFallbackSocket() {
         try {
-            //Log.e(TAG, "Trying fallback socket");
             this.btSocket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(device, 1);
-            //Log.e(TAG, "Fallback socket created, trying to connect...");
             this.btSocket.connect();
             this.bluetoothManagerClass.setBluetoothSocket(this.btSocket);
-          //  startObdInit();
-            //Log.e(TAG, "Connection established");
             return true;
-        } catch (Exception e2) {
-            //Log.e(TAG, "Couldn't establish Bluetooth connection!", e2);
+        } catch (IOException e) {
+            Log.e(TAG, "Couldn't establish Bluetooth connection!", e);
             this.communicationHandler.makeToast(R.string.couldNotConnect);
+            return false;
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+            return false;
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return false;
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
             return false;
         }
     }

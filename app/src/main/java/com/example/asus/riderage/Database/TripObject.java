@@ -3,7 +3,7 @@ package com.example.asus.riderage.Database;
 import java.util.Date;
 
 /**
- * Created by Daniel on 30/09/2016.
+ * TripObject class includes empty constructor, getters & setters
  */
 
 public class TripObject {

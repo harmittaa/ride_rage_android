@@ -37,10 +37,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-/*
-
-Handles the UI of the result screen, class includes AsyncTask for parsing data from SQLite
-
+/**
+*Handles the UI of the result screen, class includes AsyncTask for parsing data from SQLite
 */
 
 public class ResultFragment extends Fragment implements UpdatableFragment, OnMapReadyCallback, GoogleMap.OnPolylineClickListener {
@@ -111,7 +109,6 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
     // calls runonuithread to draw the polylines on the map
     private void drawPolylines() {
-        //Log.e(TAG, "drawPolylines: adding polylines, size " + polylineOptionsList.size());
         getMainActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -119,7 +116,8 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                 Log.e(TAG, "run: freeze happens here");
                 Log.e(TAG, "run: size" + polylineOptionsList.size());
                 for (PolylineOptions po : polylineOptionsList) {
-                    //Log.e(TAG, "run: color of polyline " + po.getColor());
+                    Log.e(TAG, "run: polyline data " + po.getPoints().size());
+                    Log.e(TAG, "run: polyline data " + po.getPoints().get(1));
                     googleMap.addPolyline(po.clickable(true));
                 }
                 Log.e(TAG, "run: or here?");
@@ -323,7 +321,6 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                 currentLatLng = new LatLng(Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_LATITUDE))), (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_LONGITUDE)))));
                 Log.e(TAG, "parseLatLng: latlong was at equator");
             }
-            //Log.e(TAG, "parseLatLng: cursor data " + Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(dbHelper.DATAPOINT_RPM))));
             if (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM))) > 2500) {
                 if (prevRPM > 2500) {
                     currentPolylineOption.add(currentLatLng);
@@ -331,7 +328,6 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                     prevLatLng = currentLatLng;
                 } else {
                     polylineOptionsList.add(currentPolylineOption);
-                    //Log.e(TAG, "parseLatLng: Added to polylines");
                     currentPolylineOption = new PolylineOptions();
                     currentPolylineOption.add(prevLatLng, currentLatLng);
                     currentPolylineOption = currentPolylineOption.color(Color.RED);
@@ -340,7 +336,6 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             } else {
                 if (prevRPM > 2500) {
                     polylineOptionsList.add(currentPolylineOption);
-                    //Log.e(TAG, "parseLatLng: Added to polylines");
                     // make new line
                     currentPolylineOption = new PolylineOptions();
                     currentPolylineOption.add(prevLatLng, currentLatLng);
@@ -383,8 +378,8 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                     }
                 }
                 prevRPM = Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM)));
-                polylineOptionsList.add(currentPolylineOption);
             }
+            polylineOptionsList.add(currentPolylineOption);
         }
 
         @Override

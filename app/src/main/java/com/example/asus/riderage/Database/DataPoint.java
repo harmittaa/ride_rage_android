@@ -1,7 +1,8 @@
 package com.example.asus.riderage.Database;
 
+
 /**
- * Created by Daniel on 30/09/2016.
+ * DataPoint class, includes only construct, getters & setters
  */
 
 public class DataPoint {
