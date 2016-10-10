@@ -39,8 +39,8 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 /**
-*Handles the UI of the result screen, class includes AsyncTask for parsing data from SQLite
-*/
+ * Handles the UI of the result screen, class includes AsyncTask for parsing data from SQLite
+ */
 
 public class ResultFragment extends Fragment implements UpdatableFragment, OnMapReadyCallback, GoogleMap.OnPolylineClickListener {
     private final String TAG = "ResultFragment";
@@ -114,7 +114,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             @Override
             public void run() {
                 googleMap.clear();
-                Log.e(TAG, "run: polylines size : " + polylineOptionsList.size() );
+                Log.e(TAG, "run: polylines size : " + polylineOptionsList.size());
                 for (PolylineOptions po : polylineOptionsList) {
                     googleMap.addPolyline(po.clickable(true));
                 }
@@ -222,20 +222,17 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
             String avgrpm = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_RPM));
             String avgspd = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_SPEED));
-            Log.e(TAG, "calculateAverages: datapoint RPM " + (dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM))) );
-            if(TextUtils.isEmpty(avgrpm) || TextUtils.isEmpty(avgspd)) {
+            if (TextUtils.isEmpty(avgrpm) || TextUtils.isEmpty(avgspd)) {
                 while (dataPointCursor.moveToNext()) {
-                    if (Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED))) > 0) {
-                        counter++;
-                        avgRpm += Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM)));
-                        Log.e(TAG, "calculateAverages: parsed from database rpm" + avgRpm);
-                        avgSpeed += Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED)));
-                    }
+                    counter++;
+                    avgRpm += Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM)));
+                    Log.e(TAG, "calculateAverages: parsed from database rpm" + avgRpm);
+                    avgSpeed += Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED)));
                 }
-
-                avgRpm = avgRpm / counter;
-                avgSpeed = avgSpeed / counter;
-            }else {
+                if (avgRpm != 0) avgRpm = avgRpm / counter;
+                if (avgSpeed != 0) avgSpeed = avgSpeed / counter;
+                
+            } else {
                 avgRpm = Double.parseDouble(avgrpm);
                 avgSpeed = Double.parseDouble(avgspd);
             }
