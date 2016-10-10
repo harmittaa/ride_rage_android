@@ -1,6 +1,5 @@
 package com.example.asus.riderage.Services_and_Handlers;
 
-import android.content.Intent;
 import android.util.Log;
 
 import java.text.DateFormat;
@@ -8,13 +7,10 @@ import java.text.DateFormat;
 import com.example.asus.riderage.Misc.Constants;
 import com.example.asus.riderage.Database.DataPoint;
 import com.example.asus.riderage.Database.TripDatabaseHelper;
-import com.example.asus.riderage.Database.TripObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Created by Daniel on 30/09/2016.
@@ -22,7 +18,6 @@ import static android.content.ContentValues.TAG;
 
 public class TripHandler {
     private static final String TAG = "TripHandler";
-    private TripObject currentTrip;
     private long tripId;
     private TripDatabaseHelper tripDbHelper;
     private DateFormat dateFormat;
@@ -42,17 +37,9 @@ public class TripHandler {
 
     }
 
-    public TripObject getCurrentTrip() {
-        return currentTrip;
-    }
-
-    public void setCurrentTrip(TripObject currentTrip) {
-        this.currentTrip = currentTrip;
-    }
-
     public void startNewTrip() {
         this.startDate = new Date();
-        this.tripId = this.tripDbHelper.saveTrip("Maken reissu", null, null, dateFormat.format(this.startDate), null, null, null, null, null, null, null, null);
+        this.tripId = this.tripDbHelper.saveTrip("Maken reissu", null, null, dateFormat.format(this.startDate));
     }
 
 

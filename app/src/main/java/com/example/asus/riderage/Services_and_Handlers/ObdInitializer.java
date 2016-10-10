@@ -32,6 +32,18 @@ public class ObdInitializer implements Callable<Boolean> {
     }
 
     // https://www.elmelectronics.com/help/obd/tips/#327_Commands
+
+    /**
+     * Sends initialization commands to the OBD reader.
+     * <p></p><b>Commands:</b></p>
+     * <ul>
+     *     <li>ObdResetCommand - resets the OBD</li>
+     *     <li>EchoOffCommand - turns Echo off</li>
+     *     <li>TimeoutCommand - defines how long the OBD waits for a reply from the ECU</li>
+     *     <li>SelectProtocolCommand - defines the ECU protocol</li>
+     * </ul>
+     * @return
+     */
     public boolean initializeObd() {
         try {
             // reset the ELM327

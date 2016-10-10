@@ -37,13 +37,17 @@ public class LoggerService extends Service {
         dataVariable = CommunicationHandler.getCommunicationHandlerInstance().getDataVariable();
     }
 
+    /**
+     * Runs a thread which calculates averages and creates DataPoints to be saved to the Database.
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Thread loggerServiceThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 Log.e(TAG, "loggerservice starterd ");
-                while(true) {// TODO: 10/10/2016 change to CommunicationHandler.getCommunicationHandlerInstance().getRunningStatus())
+                while(true) {
+                    // TODO: 10/10/2016 change to CommunicationHandler.getCommunicationHandlerInstance().getRunningStatus())
                     try {
                         Thread.sleep(2000);
                         dataVariable.addToRpm(dataVariable.getRpm());
@@ -86,13 +90,16 @@ public class LoggerService extends Service {
         return null;
     }
 
-
+    /**
+     * Counts the combined value of doubles in a given ArrayList.
+     * @param arrayToCount ArrayList holding doubles
+     * @return The combined value of doubles in the ArrayList
+     */
     public Double getTotalOfDoubleArray(ArrayList<Double> arrayToCount) {
-        Double jeeben = 0.0;
+        Double count = 0.0;
         for (Double d : arrayToCount) {
-            jeeben += d;
+            count += d;
         }
-        return jeeben;
+        return count;
     }
-
 }

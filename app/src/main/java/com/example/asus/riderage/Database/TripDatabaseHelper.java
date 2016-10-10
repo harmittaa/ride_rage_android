@@ -8,10 +8,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 /**
- * SQLiteOpenHelper class, includes DB methods
+ * SQLiteOpenHelper class, includes DB methods and CRUD methods
  */
 
-// Class used for saving trip data into SQL database
 public class TripDatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "TripDatabseHelper";
     private SQLiteDatabase database;
@@ -66,7 +65,6 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     private static final String SQL_CREATE_DATAPOINT_TABLE =
             "CREATE TABLE " + TABLE_DATAPOINT + " (" +
                     DATAPOINT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                  //  DATAPOINT_TRIP_ID + " integer not null, " +
                     DATAPOINT_SPEED + " real not null, " +
                     DATAPOINT_RPM + " real not null, " +
                     DATAPOINT_ACCELERATION + " real not null, " +
@@ -90,7 +88,10 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
-    // init the database
+    /**
+     * Initializes the database
+     * @param db
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(SQL_CREATE_TRIP_TABLE);
@@ -106,33 +107,34 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS datapoint");
     }
 
-    // once trip is finished save all the data to the DB
-    public long saveTrip(String title, Integer vehicleId, Double distance, String start_time, String end_time,
-                         Long durationMs, Double averageSpeed, Double averageRPM, Double averageConsumption, Double totalConsumption,
-                         Double gasCost, String analysis) {
+    /**
+     * Saves trip start parameters to DB
+     * @param title Trip title
+     * @param vehicleId The vehicle ID
+     * @param distance total distance
+     * @param start_time Start time
+     * @return returns the row ID of the new trip
+     */
+    public long saveTrip(String title, Integer vehicleId, Double distance, String start_time) {
         this.database = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(TRIP_TITLE, title);
         values.put(TRIP_VEHICLE_ID, vehicleId);
         values.put(TRIP_DISTANCE, distance);
-        values.put(TRIP_START_TIME, start_time);/*
-        if(end_time != null) values.put(TRIP_END_TIME, end_time.toString());
-        values.put(TRIP_DURATION, durationMs);
-        values.put(TRIP_AVERAGE_SPEED, averageSpeed);
-        values.put(TRIP_AVERAGE_RPM, averageRPM);
-        values.put(TRIP_AVERAGE_CONSUMPTION, averageConsumption);
-        values.put(TRIP_TOTAL_CONSUMPTION, totalConsumption);
-        values.put(TRIP_GAS_COST, gasCost);
-        values.put(TRIP_DRIVING_ANALYSIS, analysis);*/
+        values.put(TRIP_START_TIME, start_time);
 
         long newRowId = this.database.insert(TABLE_TRIP, null, values);
-        //Log.e(TAG, "New trip saved for ID " + newRowId);
         values.clear();
         this.database.close();
         return newRowId;
     }
 
-    // called when user clicks on a trip from the trip list
+
+    /**
+     * Called when user clicks on a trip from the trip list
+     * @param id ID for the trip of which data is going to be fetched
+     * @return returns the cursor which holds the rows of the query
+     */
     public Cursor getFullTripData(long id) {
         this.database = this.getReadableDatabase();
         // define SELECT fields
@@ -163,11 +165,13 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                 null,
                 null
         );
-        //Log.e(TAG, "getFullTripData: data fetched");
         return this.cursor;
     }
 
-    //called for populating the list view of all the trips
+    /**
+     * Called for populating the list view of all the trips
+     * @return Returns the cursor which holds the Trip headers
+     */
     public Cursor getTripHeaders() {
         this.database = this.getReadableDatabase();
 
@@ -244,9 +248,13 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         values.put(TRIP_GAS_COST, "2");
         values.put(TRIP_DRIVING_ANALYSIS, "Example analysis");
         this.database.update(TABLE_TRIP, values, TRIP_ID + "=" + tripId, null);
-        //Log.e(TAG, "endTrip: Database Updated");
     }
 
+    /**
+     * Gets datapoints for a trip.
+     * @param tripId Defines the trip of which DataPoints to fetch
+     * @return returns cursor that holds the DataPoints
+     */
     public Cursor getDataPoints(long tripId) {
         this.database = this.getReadableDatabase();
         this.cursor = this.database.rawQuery("SELECT " + DATAPOINT_ID + ", " + DATAPOINT_RPM + ", " + DATAPOINT_SPEED + ", " + DATAPOINT_LATITUDE + ", " + DATAPOINT_LONGITUDE + ", " + DATAPOINT_TIMESTAMP +

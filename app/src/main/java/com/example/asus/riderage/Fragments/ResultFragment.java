@@ -72,6 +72,10 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         return fragmentView;
     }
 
+    /**
+     * Called when GoogleMaps is ready to be initialized
+     * @param googleMap
+     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         Log.e(TAG, "onMapReady: map is ready");
@@ -94,6 +98,14 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         getMainActivity().changeActionBarIcons(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
     }
 
+    /**
+     * Handles updating the ResultFragment views with data
+     * @param duration Duration of the trip
+     * @param distance Distance of the trip
+     * @param avgSpeed Average speed of the trip
+     * @param avgRpm Average RPM of the trip
+     * @param placeHolder Feedback for the trip
+     */
     public void updateFragmentView(final String duration, final String distance, final String avgSpeed, final String avgRpm, final String placeHolder) {
         Log.e(TAG, "endTrip params:\ntripid " + tripId + "\ndistance " + distance + "\nduration " + duration + "\naveragespeed " + avgSpeed + "\naveragerpm " + avgRpm + "\nconsumption " + placeHolder);
         getMainActivity().runOnUiThread(new Runnable() {
@@ -108,7 +120,10 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         });
     }
 
-    // calls runonuithread to draw the polylines on the map
+    /**
+     * Calls runOnUiThread() to draw PolyLineOptions on the Google Maps.
+     * Afterwards calls zoomMap();
+     */
     private void drawPolylines() {
         getMainActivity().runOnUiThread(new Runnable() {
             @Override
@@ -123,6 +138,10 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         });
     }
 
+    /**
+     * Uses LatLngBounds to calculate the bounds of the trip and creates CameraUpdate to zoom on the
+     * location.
+     */
     private void zoomMap() {
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         Log.e(TAG, "zoomMap: all lats size" + allLatLngs.size());
@@ -174,14 +193,14 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     private class DataFetcher extends AsyncTask<Integer, Long, Boolean> {
         private long tripId;
         private TripDatabaseHelper dbHelper;
-        /*private String duration;
-        private String distance;*/
         double prevRPM = 0;
         LatLng prevLatLng;
-
         PolylineOptions currentPolylineOption = new PolylineOptions();
 
-        // constructor to pass tripId
+        /**
+         * Constructor to pass the trip id
+         * @param tripId
+         */
         public DataFetcher(long tripId) {
             this.tripId = tripId;
             polylineOptionsList.clear();
@@ -193,7 +212,11 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             super.onPreExecute();
         }
 
-        // gets trip data first, then gets datapoints
+        /**
+         * doInBackground start that calls DbHelper for cursors and proceeds to call needed methods
+         * @param params
+         * @return
+         */
         @Override
         protected Boolean doInBackground(Integer... params) {
             Log.e(TAG, "doInBackground: 7.");
@@ -208,10 +231,10 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         }
 
         /**
-         * Calculates averages
-         *
-         * @param dataPointCursor <p>Cursor holding DataPoints</p>
-         * @param tripDataCursor  <p>Cursor holding the Trip data</p>
+         * Checks if the average speed and RPM are directly available
+         * if not then calculates them based on DataPoint cursor.
+         * @param dataPointCursor Cursor holding DataPoints
+         * @param tripDataCursor  Cursor holding the Trip data
          */
         private void calculateAverages(Cursor dataPointCursor, Cursor tripDataCursor) {
             double avgSpeed = 0.0;
@@ -249,12 +272,9 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
         /**
          * Calculates distance travelled based on coordinates from Cursor
-         *
          * @param dataPointCursor <p>Cursor that holds DataPoints for the Trip</p>
          */
         private double getDistanceFromCursor(Cursor dataPointCursor) {
-            double latitude;
-            double longitude;
             double totalDistance = 0.0;
             Location location = new Location("ResultFragment");
             Location previousLocation = new Location("Make");
@@ -275,7 +295,6 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
         /**
          * Calculates the time between the first and the last DataPoints in Cursor.
-         *
          * @param dataPointCursor <p>Cursor holding DataPoints</p>
          */
         private String calculateDuration(Cursor dataPointCursor) {
@@ -298,8 +317,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
         /**
          * Formats milliseconds to HH:MM:SS
-         *
-         * @param tripTimeTotal <p>Parameter in MS to</p>
+         * @param tripTimeTotal Milliseconds to the formatted
          */
         private String formatDuration(long tripTimeTotal) {
             String hms = String.format(Locale.getDefault(), "%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(tripTimeTotal),
@@ -310,7 +328,10 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         }
 
 
-        // gets cursor, gets first LatLang and then proceeds to loop the other data points
+        /**
+         * Sets the first LatLng object then calls for LatLng parsing
+         * @param dataPointCursor Cursor that holds the trips Datapoints
+         */
         private void getDataPoints(Cursor dataPointCursor) {
             dataPointCursor.moveToFirst();
             if (dataPointCursor.getCount() > 0) {
@@ -323,7 +344,11 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             }
         }
 
-        // Creates PolyLineOption objects from DataPoint rows retrieved from the cursor
+        /**
+         * Creates PolyLineOption objects with a certain color, adds LatLngs to those objects and
+         * saves them into polyLineOpetionsList
+         * @param cursor Cursor that holds the DataPoint objects
+         */
         private void parseLatLng(Cursor cursor) {
             LatLng currentLatLng = new LatLng(Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_LATITUDE))), (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_LONGITUDE)))));
             while (currentLatLng.latitude == 0 && currentLatLng.longitude == 0) {

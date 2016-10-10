@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-/**
- * Created by Asus on 27/09/2016.
- */
 
+/**
+ * Singleton that handles communication between classes, holds instances of classes like TripHandler and DataVariable
+ */
 public class CommunicationHandler {
     private static final String TAG = "CommunicationHandler";
     private static CommunicationHandler communicationHandlerInstance = new CommunicationHandler();
@@ -28,10 +28,13 @@ public class CommunicationHandler {
 
     private CommunicationHandler() {
         this.btManager = BluetoothManagerClass.getBluetoothManagerClass();
-        //Log.e(TAG, "CommunicationHandler: created");
         this.connection_state = Constants.CONNECTION_STATE.DISCONNECTED;
     }
 
+    /**
+     * Used to pass the context to the CommunicationHandler
+     * @param ma MainActivity
+     */
     public void passContext(MainActivity ma) {
         this.mainActivity = ma;
     }
@@ -40,6 +43,9 @@ public class CommunicationHandler {
         return this.mainActivity;
     }
 
+    /**
+     * @return CommunicationHandler singleton instance
+     */
     public static CommunicationHandler getCommunicationHandlerInstance() {
         return communicationHandlerInstance;
     }
@@ -52,25 +58,13 @@ public class CommunicationHandler {
         return this.btManager.getDeviceStrings();
     }
 
-    public boolean createBluetoothConnection(int position) {
-        boolean jeeben = this.btManager.createBluetoothConnection(position);
-        if (jeeben) {
-            setConnection_state(Constants.CONNECTION_STATE.CONNECTED_NOT_RUNNING);
-        }
-        return jeeben;
-    }
 
     public void makeToast(int couldNotConnect) {
-        //Log.e(TAG, "makeToast: " + mainActivity.getString(couldNotConnect));
         mainActivity.makeToast(mainActivity.getString(couldNotConnect));
     }
 
     public void startObdJobService() {
         mainActivity.startObdJobService();
-    }
-
-    public void stopObdJobService() {
-        mainActivity.stopObdJobService();
     }
 
     public void updateGauges(double rpm, double speed) {
@@ -81,6 +75,11 @@ public class CommunicationHandler {
         return btManager.bluetoothIsConnected();
     }
 
+    /**
+     * Creates a future task which runs ObdInitializer, when returning true starts the trip,
+     * otherwise shows pop up to user.
+     * @return False if the initialization cannot be made, true if it can be made.
+     */
     public boolean checkSafeConnection() {
         if (checkBluetoothStatus(false)) {
             if (bluetoothSocketIsConnected()) {
@@ -90,9 +89,7 @@ public class CommunicationHandler {
                 try {
                     if (futureTask.get()) {
                         createTripHandler();
-                        //Log.e(TAG, "checkSafeConnection: createhanlder done" );
                         startObdJobService();
-                        //Log.e(TAG, "checkSafeConnection: start obdservice done" );
                         CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.CONNECTED_RUNNING);
                         return true;
                     } else {
@@ -146,17 +143,5 @@ public class CommunicationHandler {
 
     public void setDataVariable(DataVariables dataVariable) {
         this.dataVariable = dataVariable;
-    }
-
-    public boolean getRunningStatus() {
-        return runningStatus;
-    }
-
-    public boolean isRunningStatus() {
-        return runningStatus;
-    }
-
-    public void setRunningStatus(boolean runningStatus) {
-        this.runningStatus = runningStatus;
     }
 }

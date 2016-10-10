@@ -19,7 +19,6 @@ import static android.app.Activity.RESULT_OK;
 /**
  * Checks that bluetooth service is on, gets paired devices and holds BT socket
  */
-
 public class BluetoothManagerClass {
     private static final String TAG = "BluetoothManagerClass";
     private static BluetoothManagerClass bluetoothManagerClass = new BluetoothManagerClass();

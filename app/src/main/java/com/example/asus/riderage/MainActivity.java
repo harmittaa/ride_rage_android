@@ -148,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_delete:
                 tripDbHelper.deleteTrip(communicationHandler.getTripId());
                 changeVisibleFragmentType(Constants.FRAGMENT_TYPES.TRIPS_LIST_FRAGMENT);
-                tripDbHelper.de
             default:
                 return super.onOptionsItemSelected(item);
         }
