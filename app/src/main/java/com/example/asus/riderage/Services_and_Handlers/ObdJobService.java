@@ -49,7 +49,6 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     private DataVariables dataVariable;
     private LocationRequest locationRequest;
     private GoogleApiClient googleApiClient;
-    static volatile boolean isRunning = false;
     private ArrayList<Double> speeds, rpms;
     private double totalDistance;
     private Location previousLocation;
@@ -92,9 +91,9 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
 
                 /*Thread t = new Thread(new LoggerThread());
                 t.start();*/
-                isRunning = true;
+                CommunicationHandler.getCommunicationHandlerInstance().setRunningStatus(true);
 
-                while (isRunning) {
+                while (communicationHandler.getRunningStatus()) {
                     try {
                         speedCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
                         rpmCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
@@ -124,6 +123,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                 tripHandler.setTotalDistance(getTotalDistance());
                 CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
                 tripHandler.saveTripToDb();
+                CommunicationHandler.getCommunicationHandlerInstance().getContext().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT,true);
                 Log.e(TAG, "stopself: 5.");
                 stopSelf();
             }
@@ -147,14 +147,11 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
 
     }
 
-    public void setRunning(boolean bool) {
-        isRunning = bool;
-    }
 
     // service is closed
     @Override
     public void onDestroy() {
-        this.setRunning(false);
+        communicationHandler.setRunningStatus(false);
         this.closeConnection();
         stopLocationUpdates();
         stopService(new Intent(this, LoggerService.class));
@@ -288,11 +285,12 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     // GOOGLE MAPS API starts here
     @Override
     public void onLocationChanged(Location location) {
-        if (isRunning) {
+        if (CommunicationHandler.getCommunicationHandlerInstance().getRunningStatus()) {
             dataVariable.setLatitude(location.getLatitude());
             dataVariable.setLongitude(location.getLongitude());
             if (this.previousLocation != null) {
                 dataVariable.setTotalDistance(dataVariable.getTotalDistance() + location.distanceTo(this.previousLocation) / 1000);
+                CommunicationHandler.getCommunicationHandlerInstance().getContext().updateDistanceTextView(dataVariable.getTotalDistance());
             }
             this.previousLocation = location;
         }
@@ -339,7 +337,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
 
         @Override
         public void run() {
-            while (isRunning) {
+            while (communicationHandler.getRunningStatus()) {
                 if (getSpeed() > -1) {
                     try {
                         Thread.sleep(2000);

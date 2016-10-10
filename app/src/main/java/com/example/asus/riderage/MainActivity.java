@@ -26,7 +26,7 @@ import com.example.asus.riderage.Bluetooth.BluetoothManagerClass;
 import com.example.asus.riderage.Database.TripDatabaseHelper;
 import com.example.asus.riderage.Fragments.GaugesFragment;
 import com.example.asus.riderage.Fragments.ResultFragment;
-import com.example.asus.riderage.Fragments.TripsListView;
+import com.example.asus.riderage.Fragments.TripsListFragment;
 import com.example.asus.riderage.Misc.Constants;
 import com.example.asus.riderage.Misc.UpdatableFragment;
 import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     TextView accelTest;
     private GaugesFragment gaugeFragment;
     private ResultFragment resultFragment;
-    private TripsListView tripsListFragment;
+    private TripsListFragment tripsListFragment;
     Menu menu;
 
 
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         /*
          * Change visible fragment here, because menu is inflated after onresume, so menu will be null
          */
-        changeVisibleFragmentType(Constants.FRAGMENT_TYPES.GAUGES_FRAGMENT);
+        changeVisibleFragmentType(Constants.FRAGMENT_TYPES.GAUGES_FRAGMENT, false);
         return true;
     }
 
@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         accelTest = (TextView) findViewById(R.id.accelTest);
         gaugeFragment = new GaugesFragment();
         resultFragment = new ResultFragment();
-        tripsListFragment = new TripsListView();
+        tripsListFragment = new TripsListFragment();
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler.passContext(this);
@@ -83,40 +83,76 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
     }
 
-    public void changeVisibleFragmentType(Constants.FRAGMENT_TYPES fragment_type) {
+    public void changeVisibleFragmentType(Constants.FRAGMENT_TYPES fragment_type, boolean withBackStack) {
         this.currentFragmentType = fragment_type;
-        changeVisibleFragment();
+        changeVisibleFragment(withBackStack);
     }
 
-    private void changeVisibleFragment() {
+    private void changeVisibleFragment(boolean withBackStack) {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.setCustomAnimations(R.animator.slide_left,R.animator.slide_right,R.animator.slide_left_back,R.animator.slide_right_back);
+        fragmentTransaction.setCustomAnimations(R.animator.slide_left, R.animator.slide_right, R.animator.slide_left_back, R.animator.slide_right_back);
 
         switch (this.currentFragmentType) {
             case GAUGES_FRAGMENT:
-                this.currentFragment = this.gaugeFragment;
+                /*this.currentFragment = this.gaugeFragment;
+                if (this.gaugeFragment != null && this.gaugeFragment.isVisible())
+                    fragmentTransaction.show((Fragment) this.currentFragment);
+                else
+                    fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
+                fragmentTransaction.commit();
+                //changeActionBarIcons(this.currentFragmentType);*/
+                this.currentFragment = this.gaugeFragment = new GaugesFragment();
                 fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
                 fragmentTransaction.commit();
-                //changeActionBarIcons(this.currentFragmentType);
                 break;
             case RESULT_FRAGMENT:
-                this.currentFragment = this.resultFragment;
-                fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("jeeben");
+                /*this.currentFragment = this.resultFragment;
+
+                if (this.resultFragment != null)
+                    fragmentTransaction.show((Fragment) this.currentFragment);
+                else {
+
+                    if (withBackStack)
+                        fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("jeeben");
+                    else
+                        fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
+                }
                 fragmentTransaction.commit();
-                //changeActionBarIcons(this.currentFragmentType);
+                //changeActionBarIcons(this.currentFragmentType);*/
+                this.currentFragment = this.resultFragment = new ResultFragment();
+                if (withBackStack)
+                    fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("huuben");
+                else
+                    fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
+                fragmentTransaction.commit();
                 break;
             case TRIPS_LIST_FRAGMENT:
-                this.currentFragment = this.tripsListFragment;
-                fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("jeeben");
+                /*this.currentFragment = this.tripsListFragment;
+
+                if(this.tripsListFragment != null)fragmentTransaction.show((Fragment) this.currentFragment);
+                else {
+
+                    if (withBackStack)
+                        fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("jeeben");
+                    else
+                        fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
+                }
                 fragmentTransaction.commit();
-                //changeActionBarIcons(this.currentFragmentType);
+
+                //changeActionBarIcons(this.currentFragmentType);*/
+                this.currentFragment = this.tripsListFragment = new TripsListFragment();
+                if (withBackStack)
+                    fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("huuben");
+                else
+                    fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
+                fragmentTransaction.commit();
                 break;
 
         }
     }
 
-    public void changeActionBarIcons(Constants.FRAGMENT_TYPES fragType){
+    public void changeActionBarIcons(Constants.FRAGMENT_TYPES fragType) {
         switch (fragType) {
             case GAUGES_FRAGMENT:
                 menu.findItem(R.id.action_bluetooth).setVisible(true);
@@ -141,14 +177,29 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.e(TAG, "onOptionsItemSelected: clicked menu btton: " + item.getItemId());
         switch (item.getItemId()) {
             case R.id.action_bluetooth:
                 showDeviceSelectScreen();
                 return true;
             case R.id.action_delete:
-                tripDbHelper.deleteTrip(communicationHandler.getTripId());
-                changeVisibleFragmentType(Constants.FRAGMENT_TYPES.TRIPS_LIST_FRAGMENT);
-                tripDbHelper.de
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(R.string.confirmation_delete)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                tripDbHelper = new TripDatabaseHelper(MainActivity.this);
+                                tripDbHelper.deleteTrip(communicationHandler.getTripId());
+                                changeVisibleFragmentType(Constants.FRAGMENT_TYPES.TRIPS_LIST_FRAGMENT, false);
+                            }
+                        })
+                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                            }
+                        })
+                        .create()
+                        .show();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -213,11 +264,19 @@ public class MainActivity extends AppCompatActivity {
 
     public void updateGauges(final double rpm, final double speed) {
 
-        //TODO change to call fragment method
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 gaugeFragment.updateGauges(rpm, speed);
+            }
+        });
+    }
+
+    public void updateDistanceTextView(final double newTotalDistance){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                gaugeFragment.updateDistance(newTotalDistance);
             }
         });
     }

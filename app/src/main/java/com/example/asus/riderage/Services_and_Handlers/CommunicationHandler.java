@@ -24,7 +24,7 @@ public class CommunicationHandler {
     private long tripId;
 
     private Constants.CONNECTION_STATE connection_state;
-    private volatile boolean runningStatus;
+    private volatile boolean runningStatus = false;
 
     private CommunicationHandler() {
         this.btManager = BluetoothManagerClass.getBluetoothManagerClass();
@@ -96,18 +96,19 @@ public class CommunicationHandler {
                         CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.CONNECTED_RUNNING);
                         return true;
                     } else {
-                        //TODO popup for user "error occured"
+                        getContext().makeToast("Could not start OBD device");
                         return false;
                     }
                 } catch (InterruptedException e) {
-                    Log.e(TAG, "checkSafeConnection: interrupt" , e );
+                    Log.e(TAG, "checkSafeConnection: interrupt", e);
                 } catch (ExecutionException e) {
-                    Log.e(TAG, "checkSafeConnection:execution ", e );}
+                    Log.e(TAG, "checkSafeConnection:execution ", e);
                 }
-                return false;
             }
             return false;
         }
+        return false;
+    }
 
 
     private void createTripHandler() {
@@ -149,10 +150,6 @@ public class CommunicationHandler {
     }
 
     public boolean getRunningStatus() {
-        return runningStatus;
-    }
-
-    public boolean isRunningStatus() {
         return runningStatus;
     }
 

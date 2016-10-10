@@ -32,4 +32,5 @@ dependencies {
     compile 'com.google.android.gms:play-services-location:9.6.1'
     apply plugin: 'com.android.application'
 
+    compile 'com.google.android.gms:play-services-ads:9.6.1'
 }

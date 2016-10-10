@@ -31,7 +31,7 @@ import static android.content.ContentValues.TAG;
  * Created by Daniel on 06/10/2016.
  */
 
-public class TripsListView extends Fragment implements UpdatableFragment, AdapterView.OnItemClickListener {
+public class TripsListFragment extends Fragment implements UpdatableFragment, AdapterView.OnItemClickListener {
 
     private View fragmentView;
     private ListView listView;
@@ -70,7 +70,7 @@ public class TripsListView extends Fragment implements UpdatableFragment, Adapte
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         CommunicationHandler.getCommunicationHandlerInstance().setTripId(tripIds.get(position));
-        getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
+        getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT,true);
     }
 
 

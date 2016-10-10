@@ -172,7 +172,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         this.database = this.getReadableDatabase();
 
         this.cursor = this.database.rawQuery("SELECT " + TRIP_ID + " as " + "_id, " + TRIP_TITLE + ", " + TRIP_START_TIME + ", " + TRIP_DISTANCE + ", " + TRIP_DURATION +
-                " FROM " + TABLE_TRIP + ";", null, null);
+                " FROM " + TABLE_TRIP + " ORDER BY " + TRIP_ID + " DESC;", null, null);
         return this.cursor;
     }
 
