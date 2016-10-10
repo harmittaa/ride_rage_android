@@ -129,7 +129,8 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
             }
         });
         serviceThread.start();
-        startService(new Intent(this, LoggerService.class));
+        Log.e(TAG, "onStartCommand: should start loggerservice now" );
+        startService(new Intent(CommunicationHandler.getCommunicationHandlerInstance().getContext(), LoggerService.class));
         return START_STICKY_COMPATIBILITY;
     }
 
@@ -288,12 +289,11 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     @Override
     public void onLocationChanged(Location location) {
         if (isRunning) {
-            setLatitude(location.getLatitude());
-            setLongitude(location.getLongitude());
+            dataVariable.setLatitude(location.getLatitude());
+            dataVariable.setLongitude(location.getLongitude());
             if (this.previousLocation != null) {
-                this.totalDistance += location.distanceTo(this.previousLocation) / 1000;
+                dataVariable.setTotalDistance(dataVariable.getTotalDistance() + location.distanceTo(this.previousLocation) / 1000);
             }
-            dataVariable.setTotalDistance(dataVariable.getTotalDistance() + location.distanceTo(this.previousLocation) / 1000);
             this.previousLocation = location;
         }
     }

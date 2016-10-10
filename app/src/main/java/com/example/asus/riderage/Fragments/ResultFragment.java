@@ -7,6 +7,7 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -113,14 +114,10 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             @Override
             public void run() {
                 googleMap.clear();
-                Log.e(TAG, "run: freeze happens here");
-                Log.e(TAG, "run: size" + polylineOptionsList.size());
+                Log.e(TAG, "run: polylines size : " + polylineOptionsList.size() );
                 for (PolylineOptions po : polylineOptionsList) {
-                    Log.e(TAG, "run: polyline data " + po.getPoints().size());
-                    Log.e(TAG, "run: polyline data " + po.getPoints().get(1));
                     googleMap.addPolyline(po.clickable(true));
                 }
-                Log.e(TAG, "run: or here?");
                 zoomMap();
             }
         });
@@ -168,6 +165,11 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     public void onPolylineClick(Polyline polyline) {
         Log.e(TAG, "onPolylineClick: clicked polyline " + polyline);
     }
+
+    /**
+     * Async Task for initialization of result view
+     * draws polylines and sets variables of textviews
+     */
 
     private class DataFetcher extends AsyncTask<Integer, Long, Boolean> {
         private long tripId;
@@ -218,22 +220,33 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             dataPointCursor.moveToFirst();
             tripDataCursor.moveToFirst();
 
-            while (dataPointCursor.moveToNext()) {
-                if (Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED))) > 0) {
-                    counter++;
-                    avgRpm += Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM)));
-                    avgSpeed += Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED)));
+            String avgrpm = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_RPM));
+            String avgspd = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_SPEED));
+            Log.e(TAG, "calculateAverages: datapoint RPM " + (dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM))) );
+            if(TextUtils.isEmpty(avgrpm) || TextUtils.isEmpty(avgspd)) {
+                while (dataPointCursor.moveToNext()) {
+                    if (Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED))) > 0) {
+                        counter++;
+                        avgRpm += Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM)));
+                        Log.e(TAG, "calculateAverages: parsed from database rpm" + avgRpm);
+                        avgSpeed += Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED)));
+                    }
                 }
-            }
 
-            avgRpm = avgRpm / counter;
-            avgSpeed = avgSpeed / counter;
+                avgRpm = avgRpm / counter;
+                avgSpeed = avgSpeed / counter;
+            }else {
+                avgRpm = Double.parseDouble(avgrpm);
+                avgSpeed = Double.parseDouble(avgspd);
+            }
             String duration = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_DURATION));
             String distance = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_DISTANCE));
             if (duration == null || distance == null) {
                 duration = calculateDuration(dataPointCursor);
                 distance = String.valueOf(String.format(Locale.getDefault(), "%.2f", getDistanceFromCursor(dataPointCursor))) + "KM";
             }
+            Log.e(TAG, "endTrip params:\ntripid " + tripId + "\ndistance " + distance + "\nduration " + duration + "\naveragespeed " + avgSpeed + "\naveragerpm " + avgRpm + "\nconsumption ");
+
             updateFragmentView(duration, distance, String.valueOf(String.format(Locale.getDefault(), "%.1f", avgSpeed)) + "KM/H", String.valueOf(String.format(Locale.getDefault(), "%.0f", avgRpm)) + "RPM", "jeeben");
         }
 
@@ -319,6 +332,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             while (currentLatLng.latitude == 0 && currentLatLng.longitude == 0) {
                 cursor.moveToNext();
                 currentLatLng = new LatLng(Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_LATITUDE))), (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_LONGITUDE)))));
+                allLatLngs.add(currentLatLng);
                 Log.e(TAG, "parseLatLng: latlong was at equator");
             }
             if (Double.parseDouble(cursor.getString(cursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM))) > 2500) {

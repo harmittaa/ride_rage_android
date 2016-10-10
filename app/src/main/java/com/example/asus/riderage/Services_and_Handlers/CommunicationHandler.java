@@ -24,6 +24,8 @@ public class CommunicationHandler {
     private long tripId;
 
     private Constants.CONNECTION_STATE connection_state;
+    private volatile boolean runningStatus;
+
     private CommunicationHandler() {
         this.btManager = BluetoothManagerClass.getBluetoothManagerClass();
         //Log.e(TAG, "CommunicationHandler: created");
@@ -144,5 +146,17 @@ public class CommunicationHandler {
 
     public void setDataVariable(DataVariables dataVariable) {
         this.dataVariable = dataVariable;
+    }
+
+    public boolean getRunningStatus() {
+        return runningStatus;
+    }
+
+    public boolean isRunningStatus() {
+        return runningStatus;
+    }
+
+    public void setRunningStatus(boolean runningStatus) {
+        this.runningStatus = runningStatus;
     }
 }

@@ -1,6 +1,10 @@
 package com.example.asus.riderage.Services_and_Handlers;
 
+import android.util.Log;
+
 import java.util.ArrayList;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Holds variables such as rpm, speed and averages for the trip
@@ -46,6 +50,7 @@ public class DataVariables {
 
     public void setAvgRpm(double avgRpm) {
         this.avgRpm = avgRpm;
+        Log.e(TAG, "setAvgRpm: avgrpm set to " + this.avgRpm );
     }
 
     public double getAvgSpeed() {
@@ -54,6 +59,7 @@ public class DataVariables {
 
     public void setAvgSpeed(double avgSpeed) {
         this.avgSpeed = avgSpeed;
+        Log.e(TAG, "setAvgSpeed: avgspd set to " +this.avgSpeed);
     }
 
     public ArrayList<Double> getRpmList() {

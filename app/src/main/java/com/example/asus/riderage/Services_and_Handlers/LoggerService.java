@@ -42,21 +42,25 @@ public class LoggerService extends Service {
         Thread loggerServiceThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Thread.sleep(2000);
-                    dataVariable.addToRpm(dataVariable.getRpm());
-                    dataVariable.addToSpeed(dataVariable.getSpeed());
-                    dataVariable.setAvgRpm(getTotalOfDoubleArray(dataVariable.getRpmList()) / dataVariable.getRpmList().size());
-                    dataVariable.setAvgRpm(getTotalOfDoubleArray(dataVariable.getSpeedList()) / dataVariable.getSpeedList().size());
-                    tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), dataVariable.getSpeed(), dataVariable.getRpm(), dataVariable.getAcceleration(),
-                            dataVariable.getConsumption(), dataVariable.getLongitude(), dataVariable.getLatitude(), dateFormat.format(new Date())));
-                    if (Thread.currentThread().isInterrupted() || Thread.interrupted()) {
-                        throw new InterruptedException();
+                Log.e(TAG, "loggerservice starterd ");
+                while(true) {// TODO: 10/10/2016 change to CommunicationHandler.getCommunicationHandlerInstance().getRunningStatus())
+                    try {
+                        Thread.sleep(2000);
+                        dataVariable.addToRpm(dataVariable.getRpm());
+                        dataVariable.addToSpeed(dataVariable.getSpeed());
+                        Log.e(TAG, "loggershits before average calculaton: " + dataVariable.getRpmList().size() + "<- rpms size " + dataVariable.getSpeedList().size() + "<- speeds size");
+                        dataVariable.setAvgRpm(getTotalOfDoubleArray(dataVariable.getRpmList()) / dataVariable.getRpmList().size());
+                        dataVariable.setAvgSpeed(getTotalOfDoubleArray(dataVariable.getSpeedList()) / dataVariable.getSpeedList().size());
+                        tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), dataVariable.getSpeed(), dataVariable.getRpm(), dataVariable.getAcceleration(),
+                                dataVariable.getConsumption(), dataVariable.getLongitude(), dataVariable.getLatitude(), dateFormat.format(new Date())));
+                        if (Thread.currentThread().isInterrupted() || Thread.interrupted()) {
+                            throw new InterruptedException();
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        Thread.interrupted();
+                        return;
                     }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    Thread.interrupted();
-                    return;
                 }
 
             }
@@ -82,9 +86,6 @@ public class LoggerService extends Service {
         return null;
     }
 
-    public void setDataVariable(DataVariables dataVariable) {
-        this.dataVariable = dataVariable;
-    }
 
     public Double getTotalOfDoubleArray(ArrayList<Double> arrayToCount) {
         Double jeeben = 0.0;
