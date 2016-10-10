@@ -42,12 +42,14 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
     BluetoothAdapter btAdapter;
     TextView accelTest;
     private View fragmentView;
+    private TextView distanceTextView;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         fragmentView = inflater.inflate(R.layout.fragment_gauges, container, false);
         accelTest = (TextView) fragmentView.findViewById(R.id.accelTest);
+        distanceTextView = (TextView) fragmentView.findViewById(R.id.distance_text_view);
         initButtonListners();
         initSpeedos();
         updateOnStateChanged(CommunicationHandler.getCommunicationHandlerInstance().getConnection_state());
@@ -154,6 +156,10 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
         speedoSpeed.setSpeed(speed, 0, 0);
     }
 
+    public void updateDistance(double newTotalDistance){
+        this.distanceTextView.setText("Distance driven:n" + newTotalDistance + " KM");
+    }
+
     private MainActivity getMainActivity() {
         return (MainActivity) getActivity();
     }
@@ -174,7 +180,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
                 //getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
                 break;
             case R.id.listFragmentButton:
-                getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.TRIPS_LIST_FRAGMENT);
+                getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.TRIPS_LIST_FRAGMENT,true);
                 break;
 
         }

@@ -53,7 +53,7 @@ public class TripHandler {
 
     public void stopCurrentTrip(){
         Log.e(TAG, "stopCurrentTrip: 1." );
-        ObdJobService.isRunning = false;
+        CommunicationHandler.getCommunicationHandlerInstance().setRunningStatus(false);
         this.endDate = new Date();
         setTripTimeTotal(formatDuration(endDate.getTime() - startDate.getTime()));
     }
@@ -71,7 +71,6 @@ public class TripHandler {
         Log.e(TAG, "saveTripToDb: 4." );
         this.tripDbHelper.endTrip(this.tripId, this.getTotalDistance(), dateFormat.format(this.endDate), getTripTimeTotal(), this.getAverageSpeed(), this.getAverageRPM(), null, null, null, null);
         CommunicationHandler.getCommunicationHandlerInstance().setTripId(this.tripId);
-        CommunicationHandler.getCommunicationHandlerInstance().getContext().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
     }
 
 
