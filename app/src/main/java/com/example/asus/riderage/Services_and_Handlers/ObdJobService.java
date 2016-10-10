@@ -46,6 +46,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     private boolean isAccelerationInProgress = false;
     private double speed, rpm, acceleration, consumption, averageSpeed, averageRpm, longitude, latitude;
     TripHandler tripHandler;
+    private DataVariables dataVariable;
     private LocationRequest locationRequest;
     private GoogleApiClient googleApiClient;
     static volatile boolean isRunning = false;
@@ -59,6 +60,9 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
         rpms = new ArrayList<>();
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
+        this.dataVariable = new DataVariables();
+        this.communicationHandler.setDataVariable(this.dataVariable);
+
         tripHandler = CommunicationHandler.getCurrentTripHandler();
         initGoogleApiClient();
         createLocationRequest();
@@ -86,20 +90,19 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                 final RPMCommand rpmCommand = new RPMCommand();
                 SpeedCommand speedCommand = new SpeedCommand();
 
-                Thread t = new Thread(new LoggerThread());
-                t.start();
+                /*Thread t = new Thread(new LoggerThread());
+                t.start();*/
                 isRunning = true;
 
                 while (isRunning) {
                     try {
                         speedCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
                         rpmCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
-                        setSpeed(Double.parseDouble(speedCommand.getCalculatedResult()));
-                        setRpm(Double.parseDouble(rpmCommand.getCalculatedResult()));
-                        consumption = 10;
-                        communicationHandler.updateGauges(rpm, speed);
+                        dataVariable.setSpeed(Double.parseDouble(speedCommand.getCalculatedResult()));
+                        dataVariable.setRpm(Double.parseDouble(rpmCommand.getCalculatedResult()));
+                        dataVariable.setConsumption(10);
+                        communicationHandler.updateGauges(dataVariable.getRpm(), dataVariable.getSpeed());
 
-                        // catches exception if commands cannot be run
                     } catch (Exception e) {
                         Log.e(TAG, "ERROR running commands ", e);
                         closeConnection();
@@ -116,8 +119,8 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                     }
                 }
                 Log.e(TAG, "ObdJobService: 2.");
-                tripHandler.setAverageSpeed(getAverageSpeed());
-                tripHandler.setAverageRPM(getAverageRpm());
+                tripHandler.setAverageSpeed(dataVariable.getAvgSpeed());
+                tripHandler.setAverageRPM(dataVariable.getAvgRpm());
                 tripHandler.setTotalDistance(getTotalDistance());
                 CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
                 tripHandler.saveTripToDb();
@@ -126,6 +129,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
             }
         });
         serviceThread.start();
+        startService(new Intent(this, LoggerService.class));
         return START_STICKY_COMPATIBILITY;
     }
 
@@ -152,6 +156,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
         this.setRunning(false);
         this.closeConnection();
         stopLocationUpdates();
+        stopService(new Intent(this, LoggerService.class));
         stopSelf();
     }
 
@@ -288,7 +293,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
             if (this.previousLocation != null) {
                 this.totalDistance += location.distanceTo(this.previousLocation) / 1000;
             }
-            setTotalDistance(this.totalDistance);
+            dataVariable.setTotalDistance(dataVariable.getTotalDistance() + location.distanceTo(this.previousLocation) / 1000);
             this.previousLocation = location;
         }
     }
@@ -331,7 +336,6 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
      */
     private class LoggerThread implements Runnable {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-        int counter;
 
         @Override
         public void run() {
@@ -339,7 +343,6 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                 if (getSpeed() > -1) {
                     try {
                         Thread.sleep(2000);
-                        counter++;
                         addToRpms(getRpm());
                         addToSpeeds(getSpeed());
                         setAverageRpm(getTotalOfDoubleArray(getRpms()) / getRpms().size());

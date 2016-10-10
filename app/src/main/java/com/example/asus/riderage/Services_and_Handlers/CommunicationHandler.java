@@ -19,6 +19,7 @@ public class CommunicationHandler {
     private static CommunicationHandler communicationHandlerInstance = new CommunicationHandler();
     private MainActivity mainActivity;
     private BluetoothManagerClass btManager;
+    private DataVariables dataVariable;
     private static TripHandler currentTripHandler;
     private long tripId;
 
@@ -135,5 +136,13 @@ public class CommunicationHandler {
 
     public void setTripId(long tripId) {
         this.tripId = tripId;
+    }
+
+    public DataVariables getDataVariable() {
+        return dataVariable;
+    }
+
+    public void setDataVariable(DataVariables dataVariable) {
+        this.dataVariable = dataVariable;
     }
 }
