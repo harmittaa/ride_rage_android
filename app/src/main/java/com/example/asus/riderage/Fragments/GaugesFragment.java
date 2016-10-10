@@ -32,6 +32,7 @@ import static android.content.ContentValues.TAG;
  * Created by Daniel on 28/09/2016.
  */
 
+
 public class GaugesFragment extends Fragment implements View.OnClickListener, UpdatableFragment {
 
     private Button startTrip, stopTrip, tripsListButton;

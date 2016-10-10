@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
     private void changeVisibleFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.setCustomAnimations(R.animator.slide_left,R.animator.slide_right,R.animator.slide_left_back,R.animator.slide_right_back);
+        //fragmentTransaction.setCustomAnimations(R.animator.slide_left,R.animator.slide_right,R.animator.slide_left_back,R.animator.slide_right_back);
 
         switch (this.currentFragmentType) {
             case GAUGES_FRAGMENT:
@@ -167,7 +167,6 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //Log.e(TAG, "onClick: aids is go");
                 ConnectToOBDTask aidsTask = new ConnectToOBDTask(which);
                 aidsTask.execute();
                 dialog.dismiss();

@@ -8,8 +8,9 @@ public class DataPoint {
     private double speed,rpm;
     private long tripId;
     private double acceleration, consumption, longitude, latitude;
+    private String timestamp;
 
-    public DataPoint(long tripId, double spd, double r, double accel, double cons, double longitude, double latitude){
+    public DataPoint(long tripId, double spd, double r, double accel, double cons, double longitude, double latitude, String timestamp){
         this.speed = spd;
         this.rpm = r;
         this.acceleration = accel;
@@ -17,6 +18,7 @@ public class DataPoint {
         this.tripId = tripId;
         this.longitude = longitude;
         this.latitude = latitude;
+        this.timestamp = timestamp;
     }
 
     public double getAcceleration() {
@@ -62,4 +64,12 @@ public class DataPoint {
     public double getLatitude() {return latitude;}
 
     public void setLatitude(double latitude) {this.latitude = latitude;}
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
+    }
 }

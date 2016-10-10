@@ -27,7 +27,10 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Asus on 27/09/2016.
@@ -52,7 +55,6 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
 
     @Override
     public void onCreate() {
-        //Log.e(TAG, "onCreate: ObdJobService created");
         speeds = new ArrayList<>();
         rpms = new ArrayList<>();
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
@@ -80,10 +82,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
         this.serviceThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                //Log.e(TAG, "onStartCommand: ObdJobService started");
                 bluetoothSocket = bluetoothManagerClass.getBluetoothSocket();
-                //Log.e(TAG, "onStartCommand: bluetooth socket connection is " + BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().isConnected());
-                //Log.e(TAG, "Starting thread to get RPM");
                 final RPMCommand rpmCommand = new RPMCommand();
                 SpeedCommand speedCommand = new SpeedCommand();
                 Thread t = new Thread(new LoggerThread());
@@ -92,16 +91,14 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
 
                 while (isRunning) {
                     try {
-                        //Log.e(TAG, "onStartCommand: bluetooth socket connection is " + BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().isConnected());
                         speedCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
                         rpmCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
                         setSpeed(Double.parseDouble(speedCommand.getCalculatedResult()));
                         setRpm(Double.parseDouble(rpmCommand.getCalculatedResult()));
                         consumption = 10;
                         communicationHandler.updateGauges(rpm, speed);
-                        //Log.e(TAG, "RPM formatted " + rpm);
-                        //Log.e(TAG, "Speed formatted " + speed);
 
+                        // catches exception if commands cannot be run
                     } catch (Exception e) {
                         Log.e(TAG, "ERROR running commands ", e);
                         closeConnection();
@@ -139,7 +136,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                 Log.e(TAG, "closeConnection: 3.");
             }
         } catch (Exception e) {
-            //Log.e(TAG, "closeConnection: error when closing connection ", e);
+            Log.e(TAG, "closeConnection: error when closing connection ", e);
         }
 
     }
@@ -151,7 +148,6 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     // service is closed
     @Override
     public void onDestroy() {
-        //Log.e(TAG, "onDestroy: called");
         this.setRunning(false);
         this.closeConnection();
         stopLocationUpdates();
@@ -171,7 +167,6 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
             } else if (0 < d && d < 8) {
                 this.isAccelerationInProgress = true;
                 acceleration = d;
-                ////Log.e(TAG, "onSensorChanged: Accel value " + d);
             } else {
                 this.isAccelerationInProgress = false;
             }
@@ -267,6 +262,21 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
         this.totalDistance = totalDistance;
     }
 
+    public void addToRpms(Double rpmToAdd) {
+        this.rpms.add(rpmToAdd);
+    }
+
+    public void addToSpeeds(Double speedToAdd) {
+        this.speeds.add(speedToAdd);
+    }
+
+    public ArrayList<Double> getRpms() {
+        return this.rpms;
+    }
+
+    public ArrayList<Double> getSpeeds() {
+        return this.speeds;
+    }
 
     // GOOGLE MAPS API starts here
     @Override
@@ -289,7 +299,6 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
             Location loc = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
             LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, ObdJobService.this);
 
-            //Log.e(TAG, "onConnected: LATTARI" + loc.getLatitude());
         } catch (SecurityException e) {
             e.printStackTrace();
             System.out.println("Security Failed");
@@ -307,22 +316,6 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
         //Log.e(TAG, "onConnectionFailed: Google maps connection failed");
     }
 
-    public void addToRpms(Double rpmToAdd) {
-        this.rpms.add(rpmToAdd);
-    }
-
-    public void addToSpeeds(Double speedToAdd) {
-        this.speeds.add(speedToAdd);
-    }
-
-    public ArrayList<Double> getRpms() {
-        return this.rpms;
-    }
-
-    public ArrayList<Double> getSpeeds() {
-        return this.speeds;
-    }
-
     public Double getTotalOfDoubleArray(ArrayList<Double> arrayToCount) {
         Double jeeben = 0.0;
         for (Double d : arrayToCount) {
@@ -332,8 +325,11 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     }
 
 
-    // Thread that logs all the data from the sensors
+    /**
+     * Creates DataPoints
+     */
     private class LoggerThread implements Runnable {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
         int counter;
 
         @Override
@@ -348,7 +344,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                         setAverageRpm(getTotalOfDoubleArray(getRpms()) / getRpms().size());
                         setAverageSpeed(getTotalOfDoubleArray(getSpeeds()) / getSpeeds().size());
                         Log.e(TAG, "obdloggerthread: averages set to " + (getTotalOfDoubleArray(getSpeeds()) / getSpeeds().size()) + " & " + (getTotalOfDoubleArray(getRpms()) / getRpms().size()));
-                        tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), getSpeed(), getRpm(), getAcceleration(), getConsumption(), getLongitude(), getLatitude()));
+                        tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), getSpeed(), getRpm(), getAcceleration(), getConsumption(), getLongitude(), getLatitude(), dateFormat.format(new Date())));
                         if (Thread.currentThread().isInterrupted() || Thread.interrupted()) {
                             throw new InterruptedException();
                         }
@@ -360,9 +356,6 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                     }
                 }
             }
-            //Log.e(TAG, "run: Logger thread should end now, passing averages");
-
-            //Log.e(TAG, "run: getAvgShits" + getAverageRpm() + getAverageSpeed() + getTotalDistance());
         }
     }
 }

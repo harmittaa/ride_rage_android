@@ -67,11 +67,8 @@ public class TripHandler {
     public void stopCurrentTrip(){
         Log.e(TAG, "stopCurrentTrip: 1." );
         ObdJobService.isRunning = false;
-
         this.endDate = new Date();
         setTripTimeTotal(formatDuration(endDate.getTime() - startDate.getTime()));
-
-
     }
 
     private String formatDuration(long tripTimeTotal) {
