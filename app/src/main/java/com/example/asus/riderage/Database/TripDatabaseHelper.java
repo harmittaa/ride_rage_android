@@ -255,4 +255,15 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         return this.cursor;
 
     }
+
+    /**
+     * Deletes the Trip and associated datapoints from the DB
+     * @param tripId The ID of the trip that needs to be deleted
+     * @return Returns true when one or more rows from TABLE_TRIP are deleted
+     */
+    public boolean deleteTrip(long tripId) {
+        this.database = getWritableDatabase();
+        this.database.delete(TABLE_DATAPOINT, DATAPOINT_TRIP_ID + " = " + tripId, null);
+        return this.database.delete(TABLE_TRIP, TRIP_ID + " = " + tripId, null) > 0;
+    }
 }

@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import static android.content.ContentValues.TAG;
 
 /**
- * Created by Daniel on 28/09/2016.
+ * Handles gauges
  */
 
 
@@ -57,8 +57,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getMainActivity().changeActionBarIcons(Constants.FRAGMENT_TYPES.GAUGES_FRAGMENT);
-
+        //getMainActivity().changeActionBarIcons(Constants.FRAGMENT_TYPES.GAUGES_FRAGMENT);
     }
 
     private void initButtonListners() {

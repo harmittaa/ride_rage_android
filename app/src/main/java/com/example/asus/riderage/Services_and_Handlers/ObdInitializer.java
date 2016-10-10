@@ -14,9 +14,10 @@ import com.github.pires.obd.enums.ObdProtocols;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
-
-// class used for initializing the OBD connection
-// init sequence is required when a new connection is made to wake up the ELM327
+/**
+ * Class used for initializing the OBD connection.
+ * Init sequence is required when a new connection is made to wake up the ELM327
+ */
 
 public class ObdInitializer implements Callable<Boolean> {
     private static final String TAG = "ObdInitializer";
@@ -33,49 +34,37 @@ public class ObdInitializer implements Callable<Boolean> {
     // https://www.elmelectronics.com/help/obd/tips/#327_Commands
     public boolean initializeObd() {
         try {
-            //Log.e(TAG, "InitOBD");
             // reset the ELM327
             new ObdResetCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-            //Log.e(TAG, "ObdResetComand was run");
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
                 //Log.e(TAG, "Thread sleep: error", e);
             }
             // init commands
-            //Log.e(TAG, "Thread sleep done");
             new EchoOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
             new LineFeedOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
             new TimeoutCommand(62).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
             new SelectProtocolCommand(ObdProtocols.AUTO).run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
-
-            //RPMCommand make = new RPMCommand();
-            //make.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
-            ////Log.e(TAG, "rpm : " + make.getFormattedResult());
-
-
-            //Log.e(TAG, "Init finished without errors ");
-            //Log.e(TAG, "Bluetooth socket connection " + bluetoothSocket.isConnected());
-            // set the bluetoothsocket back and star the ObdJobService
+            // set the bluetoothsocket back and start the ObdJobService
             this.bluetoothManagerInstance.setBluetoothSocket(this.bluetoothSocket);
-            /*commHandler.startObdJobService();*/
             return true;
-        } catch (Exception e) {
-            //Log.e(TAG, "ERROR", e);
+        } catch (IOException e) {
             try {
-                //Log.e(TAG, "Read return -1, closing BT socket");
                 bluetoothSocket.close();
             } catch (IOException e1) {
                 e1.printStackTrace();
+                return false;
             }
+            return false;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
             return false;
         }
     }
-
 
     @Override
     public Boolean call() throws Exception {
         return initializeObd();
     }
 }
-
