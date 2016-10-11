@@ -4,12 +4,14 @@ import android.util.Log;
 
 import java.text.DateFormat;
 
+import com.example.asus.riderage.MainActivity;
 import com.example.asus.riderage.Misc.Constants;
 import com.example.asus.riderage.Database.DataPoint;
 import com.example.asus.riderage.Database.TripDatabaseHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -59,7 +61,7 @@ public class TripHandler {
     }
 
     private String formatDuration(long tripTimeTotal) {
-        String hms = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(tripTimeTotal),
+        String hms = String.format(Locale.getDefault(),"%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(tripTimeTotal),
                 TimeUnit.MILLISECONDS.toMinutes(tripTimeTotal) % TimeUnit.HOURS.toMinutes(1),
                 TimeUnit.MILLISECONDS.toSeconds(tripTimeTotal) % TimeUnit.MINUTES.toSeconds(1));
         Log.e(TAG, "formatDuration: time formatted " + hms);
@@ -69,7 +71,7 @@ public class TripHandler {
 
     public void saveTripToDb(){
         Log.e(TAG, "saveTripToDb: 4." );
-        this.tripDbHelper.endTrip(this.tripId, this.getTotalDistance(), dateFormat.format(this.endDate), getTripTimeTotal(), this.getAverageSpeed(), this.getAverageRPM(), null, null, null, null);
+        this.tripDbHelper.endTrip(this.tripId, MainActivity.round(this.getTotalDistance(), 2), dateFormat.format(this.endDate), getTripTimeTotal(), MainActivity.round(this.getAverageSpeed(), 1), MainActivity.round(this.getAverageRPM(), 0), null, null, null, null);
         CommunicationHandler.getCommunicationHandlerInstance().setTripId(this.tripId);
     }
 

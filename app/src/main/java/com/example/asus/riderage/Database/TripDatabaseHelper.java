@@ -8,14 +8,11 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 import android.util.Log;
 
-import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
-
-import org.apache.commons.io.FileUtils;
+import com.example.asus.riderage.MainActivity;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.channels.FileChannel;
 
 /**
@@ -296,38 +293,98 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
+     * Updates trip's values in case TripHandler has failed
+     * @param tripId ID for the trip that's going to be updated
+     * @param averageSpeed Average speed of the trip
+     * @param averageRpm Average RPM of the trip
+     * @param duration Total duration in HH:MM:SS of the trip
+     * @param distance
+     */
+    public void editTripValues(long tripId, double averageSpeed, double averageRpm, String duration, String distance) {
+        this.database = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(TRIP_AVERAGE_SPEED, averageSpeed);
+        values.put(TRIP_AVERAGE_RPM, averageRpm);
+        values.put(TRIP_DURATION, duration);
+        values.put(TRIP_DISTANCE, distance);
+        this.database.update(TABLE_TRIP, values, TRIP_ID + " = " + tripId, null);
+    }
+
+    /**
      * Deletes the Trip and associated datapoints from the DB
      *
      * @param tripId The ID of the trip that needs to be deleted
      * @return Returns true when one or more rows from TABLE_TRIP are deleted
      */
     public boolean deleteTrip(long tripId) {
-        this.database = getWritableDatabase();
+        this.database = this.getWritableDatabase();
         this.database.delete(TABLE_DATAPOINT, DATAPOINT_TRIP_ID + " = " + tripId, null);
         return this.database.delete(TABLE_TRIP, TRIP_ID + " = " + tripId, null) > 0;
     }
 
 
-    public void export2() {
+    /**
+     * Calculates the total distance driven based on the TRIP_DISTANCE field in TABLE_TRIP.
+     * @return Total distance driven in kilometers rounded to two decimals using {@link MainActivity#round(double, int)}.
+     */
+    public double getTotalDistanceDriven() {
+        this.database = this.getReadableDatabase();
+        // define SELECT fields
+        String[] projection = {
+                TRIP_DISTANCE
+        };
+
+        // define the query, searches from TABLE_TRIP with the defined projection
+        this.cursor = this.database.query(
+                TABLE_TRIP,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+
+        this.cursor.moveToFirst();
+        double totalDistance = 0.0;
+        if (this.cursor.getCount() > 0) {
+            while (this.cursor.moveToNext()) {
+                totalDistance += this.cursor.getDouble(this.cursor.getColumnIndexOrThrow(TRIP_DISTANCE));
+            }
+        }
+        return MainActivity.round(totalDistance, 2);
+
+
+    };
+
+    /**
+     * Function for exporting the database, creates a folder in downloads "BackupFolder" and saves
+     * the database file there.
+     */
+    public void exportDatabase() {
         //creating a new folder for the database to be backuped to
         File direct = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/BackupFolder");
 
-        Log.e(TAG, "export2: dir already exists?" +  direct.exists());
+        Log.e(TAG, "exportDatabase: dir already exists?" +  direct.exists());
         if(!direct.exists())
         {
             if(direct.mkdir()){
-                Log.e(TAG, "export2: dir exists?" +  direct.exists());
+                Log.e(TAG, "exportDatabase: dir exists?" +  direct.exists());
             } else {
-                Log.e(TAG, "export2: failed to create directory? " + direct.mkdir() );
+                Log.e(TAG, "exportDatabase: failed to create directory? " + direct.mkdir() );
             }
 
         }
-        Log.e(TAG, "export2: " + direct.getAbsolutePath());
-        exportDB2();
+        Log.e(TAG, "exportDatabase: " + direct.getAbsolutePath());
+        doExport();
 
     }
-    //exporting database
-    private void exportDB2() {
+
+    /**
+     * Handles the exporting of the database file
+     */
+    private void doExport() {
 
         try {
             File sd = Environment.getExternalStorageDirectory();
@@ -345,12 +402,12 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                 dst.transferFrom(src, 0, src.size());
                 src.close();
                 dst.close();
-                Log.e(TAG, "export2: success" );
+                Log.e(TAG, "exportDatabase: success" );
             } else {
-                Log.e(TAG, "exportDB2: canwrite " +  sd.canWrite() );
+                Log.e(TAG, "doExport: canwrite " +  sd.canWrite() );
             }
         } catch (Exception e) {
-            Log.e(TAG, "export2: failed", e );
+            Log.e(TAG, "exportDatabase: failed", e );
         }
     }
 }

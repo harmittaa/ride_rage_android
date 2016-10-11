@@ -16,8 +16,10 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.example.asus.riderage.Bluetooth.BluetoothManagerClass;
+import com.example.asus.riderage.Fragments.ResultFragment;
 import com.example.asus.riderage.Misc.Constants;
 import com.example.asus.riderage.Database.DataPoint;
+import com.example.asus.riderage.Misc.TripDataParser;
 import com.github.pires.obd.commands.SpeedCommand;
 import com.github.pires.obd.commands.engine.RPMCommand;
 import com.github.pires.obd.commands.protocol.ObdRawCommand;
@@ -134,6 +136,8 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                 tripHandler.setTotalDistance(dataVariable.getTotalDistance());
                 CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
                 tripHandler.saveTripToDb();
+                /*TripDataParser dataParser = new TripDataParser();
+                dataParser.execute();*/
                 CommunicationHandler.getCommunicationHandlerInstance().getContext().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT,true);
                 stopSelf();
             }
@@ -150,6 +154,8 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     private void closeConnection() {
         try {
             if (BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().isConnected()) {
+                TripDataParser dataParser = new TripDataParser();
+                dataParser.execute();
                 ObdRawCommand rawCommand = new ObdRawCommand("AT PC");
                 rawCommand.run(BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getInputStream(), BluetoothManagerClass.getBluetoothManagerClass().getBluetoothSocket().getOutputStream());
                 Log.e(TAG, "closeConnection: 3.");

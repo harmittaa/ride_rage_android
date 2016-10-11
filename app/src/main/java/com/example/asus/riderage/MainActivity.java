@@ -82,7 +82,8 @@ public class MainActivity extends AppCompatActivity {
         this.communicationHandler.passContext(this);
         checkGpsStatus();
         TripDatabaseHelper dbHelper = new TripDatabaseHelper(this);
-        //dbHelper.export2();
+        dbHelper.getTotalDistanceDriven();
+        //dbHelper.exportDatabase();
         getSupportActionBar().setDisplayShowHomeEnabled(true);
     }
 
@@ -325,6 +326,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Rounds given double to given decimals
+     * @param value Double to round
+     * @param places Amount of decimals to be rounded to
+     * @return Rounded double
+     */
     public static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 
