@@ -31,8 +31,6 @@ public class ObdInitializer implements Callable<Boolean> {
         this.commHandler = CommunicationHandler.getCommunicationHandlerInstance();
     }
 
-    // https://www.elmelectronics.com/help/obd/tips/#327_Commands
-
     /**
      * Sends initialization commands to the OBD reader.
      * <p></p><b>Commands:</b></p>
@@ -42,7 +40,8 @@ public class ObdInitializer implements Callable<Boolean> {
      *     <li>TimeoutCommand - defines how long the OBD waits for a reply from the ECU</li>
      *     <li>SelectProtocolCommand - defines the ECU protocol</li>
      * </ul>
-     * @return
+     * @see <a href="https://www.elmelectronics.com/help/obd/tips/#327_Commands"> OBD commands </a>
+     * @return True when initialization sequence has been run correctly, false when something fails
      */
     public boolean initializeObd() {
         try {

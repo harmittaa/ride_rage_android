@@ -233,6 +233,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         /**
          * Checks if the average speed and RPM are directly available
          * if not then calculates them based on DataPoint cursor.
+         * <p>Calls {@link #calculateDuration(Cursor)} and {@link #getDistanceFromCursor(Cursor)} if duration / distance is not directly available.</p>
          * @param dataPointCursor Cursor holding DataPoints
          * @param tripDataCursor  Cursor holding the Trip data
          */

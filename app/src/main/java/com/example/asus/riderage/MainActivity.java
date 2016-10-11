@@ -233,7 +233,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        //Log.e(TAG, "onDestroy: Main activity destroyed");
         stopService(new Intent(this, ObdJobService.class));
         BluetoothManagerClass.getBluetoothManagerClass().closeSocket();
         super.onDestroy();
