@@ -29,6 +29,7 @@ import static android.content.ContentValues.TAG;
 
 /**
  * Created by Daniel on 06/10/2016.
+ * <p>Displays a list of previous trips taken on the current device</p>
  */
 
 public class TripsListFragment extends Fragment implements UpdatableFragment, AdapterView.OnItemClickListener {

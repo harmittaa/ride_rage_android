@@ -165,6 +165,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                 null,
                 null
         );
+        Log.e(TAG, "getFullTripData: cursor size " + cursor.getCount());
         return this.cursor;
     }
 
@@ -262,6 +263,20 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                 " WHERE " + DATAPOINT_TRIP_ID + " = " + tripId, null, null);
         return this.cursor;
 
+    }
+
+    /**
+     * <p>Edits title of a trip with a spesific ID</p>
+     * @param newName <p>New name to be given to the trip</p>
+     * @param tripId <p>Id of the trip to be edited</p>
+     */
+    public void editTripName(String newName, long tripId){
+        this.database = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(TRIP_TITLE, newName);
+
+        this.database.update(TABLE_TRIP,values,TRIP_ID + " = " + tripId,null);
     }
 
     /**

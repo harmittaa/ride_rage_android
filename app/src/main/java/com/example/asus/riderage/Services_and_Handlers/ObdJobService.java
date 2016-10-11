@@ -105,6 +105,8 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                     } catch (Exception e) {
                         Log.e(TAG, "ERROR running commands ", e);
                         closeConnection();
+                        CommunicationHandler.getCommunicationHandlerInstance().getContext().stopObdJobService();
+                        CommunicationHandler.getCommunicationHandlerInstance().getContext().stopLoggerService();
                         CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
                         return;
                     }
@@ -113,6 +115,8 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                     } catch (InterruptedException e) {
                         Log.e(TAG, "Thread interrupted " + e);
                         closeConnection();
+                        CommunicationHandler.getCommunicationHandlerInstance().getContext().stopObdJobService();
+                        CommunicationHandler.getCommunicationHandlerInstance().getContext().stopLoggerService();
                         CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
                         return;
                     }

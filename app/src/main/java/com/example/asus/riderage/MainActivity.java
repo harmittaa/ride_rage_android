@@ -14,11 +14,14 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,8 +33,11 @@ import com.example.asus.riderage.Fragments.TripsListFragment;
 import com.example.asus.riderage.Misc.Constants;
 import com.example.asus.riderage.Misc.UpdatableFragment;
 import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
+import com.example.asus.riderage.Services_and_Handlers.LoggerService;
 import com.example.asus.riderage.Services_and_Handlers.ObdJobService;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -92,7 +98,6 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.setCustomAnimations(R.animator.slide_left, R.animator.slide_right, R.animator.slide_left_back, R.animator.slide_right_back);
-
         switch (this.currentFragmentType) {
             case GAUGES_FRAGMENT:
                 /*this.currentFragment = this.gaugeFragment;
@@ -103,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                 fragmentTransaction.commit();
                 //changeActionBarIcons(this.currentFragmentType);*/
                 this.currentFragment = this.gaugeFragment = new GaugesFragment();
-                fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
+                fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("huuben");
                 fragmentTransaction.commit();
                 break;
             case RESULT_FRAGMENT:
@@ -152,6 +157,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void resetActionBarTitle(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getSupportActionBar().setSubtitle(null);
+            }
+        });
+    }
+
     public void changeActionBarIcons(Constants.FRAGMENT_TYPES fragType) {
         switch (fragType) {
             case GAUGES_FRAGMENT:
@@ -190,11 +204,36 @@ public class MainActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int id) {
                                 tripDbHelper = new TripDatabaseHelper(MainActivity.this);
                                 tripDbHelper.deleteTrip(communicationHandler.getTripId());
-                                changeVisibleFragmentType(Constants.FRAGMENT_TYPES.TRIPS_LIST_FRAGMENT, false);
+                                //changeVisibleFragmentType(Constants.FRAGMENT_TYPES.TRIPS_LIST_FRAGMENT, false);
+                                onBackPressed();
                             }
                         })
                         .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
+                            }
+                        })
+                        .create()
+                        .show();
+                return true;
+            case R.id.action_edit:
+                AlertDialog.Builder builderi = new AlertDialog.Builder(this);
+                View alertView = CommunicationHandler.getCommunicationHandlerInstance().getContext().getLayoutInflater().inflate(R.layout.dialog_textinput, null);
+                builderi.setView(alertView);
+                final EditText newText = (EditText) alertView.findViewById(R.id.dialog_textInput);
+                builderi.setMessage(R.string.enter_name_for_trip)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                if (!TextUtils.isEmpty(newText.getText().toString())) {
+                                    tripDbHelper = new TripDatabaseHelper(MainActivity.this);
+                                    tripDbHelper.editTripName(newText.getText().toString(), CommunicationHandler.getCommunicationHandlerInstance().getTripId());
+                                }
+                                else
+                                    makeToast("Name was not changed");
+                            }
+                        })
+                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User cancelled the dialog
                             }
                         })
                         .create()
@@ -262,6 +301,10 @@ public class MainActivity extends AppCompatActivity {
         stopService(new Intent(this, ObdJobService.class));
     }
 
+    public void stopLoggerService() {
+        stopService(new Intent(this, LoggerService.class));
+    }
+
     public void updateGauges(final double rpm, final double speed) {
 
         runOnUiThread(new Runnable() {
@@ -276,9 +319,17 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                gaugeFragment.updateDistance(newTotalDistance);
+                gaugeFragment.updateDistance(round(newTotalDistance,1));
             }
         });
+    }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
     }
 
     public void updateOnConnectionStateChanged(Constants.CONNECTION_STATE newConnectionState) {
@@ -329,7 +380,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
-            //TODO show either connection complete or failed, dismiss popup
             dialog.dismiss();
             if (aBoolean) {
                 makeToast("Connection Succesful");

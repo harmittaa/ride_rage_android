@@ -8,12 +8,14 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -29,7 +31,7 @@ import java.util.ArrayList;
 import static android.content.ContentValues.TAG;
 
 /**
- * Handles gauges
+ * <p>Displays the main view of the application. Contains two gauges and buttons for connecting to bluetooth, starting and ending trips and entering listview of previous trips</p>
  */
 
 
@@ -72,6 +74,10 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
         this.tripsListButton.setOnClickListener(this);
     }
 
+
+    /**
+     * <p>Initializes the gauges, sets steps and max and min values, sets color ranges for rpm gauge</p>
+     */
 
     private void initSpeedos() {
         speedoRPM = (SpeedometerGauge) fragmentView.findViewById(R.id.speedoRPM);
@@ -116,6 +122,9 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
         getMainActivity().changeActionBarIcons(Constants.FRAGMENT_TYPES.GAUGES_FRAGMENT);
     }
 
+    /**
+     * <p>Sets a keylistener for the back key for this fragment. Only GaugeFragment requires this, as it is at the bottom of the backstack and will be the exit point for the app if pressing the back button of the phone</p>
+     */
     private void setupBackButtonActon() {
         getView().setFocusableInTouchMode(true);
         getView().requestFocus();
@@ -124,7 +133,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
                     @Override
                     public boolean onKey(View v, int keyCode, KeyEvent event) {
                         if (keyCode == KeyEvent.KEYCODE_BACK) {
-                            if (event.getAction()!=KeyEvent.ACTION_DOWN)
+                            if (event.getAction() != KeyEvent.ACTION_DOWN)
                                 return true;
                             Log.e(TAG, "onKey: BACK PRESSED");
                             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -156,7 +165,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
         speedoSpeed.setSpeed(speed, 0, 0);
     }
 
-    public void updateDistance(double newTotalDistance){
+    public void updateDistance(double newTotalDistance) {
         this.distanceTextView.setText("Distance driven:n" + newTotalDistance + " KM");
     }
 
@@ -168,11 +177,28 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.startTrip:
-                if (CommunicationHandler.getCommunicationHandlerInstance().checkSafeConnection()) {
-                    //Log.e(TAG, "Started succesfully");
-                } else {
-                    //Log.e(TAG, "Something failed in the checkSafeConnection");
-                }
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                View alertView = CommunicationHandler.getCommunicationHandlerInstance().getContext().getLayoutInflater().inflate(R.layout.dialog_textinput, null);
+                builder.setView(alertView);
+                final EditText newText = (EditText) alertView.findViewById(R.id.dialog_textInput);
+                builder.setMessage(R.string.enter_name_for_trip)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                if (TextUtils.isEmpty(newText.getText().toString()))
+                                    CommunicationHandler.getCommunicationHandlerInstance().setTripName("Trip With No Name");
+                                else
+                                    CommunicationHandler.getCommunicationHandlerInstance().setTripName(newText.getText().toString());
+                                CommunicationHandler.getCommunicationHandlerInstance().checkSafeConnection();
+                            }
+                        })
+                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User cancelled the dialog
+                            }
+                        })
+                        .create()
+                        .show();
+
                 break;
             case R.id.stopTrip:
                 //TODO 1. send obd close command through obdjobservice 2. close bluetooth socket
@@ -180,7 +206,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
                 //getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
                 break;
             case R.id.listFragmentButton:
-                getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.TRIPS_LIST_FRAGMENT,true);
+                getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.TRIPS_LIST_FRAGMENT, true);
                 break;
 
         }
