@@ -2,6 +2,7 @@ package com.example.asus.riderage.Fragments;
 
 import android.app.Fragment;
 import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -84,6 +85,12 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         this.googleMap.setOnPolylineClickListener(this);
         DataFetcher dataFetcher = new DataFetcher(tripId);
         dataFetcher.execute();
+    }
+
+    @Override
+    public void onPause() {
+        CommunicationHandler.getCommunicationHandlerInstance().getContext().resetActionBarTitle();
+        super.onPause();
     }
 
     @Override
@@ -221,10 +228,16 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         protected Boolean doInBackground(Integer... params) {
             Log.e(TAG, "doInBackground: 7.");
             this.dbHelper = new TripDatabaseHelper(getContext());
-            Cursor tripDataCursor = this.dbHelper.getFullTripData(getTripId());
+            final Cursor tripDataCursor = this.dbHelper.getFullTripData(getTripId());
             Cursor dataPointCursor = this.dbHelper.getDataPoints(getTripId());
             dataPointCursor.moveToFirst();
             tripDataCursor.moveToFirst();
+            CommunicationHandler.getCommunicationHandlerInstance().getContext().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    CommunicationHandler.getCommunicationHandlerInstance().getContext().getSupportActionBar().setSubtitle(tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(dbHelper.TRIP_TITLE)));
+                }
+            });
             calculateAverages(dataPointCursor, tripDataCursor);
             getDataPoints(dataPointCursor);
             return null;
@@ -243,23 +256,29 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             int counter = 0;
             dataPointCursor.moveToFirst();
             tripDataCursor.moveToFirst();
+            String avgrpm;
+            String avgspd;
+            try {
+                avgrpm = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_RPM));
+                avgspd = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_SPEED));
+                if (TextUtils.isEmpty(avgrpm) || TextUtils.isEmpty(avgspd)) {
+                    while (dataPointCursor.moveToNext()) {
+                        counter++;
+                        avgRpm += Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM)));
+                        Log.e(TAG, "calculateAverages: parsed from database rpm" + avgRpm);
+                        avgSpeed += Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED)));
+                    }
+                    if (avgRpm != 0) avgRpm = avgRpm / counter;
+                    if (avgSpeed != 0) avgSpeed = avgSpeed / counter;
 
-            String avgrpm = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_RPM));
-            String avgspd = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_SPEED));
-            if (TextUtils.isEmpty(avgrpm) || TextUtils.isEmpty(avgspd)) {
-                while (dataPointCursor.moveToNext()) {
-                    counter++;
-                    avgRpm += Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM)));
-                    Log.e(TAG, "calculateAverages: parsed from database rpm" + avgRpm);
-                    avgSpeed += Double.parseDouble(dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED)));
+                } else {
+                    avgRpm = Double.parseDouble(avgrpm);
+                    avgSpeed = Double.parseDouble(avgspd);
                 }
-                if (avgRpm != 0) avgRpm = avgRpm / counter;
-                if (avgSpeed != 0) avgSpeed = avgSpeed / counter;
-                
-            } else {
-                avgRpm = Double.parseDouble(avgrpm);
-                avgSpeed = Double.parseDouble(avgspd);
+            }catch (CursorIndexOutOfBoundsException e){
+
             }
+
             String duration = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_DURATION));
             String distance = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_DISTANCE));
             if (duration == null || distance == null) {

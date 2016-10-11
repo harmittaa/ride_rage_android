@@ -39,7 +39,7 @@ public class TripHandler {
 
     public void startNewTrip() {
         this.startDate = new Date();
-        this.tripId = this.tripDbHelper.saveTrip("Maken reissu", null, null, dateFormat.format(this.startDate));
+        this.tripId = this.tripDbHelper.saveTrip(CommunicationHandler.getCommunicationHandlerInstance().getTripName(), null, null, dateFormat.format(this.startDate));
     }
 
 

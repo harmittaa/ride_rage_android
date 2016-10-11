@@ -25,6 +25,7 @@ public class CommunicationHandler {
 
     private Constants.CONNECTION_STATE connection_state;
     private volatile boolean runningStatus = false;
+    private String tripName;
 
     private CommunicationHandler() {
         this.btManager = BluetoothManagerClass.getBluetoothManagerClass();
@@ -152,5 +153,13 @@ public class CommunicationHandler {
 
     public void setRunningStatus(boolean runningStatus) {
         this.runningStatus = runningStatus;
+    }
+
+    public void setTripName(String tripName) {
+        this.tripName = tripName;
+    }
+
+    public String getTripName() {
+        return tripName;
     }
 }

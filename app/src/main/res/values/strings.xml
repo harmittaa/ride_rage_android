@@ -8,4 +8,5 @@
     <string name="cancel">Cancel</string>
     <string name="confirmation_delete">Really delete trip?</string>
     <string name="no">No</string>
+    <string name="enter_name_for_trip">Enter a name for this trip</string>
 </resources>
