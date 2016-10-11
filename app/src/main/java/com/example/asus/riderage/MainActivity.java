@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.asus.riderage.Bluetooth.BluetoothManagerClass;
+import com.example.asus.riderage.Database.DatabaseExport;
 import com.example.asus.riderage.Database.TripDatabaseHelper;
 import com.example.asus.riderage.Fragments.GaugesFragment;
 import com.example.asus.riderage.Fragments.ResultFragment;
@@ -74,7 +75,8 @@ public class MainActivity extends AppCompatActivity {
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler.passContext(this);
         checkGpsStatus();
-
+        TripDatabaseHelper dbHelper = new TripDatabaseHelper(this);
+        //dbHelper.export2();
         getSupportActionBar().setDisplayShowHomeEnabled(true);
     }
 
