@@ -33,7 +33,7 @@ public class LoggerService extends Service {
     public void onCreate() {
         super.onCreate();
         tripHandler = CommunicationHandler.getCurrentTripHandler();
-        dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+        dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
         dataVariable = CommunicationHandler.getCommunicationHandlerInstance().getDataVariable();
     }
 

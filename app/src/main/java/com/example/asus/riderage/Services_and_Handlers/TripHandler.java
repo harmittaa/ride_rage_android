@@ -27,7 +27,7 @@ public class TripHandler {
     private double totalDistance;
 
     public TripHandler(){
-        this.dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+        this.dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
         this.tripDbHelper = new TripDatabaseHelper(CommunicationHandler.getCommunicationHandlerInstance().getContext());
     }
 

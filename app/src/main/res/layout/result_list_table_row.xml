@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:layout_marginTop="10dp">
+    android:padding="12dp" >
 
     <LinearLayout
         android:layout_width="0dp"
@@ -12,16 +12,20 @@
         android:orientation="vertical">
 
         <TextView
+            style="@style/font_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/trip_name"/>
+            android:id="@+id/trip_name"
+            android:textStyle="bold"/>
 
         <TextView
+            style="@style/font_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/trip_duration"/>
 
         <TextView
+            style="@style/font_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/trip_distance"/>
@@ -35,11 +39,13 @@
         android:orientation="vertical">
 
         <TextView
+            style="@style/font_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/trip_date"/>
 
         <TextView
+            style="@style/font_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/trip_cost"/>

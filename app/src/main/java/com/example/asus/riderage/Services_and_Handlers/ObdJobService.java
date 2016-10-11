@@ -337,7 +337,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
      * Creates DataPoints
      */
     private class LoggerThread implements Runnable {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+        DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 
         @Override
         public void run() {

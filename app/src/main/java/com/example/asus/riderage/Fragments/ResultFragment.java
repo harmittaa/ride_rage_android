@@ -323,7 +323,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             dataPointCursor.moveToLast();
             String endDate = dataPointCursor.getString(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_TIMESTAMP));
             Log.e(TAG, "calculateDuration: enddate " + endDate + " start " + startDate);
-            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault());
+            DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
             try {
                 Date startDateFormatted = dateFormat.parse(startDate);
                 Date endDateFormatted = dateFormat.parse(endDate);
