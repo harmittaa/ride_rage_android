@@ -26,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.asus.riderage.Bluetooth.BluetoothManagerClass;
+import com.example.asus.riderage.Database.DatabaseExport;
 import com.example.asus.riderage.Database.TripDatabaseHelper;
 import com.example.asus.riderage.Fragments.GaugesFragment;
 import com.example.asus.riderage.Fragments.ResultFragment;
@@ -80,7 +81,9 @@ public class MainActivity extends AppCompatActivity {
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler.passContext(this);
         checkGpsStatus();
-
+        TripDatabaseHelper dbHelper = new TripDatabaseHelper(this);
+        dbHelper.getTotalDistanceDriven();
+        //dbHelper.exportDatabase();
         getSupportActionBar().setDisplayShowHomeEnabled(true);
     }
 
@@ -274,7 +277,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        //Log.e(TAG, "onDestroy: Main activity destroyed");
         stopService(new Intent(this, ObdJobService.class));
         BluetoothManagerClass.getBluetoothManagerClass().closeSocket();
         super.onDestroy();
@@ -326,6 +328,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Rounds given double to given decimals
+     * @param value Double to round
+     * @param places Amount of decimals to be rounded to
+     * @return Rounded double
+     */
     public static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 

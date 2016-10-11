@@ -45,14 +45,11 @@ public class LoggerService extends Service {
         Thread loggerServiceThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                Log.e(TAG, "loggerservice starterd ");
-
-                while(CommunicationHandler.getCommunicationHandlerInstance().getRunningStatus()) {// TODO: 10/10/2016 change to CommunicationHandler.getCommunicationHandlerInstance().getRunningStatus())
+                while(CommunicationHandler.getCommunicationHandlerInstance().getRunningStatus()) {
                     try {
                         Thread.sleep(2000);
                         dataVariable.addToRpm(dataVariable.getRpm());
                         dataVariable.addToSpeed(dataVariable.getSpeed());
-                        Log.e(TAG, "loggershits before average calculaton: " + dataVariable.getRpmList().size() + "<- rpms size " + dataVariable.getSpeedList().size() + "<- speeds size");
                         dataVariable.setAvgRpm(getTotalOfDoubleArray(dataVariable.getRpmList()) / dataVariable.getRpmList().size());
                         dataVariable.setAvgSpeed(getTotalOfDoubleArray(dataVariable.getSpeedList()) / dataVariable.getSpeedList().size());
                         tripHandler.storeDataPointToDB(new DataPoint(tripHandler.getTripId(), dataVariable.getSpeed(), dataVariable.getRpm(), dataVariable.getAcceleration(),

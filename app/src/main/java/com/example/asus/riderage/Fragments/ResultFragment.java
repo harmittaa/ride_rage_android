@@ -73,6 +73,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
     /**
      * Called when GoogleMaps is ready to be initialized
+     *
      * @param googleMap
      */
     @Override
@@ -105,10 +106,11 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
     /**
      * Handles updating the ResultFragment views with data
-     * @param duration Duration of the trip
-     * @param distance Distance of the trip
-     * @param avgSpeed Average speed of the trip
-     * @param avgRpm Average RPM of the trip
+     *
+     * @param duration    Duration of the trip
+     * @param distance    Distance of the trip
+     * @param avgSpeed    Average speed of the trip
+     * @param avgRpm      Average RPM of the trip
      * @param placeHolder Feedback for the trip
      */
     public void updateFragmentView(final String duration, final String distance, final String avgSpeed, final String avgRpm, final String placeHolder) {
@@ -125,8 +127,8 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     }
 
     /**
-     * Calls runOnUiThread() to draw PolyLineOptions on the Google Maps.
-     * Afterwards calls zoomMap();
+     * Calls <code>runOnUiThread()</code> to draw <code>PolyLineOptions</code> on the Google Maps.
+     * Afterwards calls {@link #zoomMap()}
      */
     private void drawPolylines() {
         getMainActivity().runOnUiThread(new Runnable() {
@@ -143,7 +145,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     }
 
     /**
-     * Uses LatLngBounds to calculate the bounds of the trip and creates CameraUpdate to zoom on the
+     * Uses <code>LatLngBounds</code> to calculate the bounds of the trip and creates <code>CameraUpdate</code> to zoom on the
      * location.
      */
     private void zoomMap() {
@@ -191,7 +193,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
     /**
      * Async Task for initialization of result view
-     * draws polylines and sets variables of textviews
+     * draws <code>PolyLineOptions</code> and populates the <code>TextViews</code>
      */
 
     private class DataFetcher extends AsyncTask<Integer, Long, Boolean> {
@@ -203,6 +205,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
         /**
          * Constructor to pass the trip id
+         *
          * @param tripId
          */
         public DataFetcher(long tripId) {
@@ -218,6 +221,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
         /**
          * doInBackground start that calls DbHelper for cursors and proceeds to call needed methods
+         *
          * @param params
          * @return
          */
@@ -232,7 +236,9 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             CommunicationHandler.getCommunicationHandlerInstance().getContext().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    CommunicationHandler.getCommunicationHandlerInstance().getContext().getSupportActionBar().setSubtitle(tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(dbHelper.TRIP_TITLE)));
+                    if (tripDataCursor.getCount() > 0) {
+                        CommunicationHandler.getCommunicationHandlerInstance().getContext().getSupportActionBar().setSubtitle(tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(dbHelper.TRIP_TITLE)));
+                    }
                 }
             });
             calculateAverages(dataPointCursor, tripDataCursor);
@@ -243,6 +249,8 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         /**
          * Checks if the average speed and RPM are directly available
          * if not then calculates them based on DataPoint cursor.
+         * <p>Calls {@link #calculateDuration(Cursor)} and {@link #getDistanceFromCursor(Cursor)} if duration / distance is not directly available.</p>
+         *
          * @param dataPointCursor Cursor holding DataPoints
          * @param tripDataCursor  Cursor holding the Trip data
          */
@@ -252,8 +260,8 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             int counter = 0;
             dataPointCursor.moveToFirst();
             tripDataCursor.moveToFirst();
-            String avgrpm;
-            String avgspd;
+            String avgrpm = "";
+            String avgspd = "";
             try {
                 avgrpm = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_RPM));
                 avgspd = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_SPEED));
@@ -271,23 +279,23 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                     avgRpm = Double.parseDouble(avgrpm);
                     avgSpeed = Double.parseDouble(avgspd);
                 }
-            }catch (CursorIndexOutOfBoundsException e){
-
+            } catch (CursorIndexOutOfBoundsException e) {
+                Log.e(TAG, "calculateAverages: CURSOR EMPTY");
             }
-
             String duration = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_DURATION));
             String distance = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_DISTANCE));
             if (duration == null || distance == null) {
                 duration = calculateDuration(dataPointCursor);
                 distance = String.valueOf(String.format(Locale.getDefault(), "%.2f", getDistanceFromCursor(dataPointCursor))) + "KM";
             }
-            Log.e(TAG, "endTrip params:\ntripid " + tripId + "\ndistance " + distance + "\nduration " + duration + "\naveragespeed " + avgSpeed + "\naveragerpm " + avgRpm + "\nconsumption ");
-
-            updateFragmentView(duration, distance, String.valueOf(String.format(Locale.getDefault(), "%.1f", avgSpeed)) + "KM/H", String.valueOf(String.format(Locale.getDefault(), "%.0f", avgRpm)) + "RPM", "jeeben");
+            Log.e(TAG, "endTrip params:\ntripid " + tripId + "\ndistance " + distance + "\nduration " + duration + "\naveragespeed " + avgspd + "\naveragerpm " + avgrpm + "\nconsumption ");
+            updateFragmentView(duration, distance + "KM", String.valueOf(String.format(Locale.getDefault(), "%.1f", avgSpeed)) + "KM/H", String.valueOf(String.format(Locale.getDefault(), "%.0f", avgRpm)) + "RPM", "jeeben");
+            //updateFragmentView(duration, distance + "KM", avgspd + "KM/H", avgrpm + "RPM", "jeeben");
         }
 
         /**
          * Calculates distance travelled based on coordinates from Cursor
+         *
          * @param dataPointCursor <p>Cursor that holds DataPoints for the Trip</p>
          */
         private double getDistanceFromCursor(Cursor dataPointCursor) {
@@ -311,6 +319,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
         /**
          * Calculates the time between the first and the last DataPoints in Cursor.
+         *
          * @param dataPointCursor <p>Cursor holding DataPoints</p>
          */
         private String calculateDuration(Cursor dataPointCursor) {
@@ -346,6 +355,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
         /**
          * Sets the first LatLng object then calls for LatLng parsing
+         *
          * @param dataPointCursor Cursor that holds the trips Datapoints
          */
         private void getDataPoints(Cursor dataPointCursor) {
@@ -363,6 +373,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         /**
          * Creates PolyLineOption objects with a certain color, adds LatLngs to those objects and
          * saves them into polyLineOpetionsList
+         *
          * @param cursor Cursor that holds the DataPoint objects
          */
         private void parseLatLng(Cursor cursor) {

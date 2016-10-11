@@ -5,7 +5,15 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 import android.util.Log;
+
+import com.example.asus.riderage.MainActivity;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
 
 /**
  * SQLiteOpenHelper class, includes DB methods and CRUD methods
@@ -15,7 +23,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "TripDatabseHelper";
     private SQLiteDatabase database;
     private Cursor cursor;
-
+    private Context context;
     private static final String DB_NAME = "TripDatabase";
     private static final int DB_VERSION = 1;
 
@@ -73,7 +81,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                     DATAPOINT_TIMESTAMP + " string not null, " +
                     DATAPOINT_CONSUMPTION + " real not null, " +
                     DATAPOINT_TRIP_ID + " integer, " +
-                    " FOREIGN KEY ("+ DATAPOINT_TRIP_ID +") REFERENCES "+TABLE_TRIP+"("+ TRIP_ID +"));";
+                    " FOREIGN KEY (" + DATAPOINT_TRIP_ID + ") REFERENCES " + TABLE_TRIP + "(" + TRIP_ID + "));";
 
 
     private static final String TABLE_VEHICLE = "vehicle";
@@ -86,6 +94,8 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 
     public TripDatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
+        this.context = context;
+        this.database = this.getWritableDatabase();
     }
 
     /**
@@ -97,7 +107,6 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_TRIP_TABLE);
         db.execSQL(SQL_CREATE_VEHICLE_TABLE);
         db.execSQL(SQL_CREATE_DATAPOINT_TABLE);
-        //Log.e(TAG, "SQLite DB created");
     }
 
     @Override
@@ -109,9 +118,10 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Saves trip start parameters to DB
-     * @param title Trip title
-     * @param vehicleId The vehicle ID
-     * @param distance total distance
+     *
+     * @param title      Trip title
+     * @param vehicleId  The vehicle ID
+     * @param distance   total distance
      * @param start_time Start time
      * @return returns the row ID of the new trip
      */
@@ -132,6 +142,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Called when user clicks on a trip from the trip list
+     *
      * @param id ID for the trip of which data is going to be fetched
      * @return returns the cursor which holds the rows of the query
      */
@@ -171,6 +182,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Called for populating the list view of all the trips
+     *
      * @return Returns the cursor which holds the Trip headers
      */
     public Cursor getTripHeaders() {
@@ -235,7 +247,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
      */
     public void endTrip(long tripId, Double distance, String end_time, String duration, Double averageSpeed, Double averageRPM, Double averageConsumption, Double totalConsumption,
                         Double gasCost, String analysis) {
-        Log.e(TAG, "endTrip params:\ntripid "+tripId+"\ndistance " + end_time + "\nduration " + duration + "\naveragespeed " + averageSpeed + "\naveragerpm " + averageRPM + "\nconsumption " + totalConsumption);
+        Log.e(TAG, "endTrip params:\ntripid " + tripId + "\ndistance " + end_time + "\nduration " + duration + "\naveragespeed " + averageSpeed + "\naveragerpm " + averageRPM + "\nconsumption " + totalConsumption);
         this.database = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(TRIP_END_TIME, end_time);
@@ -253,6 +265,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Gets datapoints for a trip.
+     *
      * @param tripId Defines the trip of which DataPoints to fetch
      * @return returns cursor that holds the DataPoints
      */
@@ -280,13 +293,121 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
+     * Updates trip's values in case TripHandler has failed
+     * @param tripId ID for the trip that's going to be updated
+     * @param averageSpeed Average speed of the trip
+     * @param averageRpm Average RPM of the trip
+     * @param duration Total duration in HH:MM:SS of the trip
+     * @param distance
+     */
+    public void editTripValues(long tripId, double averageSpeed, double averageRpm, String duration, String distance) {
+        this.database = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(TRIP_AVERAGE_SPEED, averageSpeed);
+        values.put(TRIP_AVERAGE_RPM, averageRpm);
+        values.put(TRIP_DURATION, duration);
+        values.put(TRIP_DISTANCE, distance);
+        this.database.update(TABLE_TRIP, values, TRIP_ID + " = " + tripId, null);
+    }
+
+    /**
      * Deletes the Trip and associated datapoints from the DB
+     *
      * @param tripId The ID of the trip that needs to be deleted
      * @return Returns true when one or more rows from TABLE_TRIP are deleted
      */
     public boolean deleteTrip(long tripId) {
-        this.database = getWritableDatabase();
+        this.database = this.getWritableDatabase();
         this.database.delete(TABLE_DATAPOINT, DATAPOINT_TRIP_ID + " = " + tripId, null);
         return this.database.delete(TABLE_TRIP, TRIP_ID + " = " + tripId, null) > 0;
+    }
+
+
+    /**
+     * Calculates the total distance driven based on the TRIP_DISTANCE field in TABLE_TRIP.
+     * @return Total distance driven in kilometers rounded to two decimals using {@link MainActivity#round(double, int)}.
+     */
+    public double getTotalDistanceDriven() {
+        this.database = this.getReadableDatabase();
+        // define SELECT fields
+        String[] projection = {
+                TRIP_DISTANCE
+        };
+
+        // define the query, searches from TABLE_TRIP with the defined projection
+        this.cursor = this.database.query(
+                TABLE_TRIP,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+
+        this.cursor.moveToFirst();
+        double totalDistance = 0.0;
+        if (this.cursor.getCount() > 0) {
+            while (this.cursor.moveToNext()) {
+                totalDistance += this.cursor.getDouble(this.cursor.getColumnIndexOrThrow(TRIP_DISTANCE));
+            }
+        }
+        return MainActivity.round(totalDistance, 2);
+
+
+    };
+
+    /**
+     * Function for exporting the database, creates a folder in downloads "BackupFolder" and saves
+     * the database file there.
+     */
+    public void exportDatabase() {
+        //creating a new folder for the database to be backuped to
+        File direct = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/BackupFolder");
+
+        Log.e(TAG, "exportDatabase: dir already exists?" +  direct.exists());
+        if(!direct.exists())
+        {
+            if(direct.mkdir()){
+                Log.e(TAG, "exportDatabase: dir exists?" +  direct.exists());
+            } else {
+                Log.e(TAG, "exportDatabase: failed to create directory? " + direct.mkdir() );
+            }
+
+        }
+        Log.e(TAG, "exportDatabase: " + direct.getAbsolutePath());
+        doExport();
+
+    }
+
+    /**
+     * Handles the exporting of the database file
+     */
+    private void doExport() {
+
+        try {
+            File sd = Environment.getExternalStorageDirectory();
+            File data = Environment.getDataDirectory();
+
+            if (sd.canWrite()) {
+
+                String  currentDBPath= "/data/com.example.asus.riderage/databases/TripDatabase";
+                String backupDBPath  = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/BackupFolder/test";
+                File currentDB = new File(data, currentDBPath);
+                File backupDB = new File(backupDBPath);
+
+                FileChannel src = new FileInputStream(currentDB).getChannel();
+                FileChannel dst = new FileOutputStream(backupDB).getChannel();
+                dst.transferFrom(src, 0, src.size());
+                src.close();
+                dst.close();
+                Log.e(TAG, "exportDatabase: success" );
+            } else {
+                Log.e(TAG, "doExport: canwrite " +  sd.canWrite() );
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "exportDatabase: failed", e );
+        }
     }
 }
