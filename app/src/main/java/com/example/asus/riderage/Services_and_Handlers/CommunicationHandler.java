@@ -23,7 +23,7 @@ public class CommunicationHandler {
     private static TripHandler currentTripHandler;
     private long tripId;
 
-    private Constants.CONNECTION_STATE connection_state;
+    private Constants.CONNECTION_STATE connection_state = Constants.CONNECTION_STATE.DISCONNECTED;
     private volatile boolean runningStatus = false;
     private String tripName;
 

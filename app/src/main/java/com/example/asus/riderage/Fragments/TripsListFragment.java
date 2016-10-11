@@ -101,13 +101,11 @@ public class TripsListFragment extends Fragment implements UpdatableFragment, Ad
             TextView durationText = (TextView) view.findViewById(R.id.trip_duration);
             TextView distanceText = (TextView) view.findViewById(R.id.trip_distance);
             TextView dateText = (TextView) view.findViewById(R.id.trip_date);
-            TextView trip_cost = (TextView) view.findViewById(R.id.trip_cost);
 
             nameText.setText(cursor.getString(cursor.getColumnIndexOrThrow("title")));
             durationText.setText("Duration: " + cursor.getString(cursor.getColumnIndexOrThrow("duration")));
             distanceText.setText("Distance driven: " + cursor.getString(cursor.getColumnIndexOrThrow("distance")));
             dateText.setText(cursor.getString(cursor.getColumnIndexOrThrow("start_time")));
-            trip_cost.setText("N/A");
         }
     }
 

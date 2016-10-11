@@ -42,7 +42,7 @@
 
 
     <style name="ButtonStyle">
-        <item name="android:textColor">#c8ffffff</item>
+        <item name="android:textColor">@color/font_color_light</item>
         <item name="android:layout_margin">6dp</item>
         <item name="android:textSize">15dp</item>
         <item name="android:textStyle">normal</item>

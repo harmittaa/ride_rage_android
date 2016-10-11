@@ -218,20 +218,27 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
         getMainActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                /*switch (connection_state) {
+                switch (connection_state) {
                     case CONNECTED_NOT_RUNNING:
                         startTrip.setVisibility(View.VISIBLE);
+                        startTrip.setEnabled(true);
+                        startTrip.setActivated(true);
                         stopTrip.setVisibility(View.GONE);
+                        Log.e(TAG, "run: BUTTON SET TO VISIBLE AND ENABLED");
                         break;
                     case CONNECTED_RUNNING:
                         startTrip.setVisibility(View.GONE);
                         stopTrip.setVisibility(View.VISIBLE);
+                        Log.e(TAG, "run: BUTTON SET TOINVISIBLE" );
                         break;
                     case DISCONNECTED:
-                        startTrip.setVisibility(View.GONE);
+                        startTrip.setVisibility(View.VISIBLE);
+                        startTrip.setEnabled(false);
+                        startTrip.setActivated(false);
                         stopTrip.setVisibility(View.GONE);
+                        Log.e(TAG, "run: BUTON SET TO DISABLED");
                         break;
-                }*/
+                }
             }
         });
     }

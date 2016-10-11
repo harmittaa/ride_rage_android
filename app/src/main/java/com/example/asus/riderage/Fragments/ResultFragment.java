@@ -59,8 +59,6 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         this.setTripId(CommunicationHandler.getCommunicationHandlerInstance().getTripId());
         fragmentView = inflater.inflate(R.layout.fragment_result, container, false);
-        textView = (TextView) fragmentView.findViewById(R.id.placeHolderResultLabel);
-        textView.setText("It works");
 
         mapFragment = (MapFragment) getChildFragmentManager().findFragmentById(R.id.mapFragment);
         mapFragment.getMapAsync(this);
@@ -122,7 +120,6 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                 ResultFragment.this.distanceTextView.setText(distance);
                 ResultFragment.this.avgSpeedTextView.setText(avgSpeed);
                 ResultFragment.this.avgRpmTextView.setText(avgRpm);
-                ResultFragment.this.textView.setText(placeHolder);
             }
         });
     }

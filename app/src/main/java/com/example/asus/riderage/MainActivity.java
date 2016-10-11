@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
     }
 
     public void changeVisibleFragmentType(Constants.FRAGMENT_TYPES fragment_type, boolean withBackStack) {
@@ -184,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
                 menu.findItem(R.id.action_edit).setVisible(false);
         }
     }
+
 
     public void setFragmentTripId(long tripId) {
         this.resultFragment.setTripId(tripId);
