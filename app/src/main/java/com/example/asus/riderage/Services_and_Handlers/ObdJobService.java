@@ -16,9 +16,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.example.asus.riderage.Bluetooth.BluetoothManagerClass;
-import com.example.asus.riderage.Fragments.ResultFragment;
 import com.example.asus.riderage.Misc.Constants;
-import com.example.asus.riderage.Database.DataPoint;
 import com.example.asus.riderage.Misc.TripDataParser;
 import com.github.pires.obd.commands.SpeedCommand;
 import com.github.pires.obd.commands.engine.RPMCommand;
@@ -30,10 +28,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Created by Masa Mainio on 27/09/2016.
@@ -111,12 +106,12 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                         closeConnection();
                         CommunicationHandler.getCommunicationHandlerInstance().getContext().stopObdJobService();
                         CommunicationHandler.getCommunicationHandlerInstance().getContext().stopLoggerService();
-                        CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
+                        CommunicationHandler.getCommunicationHandlerInstance().setConnectionState(Constants.CONNECTION_STATE.DISCONNECTED);
                         return;
                     } catch (InterruptedException e) {
                         Log.e(TAG, "ERROR running commands", e);
                         closeConnection();
-                        CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
+                        CommunicationHandler.getCommunicationHandlerInstance().setConnectionState(Constants.CONNECTION_STATE.DISCONNECTED);
                         return;
                     }
                     try {
@@ -126,7 +121,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                         closeConnection();
                         CommunicationHandler.getCommunicationHandlerInstance().getContext().stopObdJobService();
                         CommunicationHandler.getCommunicationHandlerInstance().getContext().stopLoggerService();
-                        CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
+                        CommunicationHandler.getCommunicationHandlerInstance().setConnectionState(Constants.CONNECTION_STATE.CONNECTED_NOT_RUNNING);
                         return;
                     }
                 }
@@ -134,7 +129,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                 tripHandler.setAverageSpeed(dataVariable.getAvgSpeed());
                 tripHandler.setAverageRPM(dataVariable.getAvgRpm());
                 tripHandler.setTotalDistance(dataVariable.getTotalDistance());
-                CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
+                CommunicationHandler.getCommunicationHandlerInstance().setConnectionState(Constants.CONNECTION_STATE.DISCONNECTED);
                 tripHandler.saveTripToDb();
                 /*TripDataParser dataParser = new TripDataParser();
                 dataParser.execute();*/

@@ -26,7 +26,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.asus.riderage.Bluetooth.BluetoothManagerClass;
-import com.example.asus.riderage.Database.DatabaseExport;
 import com.example.asus.riderage.Database.TripDatabaseHelper;
 import com.example.asus.riderage.Fragments.GaugesFragment;
 import com.example.asus.riderage.Fragments.ResultFragment;
@@ -363,10 +362,10 @@ public class MainActivity extends AppCompatActivity {
             dialog.dismiss();
             if (aBoolean) {
                 makeToast("Connection Succesful");
-                CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.CONNECTED_NOT_RUNNING);
+                CommunicationHandler.getCommunicationHandlerInstance().setConnectionState(Constants.CONNECTION_STATE.CONNECTED_NOT_RUNNING);
             } else {
                 makeToast("Connection Failed");
-                CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.DISCONNECTED);
+                CommunicationHandler.getCommunicationHandlerInstance().setConnectionState(Constants.CONNECTION_STATE.DISCONNECTED);
             }
         }
     }

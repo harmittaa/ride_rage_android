@@ -91,7 +91,7 @@ public class CommunicationHandler {
                     if (futureTask.get()) {
                         createTripHandler();
                         startObdJobService();
-                        CommunicationHandler.getCommunicationHandlerInstance().setConnection_state(Constants.CONNECTION_STATE.CONNECTED_RUNNING);
+                        CommunicationHandler.getCommunicationHandlerInstance().setConnectionState(Constants.CONNECTION_STATE.CONNECTED_RUNNING);
                         return true;
                     } else {
                         getContext().makeToast("Could not start OBD device");
@@ -126,7 +126,7 @@ public class CommunicationHandler {
         return connection_state;
     }
 
-    public void setConnection_state(Constants.CONNECTION_STATE connection_state) {
+    public void setConnectionState(Constants.CONNECTION_STATE connection_state) {
         this.connection_state = connection_state;
         this.getContext().updateOnConnectionStateChanged(this.connection_state);
     }
