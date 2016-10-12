@@ -20,6 +20,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
+import com.example.asus.riderage.Database.TripDatabaseHelper;
 import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
 import com.example.asus.riderage.Misc.Constants;
 import com.example.asus.riderage.MainActivity;
@@ -44,7 +45,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
     BluetoothAdapter btAdapter;
     TextView accelTest;
     private View fragmentView;
-    private TextView distanceTextView;
+    private TextView distanceTextView,distanceTotal;
 
     @Nullable
     @Override
@@ -52,9 +53,11 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
         fragmentView = inflater.inflate(R.layout.fragment_gauges, container, false);
         accelTest = (TextView) fragmentView.findViewById(R.id.accelTest);
         distanceTextView = (TextView) fragmentView.findViewById(R.id.distance_text_view);
+        distanceTotal = (TextView)fragmentView.findViewById(R.id.distance_total_text_view);
         initButtonListners();
         initSpeedos();
         updateOnStateChanged(CommunicationHandler.getCommunicationHandlerInstance().getConnection_state());
+        getTotalDistanceEver();
         return fragmentView;
     }
 
@@ -166,7 +169,12 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
     }
 
     public void updateDistance(double newTotalDistance) {
-        this.distanceTextView.setText("Distance driven:n" + newTotalDistance + " KM");
+        this.distanceTextView.setText("Distance driven:\n" + newTotalDistance + " KM");
+    }
+
+    public void getTotalDistanceEver(){
+        TripDatabaseHelper tbh = new TripDatabaseHelper(getMainActivity());
+        this.distanceTotal.setText("Total distance driven:\n" + tbh.getTotalDistanceDriven() + " KM");
     }
 
     private MainActivity getMainActivity() {
@@ -224,11 +232,16 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
                         startTrip.setEnabled(true);
                         startTrip.setActivated(true);
                         stopTrip.setVisibility(View.GONE);
+                        distanceTotal.setVisibility(View.VISIBLE);
+                        distanceTextView.setVisibility(View.GONE);
+                        getTotalDistanceEver();
                         Log.e(TAG, "run: BUTTON SET TO VISIBLE AND ENABLED");
                         break;
                     case CONNECTED_RUNNING:
                         startTrip.setVisibility(View.GONE);
                         stopTrip.setVisibility(View.VISIBLE);
+                        distanceTotal.setVisibility(View.GONE);
+                        distanceTextView.setVisibility(View.VISIBLE);
                         Log.e(TAG, "run: BUTTON SET TOINVISIBLE" );
                         break;
                     case DISCONNECTED:
@@ -236,6 +249,9 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
                         startTrip.setEnabled(false);
                         startTrip.setActivated(false);
                         stopTrip.setVisibility(View.GONE);
+                        distanceTotal.setVisibility(View.VISIBLE);
+                        distanceTextView.setVisibility(View.GONE);
+                        getTotalDistanceEver();
                         Log.e(TAG, "run: BUTON SET TO DISABLED");
                         break;
                 }

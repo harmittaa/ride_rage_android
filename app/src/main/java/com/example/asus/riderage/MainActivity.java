@@ -104,31 +104,11 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.setCustomAnimations(R.animator.slide_left, R.animator.slide_right, R.animator.slide_left_back, R.animator.slide_right_back);
         switch (this.currentFragmentType) {
             case GAUGES_FRAGMENT:
-                /*this.currentFragment = this.gaugeFragment;
-                if (this.gaugeFragment != null && this.gaugeFragment.isVisible())
-                    fragmentTransaction.show((Fragment) this.currentFragment);
-                else
-                    fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
-                fragmentTransaction.commit();
-                //changeActionBarIcons(this.currentFragmentType);*/
                 this.currentFragment = this.gaugeFragment = new GaugesFragment();
                 fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("huuben");
                 fragmentTransaction.commit();
                 break;
             case RESULT_FRAGMENT:
-                /*this.currentFragment = this.resultFragment;
-
-                if (this.resultFragment != null)
-                    fragmentTransaction.show((Fragment) this.currentFragment);
-                else {
-
-                    if (withBackStack)
-                        fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("jeeben");
-                    else
-                        fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
-                }
-                fragmentTransaction.commit();
-                //changeActionBarIcons(this.currentFragmentType);*/
                 this.currentFragment = this.resultFragment = new ResultFragment();
                 if (withBackStack)
                     fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("huuben");
@@ -137,19 +117,6 @@ public class MainActivity extends AppCompatActivity {
                 fragmentTransaction.commit();
                 break;
             case TRIPS_LIST_FRAGMENT:
-                /*this.currentFragment = this.tripsListFragment;
-
-                if(this.tripsListFragment != null)fragmentTransaction.show((Fragment) this.currentFragment);
-                else {
-
-                    if (withBackStack)
-                        fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("jeeben");
-                    else
-                        fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment);
-                }
-                fragmentTransaction.commit();
-
-                //changeActionBarIcons(this.currentFragmentType);*/
                 this.currentFragment = this.tripsListFragment = new TripsListFragment();
                 if (withBackStack)
                     fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("huuben");
@@ -228,9 +195,12 @@ public class MainActivity extends AppCompatActivity {
                 builderi.setMessage(R.string.enter_name_for_trip)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                if (!TextUtils.isEmpty(newText.getText().toString())) {
+                                String editedName = newText.getText().toString();
+                                if (!TextUtils.isEmpty(editedName)) {
                                     tripDbHelper = new TripDatabaseHelper(MainActivity.this);
-                                    tripDbHelper.editTripName(newText.getText().toString(), CommunicationHandler.getCommunicationHandlerInstance().getTripId());
+                                    tripDbHelper.editTripName(editedName, CommunicationHandler.getCommunicationHandlerInstance().getTripId());
+                                    // TODO: 12/10/2016 change action bar subtitle
+                                    getSupportActionBar().setSubtitle(editedName);
                                 }
                                 else
                                     makeToast("Name was not changed");

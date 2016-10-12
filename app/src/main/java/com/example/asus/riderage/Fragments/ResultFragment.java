@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -31,6 +32,8 @@ import com.example.asus.riderage.Misc.UpdatableFragment;
 import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -53,7 +56,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 public class ResultFragment extends Fragment implements UpdatableFragment, OnMapReadyCallback, GoogleMap.OnPolylineClickListener {
     private final String TAG = "ResultFragment";
     private View fragmentView;
-    private TextView durationTextView, distanceTextView, avgSpeedTextView, avgRpmTextView, textView;
+    private TextView durationTextView, distanceTextView, avgSpeedTextView, avgRpmTextView, topSpeedTextView, topRpmTextView;
     private Constants.FRAGMENT_CALLER fragment_caller;
     private static long tripId;
     private GoogleMap googleMap;
@@ -78,6 +81,8 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         distanceTextView = (TextView) fragmentView.findViewById(R.id.distanceResultLabel);
         avgSpeedTextView = (TextView) fragmentView.findViewById(R.id.avgSpeedResultLabel);
         avgRpmTextView = (TextView) fragmentView.findViewById(R.id.avgRpmResultLabel);
+        topRpmTextView = (TextView) fragmentView.findViewById(R.id.topRpmResultLabel);
+        topSpeedTextView = (TextView) fragmentView.findViewById(R.id.topSpeedResultLabel);
 
         lineChart = (LineChart) fragmentView.findViewById(R.id.chart1);
 
@@ -115,19 +120,19 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     public void onResume() {
         super.onResume();
         getMainActivity().changeActionBarIcons(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
+        lineChart.invalidate();
     }
 
     /**
-     * Handles updating the ResultFragment views with data
+     * Handles updating values into the TextViews of the fragment
      *
-     * @param duration    Duration of the trip
-     * @param distance    Distance of the trip
-     * @param avgSpeed    Average speed of the trip
-     * @param avgRpm      Average RPM of the trip
-     * @param placeHolder Feedback for the trip
+     * @param duration total duration of the trip
+     * @param distance total distance driven during the test
+     * @param avgSpeed average speed of the trip
+     * @param avgRpm   average rpm of the trip
      */
-    public void updateFragmentView(final String duration, final String distance, final String avgSpeed, final String avgRpm, final String placeHolder) {
-        Log.e(TAG, "endTrip params:\ntripid " + tripId + "\ndistance " + distance + "\nduration " + duration + "\naveragespeed " + avgSpeed + "\naveragerpm " + avgRpm + "\nconsumption " + placeHolder);
+    public void updateFragmentView(final String duration, final String distance, final String avgSpeed, final String avgRpm) {
+        Log.e(TAG, "endTrip params:\ntripid " + tripId + "\ndistance " + distance + "\nduration " + duration + "\naveragespeed " + avgSpeed + "\naveragerpm " + avgRpm + "\nconsumption ");
         getMainActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -138,6 +143,17 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                 ResultFragment.this.setupChart();
             }
         });
+    }
+
+    /**
+     * Separate method from <code>updateFragmentView</code> just for top values of trip, since they are retrieved from elsewhere
+     * @param topSpeed
+     * @param topRpm
+     */
+
+    public void updateTopValues(final Double topSpeed, final Double topRpm){
+        ResultFragment.this.topSpeedTextView.setText(topSpeed + "KM/H");
+        ResultFragment.this.topRpmTextView.setText(topRpm + "RPM");
     }
 
     /**
@@ -175,16 +191,25 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         googleMap.animateCamera(cu);
     }
 
-    private void setupChart(){
+    private void setupChart() {
         fetchDataForChart();
         LineData data = new LineData(chartData);
         lineChart.setData(data);
+        lineChart.getAxisLeft().setEnabled(true);
+        lineChart.getAxisRight().setEnabled(true);
+        lineChart.setDescription("");
+        lineChart.setDrawGridBackground(false);
+        lineChart.getXAxis().setDrawGridLines(false);
+        lineChart.getXAxis().setEnabled(false);
+        lineChart.getAxis(YAxis.AxisDependency.LEFT).setDrawGridLines(false);
+        lineChart.getAxis(YAxis.AxisDependency.RIGHT).setDrawGridLines(true);
+        lineChart.setMaxVisibleValueCount(4);
         Legend l = lineChart.getLegend();
         l.setEnabled(true);
-        lineChart.getAxisLeft().setEnabled(false);
-        lineChart.getAxisLeft().setSpaceTop(40);
-        lineChart.getAxisLeft().setSpaceBottom(40);
-        lineChart.getAxisRight().setEnabled(false);
+        l.setForm(Legend.LegendForm.LINE);
+        l.setPosition(Legend.LegendPosition.BELOW_CHART_LEFT);
+        l.setYOffset(20);
+        //l.setYOffset(-20);
         lineChart.invalidate();
     }
 
@@ -218,17 +243,37 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         Log.e(TAG, "onPolylineClick: clicked polyline " + polyline);
     }
 
-    private void fetchDataForChart(){
+    private void fetchDataForChart() {
         TripDatabaseHelper dbh = new TripDatabaseHelper(getMainActivity());
         Cursor dataPointCursor = dbh.getDataPoints(CommunicationHandler.getCommunicationHandlerInstance().getTripId());
         int counter = 0;
+        Double currentSpeed, currentRpm, topRpm, topSpeed;
+        currentRpm = currentSpeed = 0.0;
+        topSpeed = topRpm = 0.0;
         while (dataPointCursor.moveToNext()) {
-            chartDataRpm.add(new Entry(counter,dataPointCursor.getFloat(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM))));
-            chartDataSpeed.add(new Entry(counter,dataPointCursor.getFloat(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED))));
+            currentRpm = dataPointCursor.getDouble(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM));
+            currentSpeed = dataPointCursor.getDouble(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED));
+            if (currentRpm > topRpm) topRpm = currentRpm;
+            if (currentSpeed > topSpeed) topSpeed = currentSpeed;
+            chartDataRpm.add(new Entry((counter * 2), dataPointCursor.getFloat(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM))));
+            chartDataSpeed.add(new Entry((counter * 2), dataPointCursor.getFloat(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED))));
             counter++;
         }
-        LineDataSet jeeben = new LineDataSet(chartDataRpm,"RPM");
-        LineDataSet huuben = new LineDataSet(chartDataSpeed,"Speed");
+
+        updateTopValues(topSpeed,topRpm);
+
+        LineDataSet jeeben = new LineDataSet(chartDataRpm, "RPM");
+        jeeben.setDrawCircles(false);
+        jeeben.setColor(Color.RED);
+        jeeben.setAxisDependency(YAxis.AxisDependency.LEFT);
+        jeeben.setDrawValues(true);
+        jeeben.setLineWidth(1.5f);
+        LineDataSet huuben = new LineDataSet(chartDataSpeed, "Speed");
+        huuben.setColor(Color.BLUE);
+        huuben.setDrawCircles(false);
+        huuben.setAxisDependency(YAxis.AxisDependency.RIGHT);
+        huuben.setDrawValues(true);
+        huuben.setLineWidth(1.5f);
         chartData.add(jeeben);
         chartData.add(huuben);
     }
@@ -304,14 +349,18 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             tripDataCursor.moveToFirst();
             String avgrpm = "";
             String avgspd = "";
+            Double toppestSpeed, topRpm, currentSpeed, currentRpm;
+            toppestSpeed = topRpm = currentRpm = currentSpeed = 0.0;
             try {
                 avgrpm = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_RPM));
                 avgspd = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_SPEED));
                 if (TextUtils.isEmpty(avgrpm) || TextUtils.isEmpty(avgspd)) {
                     while (dataPointCursor.moveToNext()) {
                         counter++;
-                        avgSpeed += dataPointCursor.getDouble(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED));
-                        avgRpm += dataPointCursor.getDouble(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM));
+                        currentRpm = dataPointCursor.getDouble(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM));
+                        currentSpeed = dataPointCursor.getDouble(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_SPEED));
+                        avgSpeed += currentSpeed;
+                        avgRpm += currentRpm;
                         Log.e(TAG, "calculateAverages: parsed from database rpm" + avgRpm);
                     }
                     if (avgRpm != 0) avgRpm = avgRpm / counter;
@@ -331,7 +380,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                 distance = String.valueOf(String.format(Locale.getDefault(), "%.2f", getDistanceFromCursor(dataPointCursor))) + "KM";
             }
             Log.e(TAG, "endTrip params:\ntripid " + tripId + "\ndistance " + distance + "\nduration " + duration + "\naveragespeed " + avgspd + "\naveragerpm " + avgrpm + "\nconsumption ");
-            updateFragmentView(duration, distance + "KM", String.valueOf(String.format(Locale.getDefault(), "%.1f", avgSpeed)) + "KM/H", String.valueOf(String.format(Locale.getDefault(), "%.0f", avgRpm)) + "RPM", "jeeben");
+            updateFragmentView(duration, distance + "KM", String.valueOf(String.format(Locale.getDefault(), "%.1f", avgSpeed)) + "KM/H", String.valueOf(String.format(Locale.getDefault(), "%.0f", avgRpm)) + "RPM");
             //updateFragmentView(duration, distance + "KM", avgspd + "KM/H", avgrpm + "RPM", "jeeben");
         }
 
@@ -384,6 +433,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
         /**
          * Formats milliseconds to HH:MM:SS
+         *
          * @param tripTimeTotal Milliseconds to the formatted
          */
         private String formatDuration(long tripTimeTotal) {

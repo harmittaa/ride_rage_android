@@ -38,6 +38,18 @@
             android:layout_weight="1"
             android:id="@+id/distance_text_view"
             android:layout_marginTop="50dp"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone"></TextView>
+
+        <TextView
+            style="@style/font_small"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:text="Total distance driven: \n0 KM"
+            android:layout_weight="1"
+            android:id="@+id/distance_total_text_view"
+            android:layout_marginTop="50dp"
             android:layout_marginBottom="20dp"></TextView>
         <!--<TextView
             style="@style/font_small"

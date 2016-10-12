@@ -18,20 +18,21 @@
         class="com.google.android.gms.maps.MapFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4" />
+        android:layout_weight="4"/>
 
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/chart1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="6"/>
+        android:layout_weight="4"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="2"
         android:orientation="horizontal"
-        android:layout_margin="15dp">
+        android:layout_margin="15dp"
+        android:layout_marginTop="5dp">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -40,32 +41,52 @@
             android:orientation="vertical">
 
             <TextView
-                style="@style/font_small"
+                style="@style/font_tiny"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Duration" />
+                android:text="Duration"
+                android:textStyle="bold"/>
 
             <TextView
-                style="@style/font_small"
+                style="@style/font_tiny"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Total Distance" />
+                android:text="Total Distance"
+                android:textStyle="bold" />
 
             <TextView
-                style="@style/font_small"
+                style="@style/font_tiny"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Average Speed" />
+                android:text="Top Speed"
+                android:textStyle="bold"/>
+            <TextView
+                style="@style/font_tiny"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Average Speed"
+                android:textStyle="bold" />
 
             <TextView
-                style="@style/font_small"
+                style="@style/font_tiny"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Average RPM" />
+                android:text="Top RPM"
+                android:textStyle="bold"/>
+
+            <TextView
+                style="@style/font_tiny"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Average RPM"
+                android:textStyle="bold"/>
+
 
         </LinearLayout>
 
@@ -77,7 +98,7 @@
 
             <TextView
                 android:id="@+id/durationResultLabel"
-                style="@style/font_small"
+                style="@style/font_tiny"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -85,7 +106,15 @@
 
             <TextView
                 android:id="@+id/distanceResultLabel"
-                style="@style/font_small"
+                style="@style/font_tiny"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="-" />
+
+            <TextView
+                android:id="@+id/topSpeedResultLabel"
+                style="@style/font_tiny"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -93,7 +122,15 @@
 
             <TextView
                 android:id="@+id/avgSpeedResultLabel"
-                style="@style/font_small"
+                style="@style/font_tiny"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="-" />
+
+            <TextView
+                android:id="@+id/topRpmResultLabel"
+                style="@style/font_tiny"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -101,7 +138,7 @@
 
             <TextView
                 android:id="@+id/avgRpmResultLabel"
-                style="@style/font_small"
+                style="@style/font_tiny"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

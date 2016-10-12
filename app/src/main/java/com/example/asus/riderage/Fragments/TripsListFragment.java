@@ -104,7 +104,7 @@ public class TripsListFragment extends Fragment implements UpdatableFragment, Ad
 
             nameText.setText(cursor.getString(cursor.getColumnIndexOrThrow("title")));
             durationText.setText("Duration: " + cursor.getString(cursor.getColumnIndexOrThrow("duration")));
-            distanceText.setText("Distance driven: " + cursor.getString(cursor.getColumnIndexOrThrow("distance")));
+            distanceText.setText("Distance driven: " + cursor.getString(cursor.getColumnIndexOrThrow("distance")) + " km");
             dateText.setText(cursor.getString(cursor.getColumnIndexOrThrow("start_time")));
         }
     }
