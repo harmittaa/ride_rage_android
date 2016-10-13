@@ -67,6 +67,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     ArrayList<ILineDataSet> chartData = new ArrayList<>();
     ArrayList<Entry> chartDataRpm = new ArrayList<>();
     ArrayList<Entry> chartDataSpeed = new ArrayList<>();
+    private String subtitle = "";
 
     @Nullable
     @Override
@@ -120,6 +121,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     public void onResume() {
         super.onResume();
         getMainActivity().changeActionBarIcons(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
+        if(subtitle != null) CommunicationHandler.getCommunicationHandlerInstance().getContext().getSupportActionBar().setSubtitle(subtitle);
         lineChart.invalidate();
     }
 
@@ -324,7 +326,8 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                 @Override
                 public void run() {
                     if (tripDataCursor.getCount() > 0) {
-                        CommunicationHandler.getCommunicationHandlerInstance().getContext().getSupportActionBar().setSubtitle(tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(dbHelper.TRIP_TITLE)));
+                        subtitle = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(dbHelper.TRIP_TITLE));
+                        CommunicationHandler.getCommunicationHandlerInstance().getContext().getSupportActionBar().setSubtitle(subtitle);
                     }
                 }
             });
