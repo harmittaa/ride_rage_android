@@ -31,10 +31,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Created by Masa Mainio on 27/09/2016.
+ * Background service that runs OBD commands and gets called when ever location updates
  */
 
-// BG service to run the ObdJobs
 public class ObdJobService extends Service implements SensorEventListener, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "ObdJobService";
     private BluetoothSocket bluetoothSocket;
@@ -81,6 +80,9 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
+    /**
+     * Runs OBD commands in a thread
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         this.serviceThread = new Thread(new Runnable() {

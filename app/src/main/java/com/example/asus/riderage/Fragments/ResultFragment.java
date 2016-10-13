@@ -149,8 +149,8 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
     /**
      * Separate method from <code>updateFragmentView</code> just for top values of trip, since they are retrieved from elsewhere
-     * @param topSpeed
-     * @param topRpm
+     * @param topSpeed Highest speed of the trip
+     * @param topRpm Highest RPM of the trip
      */
 
     public void updateTopValues(final Double topSpeed, final Double topRpm){

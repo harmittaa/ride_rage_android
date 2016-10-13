@@ -15,7 +15,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by Daniel on 30/09/2016.
+ * Handles trip while trip is active, includes DB commands for starting & ending the trip
  */
 
 public class TripHandler {
@@ -33,12 +33,19 @@ public class TripHandler {
         this.tripDbHelper = new TripDatabaseHelper(CommunicationHandler.getCommunicationHandlerInstance().getContext());
     }
 
+    /**
+     * Used for storing a datapoint to the DB
+     * @param dataPoint
+     */
     public void storeDataPointToDB(DataPoint dataPoint){
         //TODO get relevant values from datapoint, store into DBHelper
         this.tripDbHelper.saveDataPoint(dataPoint);
 
     }
 
+    /**
+     * Creates a new row to DB in order to get the trip ID
+     */
     public void startNewTrip() {
         this.startDate = new Date();
         this.tripId = this.tripDbHelper.saveTrip(CommunicationHandler.getCommunicationHandlerInstance().getTripName(), null, null, dateFormat.format(this.startDate));
@@ -53,6 +60,9 @@ public class TripHandler {
         this.tripId = tripId;
     }
 
+    /**
+     * Stops the trip, calculates total time for the trip
+     */
     public void stopCurrentTrip(){
         Log.e(TAG, "stopCurrentTrip: 1." );
         CommunicationHandler.getCommunicationHandlerInstance().setRunningStatus(false);
@@ -60,6 +70,11 @@ public class TripHandler {
         setTripTimeTotal(formatDuration(endDate.getTime() - startDate.getTime()));
     }
 
+    /**
+     * Formats MS to HH:MM:SS
+     * @param tripTimeTotal time in MS
+     * @return formatted time in HH:MM:SS
+     */
     private String formatDuration(long tripTimeTotal) {
         String hms = String.format(Locale.getDefault(),"%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(tripTimeTotal),
                 TimeUnit.MILLISECONDS.toMinutes(tripTimeTotal) % TimeUnit.HOURS.toMinutes(1),
@@ -68,7 +83,9 @@ public class TripHandler {
         return hms;
     }
 
-
+    /**
+     * Called when trip ends, saves available trip data to DB
+     */
     public void saveTripToDb(){
         Log.e(TAG, "saveTripToDb: 4." );
         this.tripDbHelper.endTrip(this.tripId, MainActivity.round(this.getTotalDistance(), 2), dateFormat.format(this.endDate), getTripTimeTotal(), MainActivity.round(this.getAverageSpeed(), 1), MainActivity.round(this.getAverageRPM(), 0), null, null, null, null);
