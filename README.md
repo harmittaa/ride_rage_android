@@ -15,6 +15,7 @@ such as average RPMs, speed and maximum speed.
 - Draws the route on Google Maps using different colours to show where the user has been driving economically
 - Start / stop a trip
 - Browse old trips
+- Delete trip
 - Name / rename the trip
 
 ### Techincal
@@ -29,3 +30,6 @@ such as average RPMs, speed and maximum speed.
 ### APIs used
 - [OBD Java API by Pires](https://github.com/pires/obd-java-api/), used for sending commands to the OBD device
 - [MPAndroidCHart by PhilJay](https://github.com/PhilJay/MPAndroidChart), used for creating a chart in the result screen
+
+### Screenshots
+<center><img src="/screenshots/main.jpg" width="250"> <img src="/screenshots/list.jpg" width="250"> <img src="/screenshots/result.jpg" width="250"></center>
