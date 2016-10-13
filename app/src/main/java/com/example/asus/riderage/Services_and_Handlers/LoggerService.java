@@ -1,12 +1,9 @@
 package com.example.asus.riderage.Services_and_Handlers;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.example.asus.riderage.Database.DataPoint;
 
@@ -14,6 +11,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
 
 /**
@@ -33,7 +31,7 @@ public class LoggerService extends Service {
     public void onCreate() {
         super.onCreate();
         tripHandler = CommunicationHandler.getCurrentTripHandler();
-        dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+        dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
         dataVariable = CommunicationHandler.getCommunicationHandlerInstance().getDataVariable();
     }
 

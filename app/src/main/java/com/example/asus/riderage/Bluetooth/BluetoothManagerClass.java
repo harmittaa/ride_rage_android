@@ -23,9 +23,7 @@ public class BluetoothManagerClass {
     private static final String TAG = "BluetoothManagerClass";
     private static BluetoothManagerClass bluetoothManagerClass = new BluetoothManagerClass();
     private static BluetoothSocket bluetoothSocket;
-    private CommunicationHandler communicationHandler;
     private BluetoothAdapter btAdapter;
-    private ArrayList<String> deviceStrs;
     private ArrayList<BluetoothDevice> devices;
 
 
@@ -53,11 +51,11 @@ public class BluetoothManagerClass {
 
     /**
      * Gets paired device information
-     * @return
+     * @return returns a list holding names of paired devices
      */
     public ArrayList<String> getDeviceStrings() {
-        deviceStrs = new ArrayList();
-        devices = new ArrayList();
+        ArrayList<String> deviceStrs = new ArrayList<String>();
+        devices = new ArrayList<BluetoothDevice>();
         Set<BluetoothDevice> pairedDevices = this.btAdapter.getBondedDevices();
 
         if (pairedDevices.size() > 0) {
@@ -66,7 +64,7 @@ public class BluetoothManagerClass {
                 devices.add(device);
             }
         }
-        return this.deviceStrs;
+        return deviceStrs;
     }
 
     /**
@@ -80,7 +78,7 @@ public class BluetoothManagerClass {
         Thread t=new Thread(futureTask);
         t.start();
         try {
-            return futureTask.get().booleanValue();
+            return futureTask.get();
         } catch (Exception e) {
             e.printStackTrace();
             return false;

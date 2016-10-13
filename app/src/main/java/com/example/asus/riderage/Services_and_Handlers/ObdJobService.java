@@ -28,7 +28,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * Background service that runs OBD commands and gets called when ever location updates
@@ -36,25 +35,17 @@ import java.util.ArrayList;
 
 public class ObdJobService extends Service implements SensorEventListener, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "ObdJobService";
-    private BluetoothSocket bluetoothSocket;
-    private BluetoothManagerClass bluetoothManagerClass;
     private CommunicationHandler communicationHandler;
-    private Thread serviceThread;
-    private boolean isAccelerationInProgress = false;
-    private double speed, rpm, acceleration, consumption, averageSpeed, averageRpm, longitude, latitude;
     TripHandler tripHandler;
     private DataVariables dataVariable;
     private LocationRequest locationRequest;
     private GoogleApiClient googleApiClient;
-    private ArrayList<Double> speeds, rpms;
-    private double totalDistance;
     private Location previousLocation;
+    private boolean isAccelerationInProgress;
+    private double acceleration;
 
     @Override
     public void onCreate() {
-        speeds = new ArrayList<>();
-        rpms = new ArrayList<>();
-        this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
         this.dataVariable = new DataVariables();
         this.communicationHandler.setDataVariable(this.dataVariable);
@@ -85,10 +76,9 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        this.serviceThread = new Thread(new Runnable() {
+        Thread serviceThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                bluetoothSocket = bluetoothManagerClass.getBluetoothSocket();
                 final RPMCommand rpmCommand = new RPMCommand();
                 SpeedCommand speedCommand = new SpeedCommand();
                 CommunicationHandler.getCommunicationHandlerInstance().setRunningStatus(true);
@@ -135,7 +125,7 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
                 tripHandler.saveTripToDb();
                 /*TripDataParser dataParser = new TripDataParser();
                 dataParser.execute();*/
-                CommunicationHandler.getCommunicationHandlerInstance().getContext().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT,true);
+                CommunicationHandler.getCommunicationHandlerInstance().getContext().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT, true);
                 stopSelf();
             }
         });
@@ -181,13 +171,12 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
 
     /**
      * Receives new events from the accelerometer sensor
-     * @param event
+     * @param event SensorEvent
      */
     @Override
     public void onSensorChanged(SensorEvent event) {
         for (double d : event.values) {
             if (d > 8) {
-            } else if (0 < d && d < 8) {
                 this.isAccelerationInProgress = true;
                 acceleration = d;
             } else {
@@ -201,8 +190,10 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
 
     /**
      * Binder for the service, not used because this is a manually started/stopped service
-     * @param intent
-     * @return
+     * Return the communication channel to the service. May return null if clients can not bind to the service.
+     * The returned IBinder is usually for a complex interface that has been described using aidl.
+     * @param intent Intent to bind to service
+     * @return Returns nullReceived
      */
     @Nullable
     @Override
@@ -235,7 +226,6 @@ public class ObdJobService extends Service implements SensorEventListener, Locat
     public void onConnected(@Nullable Bundle bundle) {
         System.out.println("In onconnected");
         try {
-            Location loc = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
             LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, ObdJobService.this);
 
         } catch (SecurityException e) {

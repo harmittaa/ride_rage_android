@@ -41,8 +41,6 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-
-    private BluetoothManagerClass bluetoothManagerClass;
     private CommunicationHandler communicationHandler;
     private TripDatabaseHelper tripDbHelper;
     private final String TAG = "MainActivity";
@@ -51,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
     TextView accelTest;
     private GaugesFragment gaugeFragment;
     private ResultFragment resultFragment;
-    private TripsListFragment tripsListFragment;
     Menu menu;
 
 
@@ -75,9 +72,7 @@ public class MainActivity extends AppCompatActivity {
         accelTest = (TextView) findViewById(R.id.accelTest);
         gaugeFragment = new GaugesFragment();
         resultFragment = new ResultFragment();
-        tripsListFragment = new TripsListFragment();
         this.communicationHandler = CommunicationHandler.getCommunicationHandlerInstance();
-        this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
         this.communicationHandler.passContext(this);
         checkGpsStatus();
         TripDatabaseHelper dbHelper = new TripDatabaseHelper(this);
@@ -116,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 fragmentTransaction.commit();
                 break;
             case TRIPS_LIST_FRAGMENT:
-                this.currentFragment = this.tripsListFragment = new TripsListFragment();
+                this.currentFragment = new TripsListFragment();
                 if (withBackStack)
                     fragmentTransaction.replace(R.id.replaceWithFragment, (Fragment) this.currentFragment).addToBackStack("huuben");
                 else
@@ -155,10 +150,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    public void setFragmentTripId(long tripId) {
-        this.resultFragment.setTripId(tripId);
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -216,12 +207,6 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    public void activateDeviceSelectScreen() {
-        if (!communicationHandler.checkBluetoothStatus(true)) {
-
-        } else showDeviceSelectScreen();
     }
 
     private void showDeviceSelectScreen() {
@@ -349,10 +334,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Integer... params) {
             if (BluetoothManagerClass.getBluetoothManagerClass().createBluetoothConnection(this.which)) {
-                //Log.e(TAG, "onClick: success");
+                Log.e(TAG, "onClick: success");
                 return true;
             } else {
-                //Log.e(TAG, "onClick: failure");
+                Log.e(TAG, "onClick: failure");
                 return false;
             }
         }

@@ -28,17 +28,16 @@ public class TripHandler {
     private double averageSpeed, averageRPM;
     private double totalDistance;
 
-    public TripHandler(){
-        this.dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+    TripHandler(){
+        this.dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
         this.tripDbHelper = new TripDatabaseHelper(CommunicationHandler.getCommunicationHandlerInstance().getContext());
     }
 
     /**
      * Used for storing a datapoint to the DB
-     * @param dataPoint
+     * @param dataPoint The datapoint to be saved
      */
-    public void storeDataPointToDB(DataPoint dataPoint){
-        //TODO get relevant values from datapoint, store into DBHelper
+    void storeDataPointToDB(DataPoint dataPoint){
         this.tripDbHelper.saveDataPoint(dataPoint);
 
     }
@@ -46,18 +45,14 @@ public class TripHandler {
     /**
      * Creates a new row to DB in order to get the trip ID
      */
-    public void startNewTrip() {
+    void startNewTrip() {
         this.startDate = new Date();
         this.tripId = this.tripDbHelper.saveTrip(CommunicationHandler.getCommunicationHandlerInstance().getTripName(), null, null, dateFormat.format(this.startDate));
     }
 
 
-    public long getTripId() {
+    long getTripId() {
         return tripId;
-    }
-
-    public void setTripId(long tripId) {
-        this.tripId = tripId;
     }
 
     /**
@@ -86,38 +81,38 @@ public class TripHandler {
     /**
      * Called when trip ends, saves available trip data to DB
      */
-    public void saveTripToDb(){
+    void saveTripToDb(){
         Log.e(TAG, "saveTripToDb: 4." );
         this.tripDbHelper.endTrip(this.tripId, MainActivity.round(this.getTotalDistance(), 2), dateFormat.format(this.endDate), getTripTimeTotal(), MainActivity.round(this.getAverageSpeed(), 1), MainActivity.round(this.getAverageRPM(), 0), null, null, null, null);
         CommunicationHandler.getCommunicationHandlerInstance().setTripId(this.tripId);
     }
 
 
-    public double getAverageSpeed() {
+    private double getAverageSpeed() {
         return averageSpeed;
     }
 
-    public void setAverageSpeed(double averageSpeed) {
+    void setAverageSpeed(double averageSpeed) {
         Log.e(TAG, "setAverageSpeed: ¤avg speed set to# " + averageSpeed );
         this.averageSpeed = averageSpeed;
     }
 
-    public double getAverageRPM() {
+    private double getAverageRPM() {
         return averageRPM;
     }
 
-    public void setAverageRPM(double averageRPM) {
+    void setAverageRPM(double averageRPM) {
         Log.e(TAG, "setAverageRPM: #average rpm set to#" + averageRPM );
         this.averageRPM = averageRPM;
     }
 
-    public void setTotalDistance(double totalDistance) { this.totalDistance = totalDistance;}
+    void setTotalDistance(double totalDistance) { this.totalDistance = totalDistance;}
 
-    public double getTotalDistance() {return totalDistance;}
+    private double getTotalDistance() {return totalDistance;}
 
-    public String getTripTimeTotal() {return tripTimeTotal;}
+    private String getTripTimeTotal() {return tripTimeTotal;}
 
-    public void setTripTimeTotal(String tripTimeTotal) {
+    private void setTripTimeTotal(String tripTimeTotal) {
         this.tripTimeTotal = tripTimeTotal;
     }
 }

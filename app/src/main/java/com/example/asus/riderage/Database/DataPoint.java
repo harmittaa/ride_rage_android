@@ -2,7 +2,7 @@ package com.example.asus.riderage.Database;
 
 
 /**
- * DataPoint class, includes only construct, getters & setters
+ * DataPoint class, includes construct, getters & setters
  */
 
 public class DataPoint {
@@ -11,6 +11,17 @@ public class DataPoint {
     private double acceleration, consumption, longitude, latitude;
     private String timestamp;
 
+    /**
+     * Constructor for the DataPoint
+     * @param tripId ID for the trip which this DP is related to
+     * @param spd Speed in KM/H for this DP
+     * @param r RPM for this DP
+     * @param accel Acceleration for this DP
+     * @param cons Consumption for this DP
+     * @param longitude Longitude for this DP
+     * @param latitude Latitude for this DP
+     * @param timestamp Timestamp for this DP
+     */
     public DataPoint(long tripId, double spd, double r, double accel, double cons, double longitude, double latitude, String timestamp){
         this.speed = spd;
         this.rpm = r;
@@ -22,20 +33,16 @@ public class DataPoint {
         this.timestamp = timestamp;
     }
 
-    public double getAcceleration() {
+    /*
+     * GETTERS AND SETTERS
+     */
+
+    double getAcceleration() {
         return acceleration;
     }
 
-    public void setAcceleration(double acceleration) {
-        this.acceleration = acceleration;
-    }
-
-    public double getConsumption() {
+    double getConsumption() {
         return consumption;
-    }
-
-    public void setConsumption(double consumption) {
-        this.consumption = consumption;
     }
 
     public double getRpm() {
@@ -54,23 +61,13 @@ public class DataPoint {
         this.speed = speed;
     }
 
-    public long getTripId() {return tripId;}
+    long getTripId() {return tripId;}
 
-    public void setTripId(long tripId) {this.tripId = tripId;}
+    double getLongitude() {return longitude;}
 
-    public double getLongitude() {return longitude;}
+    double getLatitude() {return latitude;}
 
-    public void setLongitude(double longitude) {this.longitude = longitude;}
-
-    public double getLatitude() {return latitude;}
-
-    public void setLatitude(double latitude) {this.latitude = latitude;}
-
-    public String getTimestamp() {
+    String getTimestamp() {
         return timestamp;
-    }
-
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
     }
 }

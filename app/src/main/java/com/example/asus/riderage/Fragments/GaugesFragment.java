@@ -2,8 +2,6 @@ package com.example.asus.riderage.Fragments;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -16,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
@@ -26,8 +23,6 @@ import com.example.asus.riderage.Misc.Constants;
 import com.example.asus.riderage.MainActivity;
 import com.example.asus.riderage.R;
 import com.example.asus.riderage.Misc.UpdatableFragment;
-
-import java.util.ArrayList;
 
 import static android.content.ContentValues.TAG;
 
@@ -39,10 +34,7 @@ import static android.content.ContentValues.TAG;
 public class GaugesFragment extends Fragment implements View.OnClickListener, UpdatableFragment {
 
     private Button startTrip, stopTrip, tripsListButton;
-    ImageButton blSelectBtn;
     SpeedometerGauge speedoRPM, speedoSpeed;
-    ArrayList<BluetoothDevice> devices;
-    BluetoothAdapter btAdapter;
     TextView accelTest;
     private View fragmentView;
     private TextView distanceTextView,distanceTotal;
@@ -54,7 +46,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
         accelTest = (TextView) fragmentView.findViewById(R.id.accelTest);
         distanceTextView = (TextView) fragmentView.findViewById(R.id.distance_text_view);
         distanceTotal = (TextView)fragmentView.findViewById(R.id.distance_total_text_view);
-        initButtonListners();
+        initButtonListeners();
         initSpeedos();
         updateOnStateChanged(CommunicationHandler.getCommunicationHandlerInstance().getConnection_state());
         getTotalDistanceEver();
@@ -64,11 +56,12 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //getMainActivity().changeActionBarIcons(Constants.FRAGMENT_TYPES.GAUGES_FRAGMENT);
     }
 
-    private void initButtonListners() {
-
+    /**
+     * Initializes the button listeners for this fragment
+     */
+    private void initButtonListeners() {
         this.startTrip = (Button) fragmentView.findViewById(R.id.startTrip);
         this.stopTrip = (Button) fragmentView.findViewById(R.id.stopTrip);
         this.tripsListButton = (Button) fragmentView.findViewById(R.id.listFragmentButton);
@@ -77,11 +70,9 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
         this.tripsListButton.setOnClickListener(this);
     }
 
-
     /**
      * <p>Initializes the gauges, sets steps and max and min values, sets color ranges for rpm gauge</p>
      */
-
     private void initSpeedos() {
         speedoRPM = (SpeedometerGauge) fragmentView.findViewById(R.id.speedoRPM);
 
@@ -209,9 +200,7 @@ public class GaugesFragment extends Fragment implements View.OnClickListener, Up
 
                 break;
             case R.id.stopTrip:
-                //TODO 1. send obd close command through obdjobservice 2. close bluetooth socket
-                CommunicationHandler.getCommunicationHandlerInstance().getCurrentTripHandler().stopCurrentTrip();
-                //getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
+                CommunicationHandler.getCurrentTripHandler().stopCurrentTrip();
                 break;
             case R.id.listFragmentButton:
                 getMainActivity().changeVisibleFragmentType(Constants.FRAGMENT_TYPES.TRIPS_LIST_FRAGMENT, true);

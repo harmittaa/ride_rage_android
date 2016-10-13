@@ -5,8 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,9 +21,6 @@ import com.example.asus.riderage.R;
 import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
 
 import java.util.ArrayList;
-import java.util.List;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Created by Daniel on 06/10/2016.
@@ -34,7 +29,6 @@ import static android.content.ContentValues.TAG;
 
 public class TripsListFragment extends Fragment implements UpdatableFragment, AdapterView.OnItemClickListener {
 
-    private View fragmentView;
     private ListView listView;
     TripDatabaseHelper dbHelper;
     private ArrayList<Long> tripIds = new ArrayList<>();
@@ -42,10 +36,9 @@ public class TripsListFragment extends Fragment implements UpdatableFragment, Ad
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        fragmentView = inflater.inflate(R.layout.fragment_trips_list, container, false);
+        View fragmentView = inflater.inflate(R.layout.fragment_trips_list, container, false);
         this.listView = (ListView) fragmentView.findViewById(R.id.tripsListView);
         setupListView();
-        //setupBackButtonActon();
         return fragmentView;
     }
 
@@ -83,7 +76,7 @@ public class TripsListFragment extends Fragment implements UpdatableFragment, Ad
 
     private class TripsCursorAdapter extends CursorAdapter {
 
-        public TripsCursorAdapter(Context context, Cursor c, boolean autoRequery) {
+        TripsCursorAdapter(Context context, Cursor c, boolean autoRequery) {
             super(context, c, autoRequery);
         }
 
@@ -103,7 +96,8 @@ public class TripsListFragment extends Fragment implements UpdatableFragment, Ad
             TextView dateText = (TextView) view.findViewById(R.id.trip_date);
 
             nameText.setText(cursor.getString(cursor.getColumnIndexOrThrow("title")));
-            durationText.setText("Duration: " + cursor.getString(cursor.getColumnIndexOrThrow("duration")));
+            String durationString = "Duration: " + cursor.getString(cursor.getColumnIndexOrThrow("duration"));
+            durationText.setText(durationString);
             distanceText.setText("Distance driven: " + cursor.getString(cursor.getColumnIndexOrThrow("distance")) + " km");
             dateText.setText(cursor.getString(cursor.getColumnIndexOrThrow("start_time")));
         }

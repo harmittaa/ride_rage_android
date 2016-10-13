@@ -12,8 +12,4 @@ public class Constants {
     public enum FRAGMENT_TYPES{
         GAUGES_FRAGMENT, RESULT_FRAGMENT, TRIPS_LIST_FRAGMENT
     }
-    public enum FRAGMENT_CALLER{
-        TRIP_END, TRIP_LIST
-    }
-
 }

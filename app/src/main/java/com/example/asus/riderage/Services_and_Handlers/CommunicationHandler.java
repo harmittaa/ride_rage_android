@@ -64,15 +64,15 @@ public class CommunicationHandler {
         mainActivity.makeToast(mainActivity.getString(couldNotConnect));
     }
 
-    public void startObdJobService() {
+    private void startObdJobService() {
         mainActivity.startObdJobService();
     }
 
-    public void updateGauges(double rpm, double speed) {
+    void updateGauges(double rpm, double speed) {
         mainActivity.updateGauges(rpm, speed);
     }
 
-    public boolean bluetoothSocketIsConnected() {
+    private boolean bluetoothSocketIsConnected() {
         return btManager.bluetoothIsConnected();
     }
 
@@ -111,14 +111,14 @@ public class CommunicationHandler {
 
     private void createTripHandler() {
         setCurrentTripHandler(new TripHandler());
-        this.currentTripHandler.startNewTrip();
+        currentTripHandler.startNewTrip();
     }
 
     public static TripHandler getCurrentTripHandler() {
         return currentTripHandler;
     }
 
-    public void setCurrentTripHandler(TripHandler currentTripHandler) {
+    private void setCurrentTripHandler(TripHandler currentTripHandler) {
         CommunicationHandler.currentTripHandler = currentTripHandler;
     }
 
@@ -139,19 +139,19 @@ public class CommunicationHandler {
         this.tripId = tripId;
     }
 
-    public DataVariables getDataVariable() {
+    DataVariables getDataVariable() {
         return dataVariable;
     }
 
-    public void setDataVariable(DataVariables dataVariable) {
+    void setDataVariable(DataVariables dataVariable) {
         this.dataVariable = dataVariable;
     }
 
-    public boolean getRunningStatus() {
+    boolean getRunningStatus() {
         return runningStatus;
     }
 
-    public void setRunningStatus(boolean runningStatus) {
+    void setRunningStatus(boolean runningStatus) {
         this.runningStatus = runningStatus;
     }
 
@@ -159,7 +159,7 @@ public class CommunicationHandler {
         this.tripName = tripName;
     }
 
-    public String getTripName() {
+    String getTripName() {
         return tripName;
     }
 }

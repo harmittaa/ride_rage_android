@@ -19,16 +19,14 @@ import java.util.concurrent.Callable;
  * Init sequence is required when a new connection is made to wake up the ELM327
  */
 
-public class ObdInitializer implements Callable<Boolean> {
+class ObdInitializer implements Callable<Boolean> {
     private static final String TAG = "ObdInitializer";
-    BluetoothManagerClass bluetoothManagerInstance;
+    private BluetoothManagerClass bluetoothManagerInstance;
     private BluetoothSocket bluetoothSocket;
-    private CommunicationHandler commHandler;
 
-    public ObdInitializer() {
+    ObdInitializer() {
         bluetoothManagerInstance = BluetoothManagerClass.getBluetoothManagerClass();
         this.bluetoothSocket = this.bluetoothManagerInstance.getBluetoothSocket();
-        this.commHandler = CommunicationHandler.getCommunicationHandlerInstance();
     }
 
     /**
@@ -43,14 +41,14 @@ public class ObdInitializer implements Callable<Boolean> {
      * @see <a href="https://www.elmelectronics.com/help/obd/tips/#327_Commands"> OBD commands </a>
      * @return True when initialization sequence has been run correctly, false when something fails
      */
-    public boolean initializeObd() {
+    private boolean initializeObd() {
         try {
             // reset the ELM327
             new ObdResetCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                //Log.e(TAG, "Thread sleep: error", e);
+                Log.e(TAG, "initializeObd: Reset failed", e);
             }
             // init commands
             new EchoOffCommand().run(bluetoothSocket.getInputStream(), bluetoothSocket.getOutputStream());

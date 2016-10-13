@@ -23,24 +23,23 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "TripDatabseHelper";
     private SQLiteDatabase database;
     private Cursor cursor;
-    private Context context;
     private static final String DB_NAME = "TripDatabase";
     private static final int DB_VERSION = 1;
 
     private static final String TABLE_TRIP = "trip";
-    public static final String TRIP_ID = "trip_id";
+    private static final String TRIP_ID = "trip_id";
     public static final String TRIP_TITLE = "title";
-    public static final String TRIP_VEHICLE_ID = "trip_vehicle_id";
+    private static final String TRIP_VEHICLE_ID = "trip_vehicle_id";
     public static final String TRIP_DISTANCE = "distance";
     public static final String TRIP_DURATION = "duration";
-    public static final String TRIP_START_TIME = "start_time";
-    public static final String TRIP_END_TIME = "end_time";
+    private static final String TRIP_START_TIME = "start_time";
+    private static final String TRIP_END_TIME = "end_time";
     public static final String TRIP_AVERAGE_SPEED = "average_speed";
     public static final String TRIP_AVERAGE_RPM = "average_rpm";
-    public static final String TRIP_AVERAGE_CONSUMPTION = "average_consumption";
-    public static final String TRIP_TOTAL_CONSUMPTION = "total_consumption";
-    public static final String TRIP_GAS_COST = "gas_cost";
-    public static final String TRIP_DRIVING_ANALYSIS = "driving_analysis";
+    private static final String TRIP_AVERAGE_CONSUMPTION = "average_consumption";
+    private static final String TRIP_TOTAL_CONSUMPTION = "total_consumption";
+    private static final String TRIP_GAS_COST = "gas_cost";
+    private static final String TRIP_DRIVING_ANALYSIS = "driving_analysis";
 
     private static final String SQL_CREATE_TRIP_TABLE =
             "CREATE TABLE " + TABLE_TRIP + " (" +
@@ -58,13 +57,13 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
                     TRIP_GAS_COST + " real, " +
                     TRIP_DRIVING_ANALYSIS + " text);";
 
-    public static final String TABLE_DATAPOINT = "datapoint";
-    public static final String DATAPOINT_ID = "datapoint_id";
-    public static final String DATAPOINT_TRIP_ID = "datapoint_trip_id";
+    private static final String TABLE_DATAPOINT = "datapoint";
+    private static final String DATAPOINT_ID = "datapoint_id";
+    private static final String DATAPOINT_TRIP_ID = "datapoint_trip_id";
     public static final String DATAPOINT_SPEED = "datapoint_speed";
     public static final String DATAPOINT_RPM = "datapoint_rpm";
-    public static final String DATAPOINT_ACCELERATION = "datapoint_acceleration";
-    public static final String DATAPOINT_CONSUMPTION = "datapoint_consumption";
+    private static final String DATAPOINT_ACCELERATION = "datapoint_acceleration";
+    private static final String DATAPOINT_CONSUMPTION = "datapoint_consumption";
     public static final String DATAPOINT_LONGITUDE = "datapoint_longitude";
     public static final String DATAPOINT_LATITUDE = "datapoint_latitude";
     public static final String DATAPOINT_TIMESTAMP = "datapoint_timestamp";
@@ -86,7 +85,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TABLE_VEHICLE = "vehicle";
     private static final String VEHICLE_ID = "vehicle_id";
-    public static final String VEHICLE_NAME = "vehicle";
+    private static final String VEHICLE_NAME = "vehicle";
     private static final String SQL_CREATE_VEHICLE_TABLE =
             "CREATE TABLE " + TABLE_VEHICLE + " (" +
                     VEHICLE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -94,13 +93,12 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
 
     public TripDatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
-        this.context = context;
         this.database = this.getWritableDatabase();
     }
 
     /**
-     * Initializes the database
-     * @param db
+     * Default onCreate for the DB.
+     * @param db The Database instance
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
@@ -215,7 +213,6 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(VEHICLE_NAME, vehicleName);
         long vehicleId = this.database.insert(TABLE_VEHICLE, null, values);
-        //Log.e(TAG, "Vehicle saved");
         values.clear();
         this.database.close();
         return vehicleId;
@@ -298,7 +295,7 @@ public class TripDatabaseHelper extends SQLiteOpenHelper {
      * @param averageSpeed Average speed of the trip
      * @param averageRpm Average RPM of the trip
      * @param duration Total duration in HH:MM:SS of the trip
-     * @param distance
+     * @param distance Total distance of the trip
      */
     public void editTripValues(long tripId, double averageSpeed, double averageRpm, String duration, String distance) {
         this.database = this.getWritableDatabase();

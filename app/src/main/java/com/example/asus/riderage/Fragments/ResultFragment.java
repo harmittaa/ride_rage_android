@@ -4,7 +4,6 @@ import android.app.Fragment;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,12 +31,10 @@ import com.example.asus.riderage.Misc.UpdatableFragment;
 import com.example.asus.riderage.Services_and_Handlers.CommunicationHandler;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.data.LineRadarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -55,12 +52,9 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 public class ResultFragment extends Fragment implements UpdatableFragment, OnMapReadyCallback, GoogleMap.OnPolylineClickListener {
     private final String TAG = "ResultFragment";
-    private View fragmentView;
     private TextView durationTextView, distanceTextView, avgSpeedTextView, avgRpmTextView, topSpeedTextView, topRpmTextView;
-    private Constants.FRAGMENT_CALLER fragment_caller;
     private static long tripId;
     private GoogleMap googleMap;
-    private MapFragment mapFragment;
     ArrayList<PolylineOptions> polylineOptionsList = new ArrayList<>();
     ArrayList<LatLng> allLatLngs = new ArrayList<>();
     LineChart lineChart;
@@ -72,10 +66,10 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        this.setTripId(CommunicationHandler.getCommunicationHandlerInstance().getTripId());
-        fragmentView = inflater.inflate(R.layout.fragment_result, container, false);
+        setTripId(CommunicationHandler.getCommunicationHandlerInstance().getTripId());
+        View fragmentView = inflater.inflate(R.layout.fragment_result, container, false);
 
-        mapFragment = (MapFragment) getChildFragmentManager().findFragmentById(R.id.mapFragment);
+        MapFragment mapFragment = (MapFragment) getChildFragmentManager().findFragmentById(R.id.mapFragment);
         mapFragment.getMapAsync(this);
 
         durationTextView = (TextView) fragmentView.findViewById(R.id.durationResultLabel);
@@ -92,8 +86,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
     /**
      * Called when GoogleMaps is ready to be initialized
-     *
-     * @param googleMap
+     * @param googleMap Google Maps instance
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -121,12 +114,13 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
     public void onResume() {
         super.onResume();
         getMainActivity().changeActionBarIcons(Constants.FRAGMENT_TYPES.RESULT_FRAGMENT);
-        if(subtitle != null) CommunicationHandler.getCommunicationHandlerInstance().getContext().getSupportActionBar().setSubtitle(subtitle);
+        if (subtitle != null)
+            CommunicationHandler.getCommunicationHandlerInstance().getContext().getSupportActionBar().setSubtitle(subtitle);
         lineChart.invalidate();
     }
 
     /**
-     * Handles updating values into the TextViews of the fragment
+     * Handles updating values into the TextViews of the fragment.
      *
      * @param duration total duration of the trip
      * @param distance total distance driven during the test
@@ -149,13 +143,16 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
     /**
      * Separate method from <code>updateFragmentView</code> just for top values of trip, since they are retrieved from elsewhere
+     *
      * @param topSpeed Highest speed of the trip
-     * @param topRpm Highest RPM of the trip
+     * @param topRpm   Highest RPM of the trip
      */
 
-    public void updateTopValues(final Double topSpeed, final Double topRpm){
-        ResultFragment.this.topSpeedTextView.setText(topSpeed + "KM/H");
-        ResultFragment.this.topRpmTextView.setText(topRpm + "RPM");
+    public void updateTopValues(final Double topSpeed, final Double topRpm) {
+        String topSpeedString = topSpeed + "KM/H";
+        String topRPMSring = topRpm + "RPM";
+        ResultFragment.this.topSpeedTextView.setText(topSpeedString);
+        ResultFragment.this.topRpmTextView.setText(topRPMSring);
     }
 
     /**
@@ -223,18 +220,9 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         return (MainActivity) getActivity();
     }
 
-    public Constants.FRAGMENT_CALLER getFragment_caller() {
-        return fragment_caller;
-    }
-
-    public void setFragment_caller(Constants.FRAGMENT_CALLER fragment_caller) {
-        this.fragment_caller = fragment_caller;
-    }
-
     public static long getTripId() {
         return tripId;
     }
-
 
     public static void setTripId(long tripId) {
         ResultFragment.tripId = tripId;
@@ -250,7 +238,6 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         Cursor dataPointCursor = dbh.getDataPoints(CommunicationHandler.getCommunicationHandlerInstance().getTripId());
         int counter = 0;
         Double currentSpeed, currentRpm, topRpm, topSpeed;
-        currentRpm = currentSpeed = 0.0;
         topSpeed = topRpm = 0.0;
         while (dataPointCursor.moveToNext()) {
             currentRpm = dataPointCursor.getDouble(dataPointCursor.getColumnIndexOrThrow(TripDatabaseHelper.DATAPOINT_RPM));
@@ -262,7 +249,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             counter++;
         }
 
-        updateTopValues(topSpeed,topRpm);
+        updateTopValues(topSpeed, topRpm);
 
         LineDataSet jeeben = new LineDataSet(chartDataRpm, "RPM");
         jeeben.setDrawCircles(false);
@@ -295,9 +282,9 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
         /**
          * Constructor to pass the trip id
          *
-         * @param tripId
+         * @param tripId ID for the current trip
          */
-        public DataFetcher(long tripId) {
+        DataFetcher(long tripId) {
             this.tripId = tripId;
             polylineOptionsList.clear();
             allLatLngs.clear();
@@ -310,9 +297,8 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
 
         /**
          * doInBackground start that calls DbHelper for cursors and proceeds to call needed methods
-         *
-         * @param params
-         * @return
+         * @param params Parameters for doInBackGround
+         * @return returns null
          */
         @Override
         protected Boolean doInBackground(Integer... params) {
@@ -326,7 +312,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
                 @Override
                 public void run() {
                     if (tripDataCursor.getCount() > 0) {
-                        subtitle = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(dbHelper.TRIP_TITLE));
+                        subtitle = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_TITLE));
                         CommunicationHandler.getCommunicationHandlerInstance().getContext().getSupportActionBar().setSubtitle(subtitle);
                     }
                 }
@@ -352,8 +338,7 @@ public class ResultFragment extends Fragment implements UpdatableFragment, OnMap
             tripDataCursor.moveToFirst();
             String avgrpm = "";
             String avgspd = "";
-            Double toppestSpeed, topRpm, currentSpeed, currentRpm;
-            toppestSpeed = topRpm = currentRpm = currentSpeed = 0.0;
+            Double currentSpeed, currentRpm;
             try {
                 avgrpm = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_RPM));
                 avgspd = tripDataCursor.getString(tripDataCursor.getColumnIndexOrThrow(TripDatabaseHelper.TRIP_AVERAGE_SPEED));

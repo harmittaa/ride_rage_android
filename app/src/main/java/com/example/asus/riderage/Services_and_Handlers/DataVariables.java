@@ -10,11 +10,11 @@ import static android.content.ContentValues.TAG;
  * Holds variables such as rpm, speed and averages for the trip
  */
 
-public class DataVariables {
+class DataVariables {
     private double rpm, speed, avgSpeed, avgRpm, acceleration, consumption, longitude, latitude, totalDistance;
     private ArrayList<Double> rpmList, speedList;
 
-    public DataVariables() {
+    DataVariables() {
         this.speedList = new ArrayList<>();
         this.rpmList = new ArrayList<>();
     }
@@ -35,86 +35,74 @@ public class DataVariables {
         this.speed = speed;
     }
 
-    public void addToSpeed(double speed) {
+    void addToSpeed(double speed) {
         this.speedList.add(speed);
     }
 
-    public void addToRpm(double rpm) {
+    void addToRpm(double rpm) {
         this.rpmList.add(rpm);
     }
 
 
-    public double getAvgRpm() {
+    double getAvgRpm() {
         return avgRpm;
     }
 
-    public void setAvgRpm(double avgRpm) {
+    void setAvgRpm(double avgRpm) {
         this.avgRpm = avgRpm;
         Log.e(TAG, "setAvgRpm: avgrpm set to " + this.avgRpm );
     }
 
-    public double getAvgSpeed() {
+    double getAvgSpeed() {
         return avgSpeed;
     }
 
-    public void setAvgSpeed(double avgSpeed) {
+    void setAvgSpeed(double avgSpeed) {
         this.avgSpeed = avgSpeed;
         Log.e(TAG, "setAvgSpeed: avgspd set to " +this.avgSpeed);
     }
 
-    public ArrayList<Double> getRpmList() {
+    ArrayList<Double> getRpmList() {
         return rpmList;
     }
 
-    public void setRpmList(ArrayList<Double> rpmList) {
-        this.rpmList = rpmList;
-    }
-
-    public ArrayList<Double> getSpeedList() {
+    ArrayList<Double> getSpeedList() {
         return speedList;
     }
 
-    public void setSpeedList(ArrayList<Double> speedList) {
-        this.speedList = speedList;
-    }
-
-    public double getAcceleration() {
+    double getAcceleration() {
         return acceleration;
     }
 
-    public void setAcceleration(double acceleration) {
-        this.acceleration = acceleration;
-    }
-
-    public double getConsumption() {
+    double getConsumption() {
         return consumption;
     }
 
-    public void setConsumption(double consumption) {
+    void setConsumption(double consumption) {
         this.consumption = consumption;
     }
 
-    public double getLongitude() {
+    double getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(double longitude) {
+    void setLongitude(double longitude) {
         this.longitude = longitude;
     }
 
-    public double getLatitude() {
+    double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(double latitude) {
+    void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
-    public double getTotalDistance() {
+    double getTotalDistance() {
         return totalDistance;
     }
 
-    public void setTotalDistance(double totalDistance) {
+    void setTotalDistance(double totalDistance) {
         this.totalDistance = totalDistance;
     }
 }

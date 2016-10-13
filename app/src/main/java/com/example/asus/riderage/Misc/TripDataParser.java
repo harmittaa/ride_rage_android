@@ -35,8 +35,8 @@ public class TripDataParser extends AsyncTask<Integer, Long, Boolean> {
 
     /**
      * doInBackground start that calls DbHelper for cursors and proceeds to call needed methods
-     * @param params
-     * @return
+     * @param params Parameters for the doInBackground
+     * @return Returns null
      */
     @Override
     protected Boolean doInBackground(Integer... params) {

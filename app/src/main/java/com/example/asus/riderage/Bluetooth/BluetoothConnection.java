@@ -16,7 +16,7 @@ import java.util.concurrent.Callable;
  * Class is used for establishing connection to OBD device
  */
 
-public class BluetoothConnection implements Callable<Boolean> {
+class BluetoothConnection implements Callable<Boolean> {
     private static final String TAG = "BluetoothConnection";
     private UUID uuidToConnect;
     private BluetoothDevice device;
@@ -24,7 +24,7 @@ public class BluetoothConnection implements Callable<Boolean> {
     private BluetoothManagerClass bluetoothManagerClass;
     private CommunicationHandler communicationHandler;
 
-    public BluetoothConnection(UUID uid, BluetoothDevice dev) {
+    BluetoothConnection(UUID uid, BluetoothDevice dev) {
         this.uuidToConnect = uid;
         this.device = dev;
         this.bluetoothManagerClass = BluetoothManagerClass.getBluetoothManagerClass();
